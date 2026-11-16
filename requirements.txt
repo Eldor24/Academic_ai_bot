@@ -4,9 +4,10 @@ httpx<0.28            # openai 1.14 httpx 0.28+ bilan ishlamaydi ("proxies" xato
 python-pptx==0.6.23
 python-docx==1.1.0
 python-dotenv==1.0.1
-lxml==5.1.0
+lxml>=5.1.0          # Python 3.13 uchun tayyor paket bor versiya
 google-genai>=1.0.0   # Gemini (rasm o'qish, masala yechish)
 PyMuPDF>=1.23         # PDF o'qish (import fitz)
 Pillow>=10.0
 pytz>=2024.1
 reportlab>=4.0        # Esse PDF hisobot va sertifikat
+edge-tts>=6.1          # Matnni ovozga (Microsoft Edge ovozlari, bepul)

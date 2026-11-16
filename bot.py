@@ -233,6 +233,10 @@ DOC_NARX = {
     "imtihon":      5,   # Imtihonga tayyorlov to'plami + Telegram test
     "masala":       3,   # Masala yechish (rasmdan)
     "mustaqil":     7,   # Mustaqil ish + APA/GOST/MLA adabiyotlar
+    # ── FOYDALANUVCHI TAKLIFLARI (xizmatlar_qoshimcha.py) ──
+    "ftest":        4,   # Fayl/rasmdan test (PDF, Word, rasm) + Telegram quiz
+    "tts":          2,   # Matnni ovozga (MP3)
+    "sardor":       4,   # Sinf sardori: bayonnoma, ssenariy, tarbiyaviy soat...
 }
 XUSH_BONUS     = 5
 REFERRAL_BONUS = 10
@@ -341,6 +345,7 @@ bot = telebot.TeleBot(BOT_TOKEN, parse_mode=None)
 import security
 import pptx_themes
 import xizmatlar_yangi
+import xizmatlar_qoshimcha
 from security import sanitize_long_text, UnsafeFileError
 FLOOD_GUARD = security.install(
     bot, admin_id=ADMIN_ID,
@@ -2817,7 +2822,14 @@ I18N = {
             "• ✨ Matnni Originallashtirish = 6 tanga\n"
             "• 🔬 Ilmiy Muammo = 5 tanga\n"
             "• 📽 Taqdimot Nutqi = 4 tanga\n"
-            "• 📝 Esse Tekshirish = 5 tanga\n\n"
+            "• 📝 Esse Tekshirish = 5 tanga\n"
+            "• 📚 Konspekt = 4 tanga 🆕\n"
+            "• 🎯 Imtihonga tayyorlov = 5 tanga 🆕\n"
+            "• 🧮 Masala yechish = 3 tanga 🆕\n"
+            "• 🗂 Mustaqil ish (Word) = 7 tanga 🆕\n"
+            "• 🧠 Fayldan test (PDF/rasm) = 4 tanga 🆕\n"
+            "• 🎧 Ovozli matn (MP3) = 2 tanga 🆕\n"
+            "• 🧑‍🏫 Sinf sardori hujjatlari = 4 tanga 🆕\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━\n"
             "💳 <b>To'lov karta:</b>\n"
             "<code>{card}</code>\n"
@@ -3463,7 +3475,14 @@ I18N = {
             "• ✨ Оригинализация текста = 6 монет\n"
             "• 🔬 Науч. Проблема = 5 монет\n"
             "• 📽 Речь для презентации = 4 монеты\n"
-            "• 📝 Проверка эссе = 5 монет\n\n"
+            "• 📝 Проверка эссе = 5 монет\n"
+            "• 📚 Конспект = 4 монеты 🆕\n"
+            "• 🎯 Подготовка к экзамену = 5 монет 🆕\n"
+            "• 🧮 Решение задач = 3 монеты 🆕\n"
+            "• 🗂 Самостоятельная работа (Word) = 7 монет 🆕\n"
+            "• 🧠 Тест из файла (PDF/фото) = 4 монеты 🆕\n"
+            "• 🎧 Текст в аудио (MP3) = 2 монеты 🆕\n"
+            "• 🧑‍🏫 Документы старосты = 4 монеты 🆕\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━\n"
             "💳 <b>Карта для оплаты:</b>\n"
             "<code>{card}</code>\n"
@@ -4180,7 +4199,14 @@ I18N = {
             "• ✨ Originalize Text = 6 coins\n"
             "• 🔬 Research Problem = 5 coins\n"
             "• 📽 Presentation Speech = 4 coins\n"
-            "• 📝 Essay Check = 5 coins\n\n"
+            "• 📝 Essay Check = 5 coins\n"
+            "• 📚 Summary notes = 4 coins 🆕\n"
+            "• 🎯 Exam prep = 5 coins 🆕\n"
+            "• 🧮 Problem solver = 3 coins 🆕\n"
+            "• 🗂 Independent work (Word) = 7 coins 🆕\n"
+            "• 🧠 Quiz from file (PDF/photo) = 4 coins 🆕\n"
+            "• 🎧 Text to audio (MP3) = 2 coins 🆕\n"
+            "• 🧑‍🏫 Class leader documents = 4 coins 🆕\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━\n"
             "💳 <b>Payment card:</b>\n"
             "<code>{card}</code>\n"
@@ -6016,9 +6042,11 @@ def _pptx_dan_data(cid: int, params: dict, inner: dict,
     if not theme:  # eski formatdagi saqlangan taqdimot
         theme = pptx_themes.LEGACY_PAL_MAP[int(inner.get("pal_idx", 0)) % len(pptx_themes.LEGACY_PAL_MAP)]
     til = holat.get(cid, {}).get("til", "uz")
+    doc_til = inner.get("doc_til") or til
     fname = make_fname(mavzu, ".pptx")
-    pptx_themes.build_presentation(slides_data, mavzu, ism, theme, til, fname,
-                                   labels={"bajardi": I18N[til]["bajardi"]})
+    pptx_themes.build_presentation(slides_data, mavzu, ism, theme, doc_til, fname,
+                                   labels={"bajardi": I18N[til]["bajardi"]} if doc_til == til else None,
+                                   template_path=inner.get("tpl"))
     log.info(f"✅ PPTX qayta qurildi: {fname} | shablon={theme}")
     return fname
 
@@ -11601,7 +11629,7 @@ _PPTX_EXTRA_QOIDA = {
 }
 
 def pptx_yaratish(cid: int, mavzu: str, ism: str, soni: int, progress=None,
-                  theme: str = "akademik") -> str:
+                  theme: str = "akademik", doc_lang: str | None = None, tpl_path: str | None = None) -> str:
     # ✅ SANITIZATSIYA
     mavzu = sanitize_user_input(mavzu, max_len=300)
     ism   = sanitize_user_input(ism,   max_len=150)
@@ -11613,6 +11641,10 @@ def pptx_yaratish(cid: int, mavzu: str, ism: str, soni: int, progress=None,
         "ru": "Пиши ТОЛЬКО на РУССКОМ.",   # ← ✅ KIRILL!
         "en": "Write ONLY in ENGLISH.",
     }[til]
+    # Taqdimot TILI interfeys tilidan farq qilishi mumkin (qoraqalpoq, qozoq, kirill o'zbek...)
+    doc_lang = doc_lang if doc_lang in pptx_themes.DOC_LANGS else til
+    if doc_lang != til:
+        lang_cmd = pptx_themes.DOC_LANGS[doc_lang]["cmd"]
 
     _pptx_intro = {
         "uz": (f"Sen professional va akademik taqdimot mutaxassissan. {lang_cmd}\n"
@@ -11764,6 +11796,9 @@ def pptx_yaratish(cid: int, mavzu: str, ism: str, soni: int, progress=None,
 [
 {_pptx_json_misol}
 ]"""
+    if doc_lang != til:
+        prompt += (f"\n\n‼️ {pptx_themes.DOC_LANGS[doc_lang]['cmd']} "
+                   f"(sarlavha, matn, izoh, chapNom, ongNom, birligi — hammasi shu tilda; JSON kalitlari o'zgarmasin.)")
 
     raw = call_ai(prompt)
     if progress:
@@ -11834,11 +11869,13 @@ def pptx_yaratish(cid: int, mavzu: str, ism: str, soni: int, progress=None,
         theme = random.choice(pptx_themes.THEME_ORDER)
     fname = make_fname(mavzu, ".pptx")
     pptx_themes.build_presentation(
-        slides_data, mavzu, ism, theme, til, fname,
-        labels={"bajardi": I18N[til]["bajardi"]},
+        slides_data, mavzu, ism, theme, doc_lang, fname,
+        labels={"bajardi": I18N[til]["bajardi"]} if doc_lang == til else None,
+        template_path=tpl_path if theme == "custom" else None,
     )
-    log.info(f"✅ PPTX saqlandi: {fname} | shablon={theme}")
-    return fname, {"slides_data": filtered_slides, "theme": theme}
+    log.info(f"✅ PPTX saqlandi: {fname} | shablon={theme} | til={doc_lang}")
+    return fname, {"slides_data": filtered_slides, "theme": theme, "doc_til": doc_lang,
+                   "tpl": tpl_path if theme == "custom" else None}
 
 
 # ═══════════════════════════════════════════════
@@ -11863,13 +11900,15 @@ def main_kb(cid: int, show_tahrir: bool = False):
     m.add(KeyboardButton(tx(cid, "btn_maqola")), KeyboardButton(tx(cid, "btn_tezis")))
     # ── O'qish va imtihon ──
     m.add(yb("konspekt"), yb("imtihon"))
-    m.add(yb("masala"), KeyboardButton(tx(cid, "btn_test")))
+    m.add(KeyboardButton(tx(cid, "btn_test")), yb("ftest"))
+    m.add(yb("masala"), yb("tts"))
     # ── Matn bilan ishlash ──
     m.add(KeyboardButton(tx(cid, "btn_tarjima")), KeyboardButton(tx(cid, "btn_grammatika")))
     m.add(KeyboardButton(tx(cid, "btn_original")), KeyboardButton(tx(cid, "btn_esse")))
     # ── Nutq, CV, ilmiy ──
     m.add(KeyboardButton(tx(cid, "btn_nutq")), KeyboardButton(tx(cid, "btn_spiker")))
     m.add(KeyboardButton(tx(cid, "btn_cv")), KeyboardButton(tx(cid, "btn_gipoteza")))
+    m.add(yb("sardor"))
     # ── Kabinet ──
     m.add(KeyboardButton(tx(cid, "btn_kabinet")), KeyboardButton(tx(cid, "btn_topup")))
     if cid == ADMIN_ID:
@@ -14441,7 +14480,7 @@ def _show_kabinet(cid: int):
     kabinet_matn = tx(cid, "kabinet_msg").format(
         uid=cid, ism=ism, coins=coins, refs=refs, docs=docs,
         botname=bot_username, ref_bonus=REFERRAL_BONUS
-    ) + f"\n\n{_joriy_til_lbl} {til_belgi}"
+    ) + f"\n\n{_joriy_til_lbl} {til_belgi}" + "\n\n" + tanga_kalkulyator(cid)
 
     # Til o'zgartirish tugmasi bilan yuboramiz
     bot.send_message(cid, kabinet_matn,
@@ -14564,11 +14603,33 @@ def topup_kb(cid: int):
     return m
 
 
+def tanga_kalkulyator(cid: int) -> str:
+    """'Tangangiz nechtaga yetadi' va tanga yig'ish yo'llari (to'ldirish va kabinetda ko'rsatiladi)."""
+    til = holat.get(cid, {}).get("til", "uz")
+    c = get_coins(cid)
+    L = {
+        "uz": ("🧮 <b>Sizning {c} tangangiz yetadi:</b>", ("taqdimot", "test", "konspekt", "masala yechimi", "audio"),
+               "🎁 <b>Tekin tanga yig'ish:</b>\n• 👥 Do'stingizni taklif qiling — har biri uchun <b>+{ref}</b> tanga (Kabinetdagi havola)\n"
+               "• 📅 Har dushanba tangasi kam qolganlarga haftalik bonus\n• 🎟 Promokodlar — /promo"),
+        "ru": ("🧮 <b>Ваших {c} монет хватит на:</b>", ("презентаций", "тестов", "конспектов", "решений задач", "аудио"),
+               "🎁 <b>Бесплатные монеты:</b>\n• 👥 Пригласите друга — <b>+{ref}</b> монет за каждого (ссылка в Кабинете)\n"
+               "• 📅 Каждый понедельник — бонус тем, у кого мало монет\n• 🎟 Промокоды — /promo"),
+        "en": ("🧮 <b>Your {c} coins are enough for:</b>", ("presentations", "quizzes", "summaries", "problem solutions", "audios"),
+               "🎁 <b>Free coins:</b>\n• 👥 Invite a friend — <b>+{ref}</b> coins each (link in Profile)\n"
+               "• 📅 Every Monday — bonus for users with few coins\n• 🎟 Promo codes — /promo"),
+    }.get(til)
+    head, names, earn = L
+    turlar = ("pptx", "test", "konspekt", "masala", "tts")
+    qator = " • ".join(f"<b>{c // DOC_NARX[t]}</b> {n}" for t, n in zip(turlar, names))
+    return f"{head.format(c=c)}\n{qator}\n\n{earn.format(ref=REFERRAL_BONUS)}"
+
+
 def _show_topup(cid: int):
     """To'lov oynasini ko'rsatish (yangi tugmalar bilan)"""
     bot.send_message(
         cid,
-        tx(cid, "topup_msg").format(card=CARD_NUMBER, owner=CARD_OWNER),
+        tx(cid, "topup_msg").format(card=CARD_NUMBER, owner=CARD_OWNER)
+        + "\n\n━━━━━━━━━━━━━━━━━━━━━━\n" + tanga_kalkulyator(cid),
         reply_markup=topup_kb(cid),
         parse_mode="HTML"
     )
@@ -17795,9 +17856,9 @@ def h_ppt_soni(msg):
         ),
     )
 
-    # ✅ YANGI: shablon tanlash bosqichi
-    update_holat(cid, "qadam", "ppt_shablon")
-    _ppt_shablon_galereya(cid)
+    # ✅ YANGI: avval taqdimot TILI, keyin shablon
+    update_holat(cid, "qadam", "ppt_til")
+    _ppt_til_sor(cid)
 
 
 # ═══════════════════════════════════════════════
@@ -17834,6 +17895,7 @@ def _ppt_shablon_kb(cid: int) -> InlineKeyboardMarkup:
         btns.append(InlineKeyboardButton(f"{i}. {th.name(til)}", callback_data=f"pptheme_{key}"))
     kb.add(*btns)
     kb.add(InlineKeyboardButton(_SHABLON_RANDOM.get(til, "🎲"), callback_data="pptheme_random"))
+    kb.add(InlineKeyboardButton(_TPL_BTN.get(til, _TPL_BTN["uz"]), callback_data="pptheme_custom"))
     return kb
 
 
@@ -17892,6 +17954,96 @@ def _ppt_shablon_galereya(cid: int):
         bot.send_message(cid, caption, reply_markup=_ppt_shablon_kb(cid), parse_mode="HTML")
 
 
+_PPT_TIL_SAVOL = {
+    "uz": "🌐 <b>Taqdimot qaysi tilda bo'lsin?</b>",
+    "ru": "🌐 <b>На каком языке сделать презентацию?</b>",
+    "en": "🌐 <b>Which language should the presentation be in?</b>",
+}
+_TPL_SOR = {
+    "uz": ("📎 <b>O'z shabloningizni yuboring</b>\n\n"
+           "PowerPoint shablonini (<b>.pptx</b>, 20 MB gacha) fayl qilib yuboring.\n"
+           "Bot shablonning foni, bezaklari va ranglarini saqlab, ichini to'ldirib beradi.\n\n"
+           "<i>Maslahat: 16:9 o'lchamdagi shablon eng yaxshi natija beradi.</i>"),
+    "ru": ("📎 <b>Отправьте свой шаблон</b>\n\n"
+           "Отправьте шаблон PowerPoint (<b>.pptx</b>, до 20 МБ) файлом.\n"
+           "Бот сохранит фон, оформление и цвета шаблона и заполнит его.\n\n"
+           "<i>Совет: лучше всего подходит шаблон 16:9.</i>"),
+    "en": ("📎 <b>Send your template</b>\n\n"
+           "Send a PowerPoint template (<b>.pptx</b>, up to 20 MB) as a file.\n"
+           "The bot keeps its background, decorations and colours and fills it in.\n\n"
+           "<i>Tip: a 16:9 template works best.</i>"),
+}
+_TPL_BAD = {
+    "uz": "⚠️ Bu fayl PowerPoint shabloni sifatida ochilmadi. Boshqa <b>.pptx</b> yuboring yoki tayyor shablonni tanlang.",
+    "ru": "⚠️ Этот файл не открывается как шаблон PowerPoint. Отправьте другой <b>.pptx</b> или выберите готовый шаблон.",
+    "en": "⚠️ This file can't be opened as a PowerPoint template. Send another <b>.pptx</b> or pick a ready template.",
+}
+_TPL_BTN = {"uz": "📎 O'z shablonimni yuklayman", "ru": "📎 Загружу свой шаблон", "en": "📎 Upload my own template"}
+
+
+def _ppt_til_sor(cid: int):
+    til = holat.get(cid, {}).get("til", "uz")
+    kb = InlineKeyboardMarkup(row_width=2)
+    langs = list(pptx_themes.DOC_LANGS.items())
+    langs.sort(key=lambda kv: kv[0] != til)            # foydalanuvchi tili birinchi
+    kb.add(*[InlineKeyboardButton(v["nom"], callback_data=f"pptil_{k}") for k, v in langs])
+    bot.send_message(cid, _PPT_TIL_SAVOL.get(til, _PPT_TIL_SAVOL["uz"]), reply_markup=kb, parse_mode="HTML")
+
+
+@bot.callback_query_handler(func=lambda c: c.data.startswith("pptil_"))
+def h_ppt_til(call):
+    cid = call.message.chat.id
+    bot.answer_callback_query(call.id)
+    if is_banned(cid) or holat.get(cid, {}).get("qadam") != "ppt_til":
+        return
+    kod = call.data.split("_", 1)[1]
+    if kod not in pptx_themes.DOC_LANGS:
+        return
+    update_holat(cid, "ppt_doc_til", kod)
+    update_holat(cid, "qadam", "ppt_shablon")
+    try:
+        bot.edit_message_text(f"🌐 {pptx_themes.DOC_LANGS[kod]['nom']}", cid, call.message.message_id)
+    except Exception:
+        pass
+    _ppt_shablon_galereya(cid)
+
+
+@bot.message_handler(
+    content_types=["document"],
+    func=lambda m: holat.get(m.chat.id, {}).get("qadam") == "ppt_tpl_kutish",
+)
+def h_ppt_tpl_fayl(msg):
+    cid = msg.chat.id
+    til = holat.get(cid, {}).get("til", "uz")
+    d = msg.document
+    if not (d.file_name or "").lower().endswith((".pptx", ".potx")) or (d.file_size or 0) > 20 * 1024 * 1024:
+        bot.send_message(cid, _TPL_BAD.get(til, _TPL_BAD["uz"]), parse_mode="HTML")
+        return
+    try:
+        raw = bot.download_file(bot.get_file(d.file_id).file_path)
+        ok, why = security.check_office_bytes(raw, "ppt/presentation.xml")
+        if not ok:
+            raise ValueError(why)
+        tpl_dir = os.path.join(tempfile.gettempdir(), "academic_bot_tpl")
+        os.makedirs(tpl_dir, exist_ok=True)
+        path = os.path.join(tpl_dir, f"tpl_{cid}_{int(time.time())}.pptx")
+        with open(path, "wb") as f:
+            f.write(raw)
+        ok, why = pptx_themes.check_template(path)
+        if not ok:
+            os.remove(path)
+            raise ValueError(why)
+    except Exception as e:
+        log.warning(f"[{cid}] Shablon rad etildi: {e}")
+        bot.send_message(cid, _TPL_BAD.get(til, _TPL_BAD["uz"]), parse_mode="HTML")
+        return
+    update_holat(cid, "ppt_theme", "custom")
+    update_holat(cid, "ppt_tpl", path)
+    update_holat(cid, "qadam", "ppt_yaratilmoqda")
+    bot.send_message(cid, _SHABLON_OK.get(til, _SHABLON_OK["uz"]).format(nom=_TPL_BTN.get(til, "📎")), parse_mode="HTML")
+    _yaratish(msg, is_docx=False)
+
+
 @bot.callback_query_handler(func=lambda c: c.data.startswith("pptheme_"))
 def h_ppt_shablon_tanlash(call):
     cid = call.message.chat.id
@@ -17900,6 +18052,13 @@ def h_ppt_shablon_tanlash(call):
     if holat.get(cid, {}).get("qadam") != "ppt_shablon":
         bot.answer_callback_query(call.id, "⌛"); return
     key = call.data.replace("pptheme_", "", 1)
+    if key == "custom":
+        til = holat.get(cid, {}).get("til", "uz")
+        bot.answer_callback_query(call.id)
+        update_holat(cid, "qadam", "ppt_tpl_kutish")
+        bot.send_message(cid, _TPL_SOR.get(til, _TPL_SOR["uz"]), parse_mode="HTML", reply_markup=back_kb(cid))
+        return
+    update_holat(cid, "ppt_tpl", None)
     if key != "random" and key not in pptx_themes.THEMES:
         bot.answer_callback_query(call.id, "❌"); return
     if key == "random":
@@ -18515,6 +18674,8 @@ def _yaratish(msg, is_docx: bool):
                     fname, gen_data = pptx_yaratish(
                         cid, mavzu, ism, h["soni"], progress=prog,
                         theme=h.get("ppt_theme", "akademik"),
+                        doc_lang=h.get("ppt_doc_til"),
+                        tpl_path=h.get("ppt_tpl"),
                     )
 
                 prog.delete()
@@ -20868,6 +21029,7 @@ xizmatlar_yangi.register(bot, _NS(
     increment_docs=_increment_docs_count, log_action=log_action, log_javob=_log_bot_javob,
     log_xato=_log_bot_xatolik, user_info=_user_info_from_msg, ADMIN_ID=ADMIN_ID,
 ))
+xizmatlar_qoshimcha.register(bot)
 
 # ═══════════════════════════════════════════════
 # NOMA'LUM XABARLAR

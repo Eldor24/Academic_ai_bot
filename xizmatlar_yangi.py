@@ -69,7 +69,9 @@ T = {
         "imtihon_quiz_start": "🧠 Test boshlandi! Har bir savolga javob bering — to'g'ri javob va izoh darhol chiqadi.",
         "masala_start": ("🧮 <b>Masala yechish</b> — {narx} 🪙\n\n"
                          "Masalaning <b>rasmini</b> yuboring yoki <b>matnini</b> yozing.\n"
-                         "Matematika, fizika, kimyo, iqtisod, statistika, dasturlash.\n\n"
+                         "• Matematika, fizika, iqtisod, statistika, dasturlash\n"
+                         "• 🧪 Kimyoviy reaksiyalar va formulalar (tenglash, reaksiya turi)\n"
+                         "• 🧬 Biologik sxemalar, chizmalar va jadvallar (qo'lda yozilgan yoki skaner)\n\n"
                          "Yechim bosqichma-bosqich tushuntiriladi — mavzuni o'zingiz ham tushunib olasiz."),
         "masala_wait": "🧮 Masala yechilmoqda... (20-60 soniya)",
         "masala_bad": "⚠️ Masala matni yoki rasmini yuboring.",
@@ -109,7 +111,9 @@ T = {
         "imtihon_quiz_start": "🧠 Тест начался! Отвечайте — правильный ответ и пояснение появятся сразу.",
         "masala_start": ("🧮 <b>Решение задач</b> — {narx} 🪙\n\n"
                          "Отправьте <b>фото</b> задачи или напишите её <b>текст</b>.\n"
-                         "Математика, физика, химия, экономика, статистика, программирование.\n\n"
+                         "• Математика, физика, экономика, статистика, программирование\n"
+                         "• 🧪 Химические реакции и формулы (уравнивание, тип реакции)\n"
+                         "• 🧬 Биологические схемы, рисунки и таблицы (рукописные или скан)\n\n"
                          "Решение объясняется пошагово."),
         "masala_wait": "🧮 Решаю задачу... (20-60 секунд)",
         "masala_bad": "⚠️ Отправьте текст или фото задачи.",
@@ -148,7 +152,9 @@ T = {
         "imtihon_quiz_start": "🧠 Quiz started! Answer each question — the correct answer and explanation appear instantly.",
         "masala_start": ("🧮 <b>Problem solver</b> — {narx} 🪙\n\n"
                          "Send a <b>photo</b> of the problem or type its <b>text</b>.\n"
-                         "Maths, physics, chemistry, economics, statistics, programming.\n\n"
+                         "• Maths, physics, economics, statistics, programming\n"
+                         "• 🧪 Chemical reactions and formulas (balancing, reaction type)\n"
+                         "• 🧬 Biology diagrams, drawings and tables (handwritten or scanned)\n\n"
                          "The solution is explained step by step."),
         "masala_wait": "🧮 Solving... (20-60 seconds)",
         "masala_bad": "⚠️ Send the problem as text or a photo.",
@@ -522,6 +528,37 @@ def _log_start(msg, action, content):
         pass
 
 
+_TTS_BTN = {"uz": "🎧 Ovozli tinglash", "ru": "🎧 Прослушать аудио", "en": "🎧 Listen as audio"}
+
+
+def _tts_kb(cid: int):
+    """Hujjat ostidagi '🎧 Ovozli tinglash' tugmasi (xizmatlar_qoshimcha.py dagi TTS ishlatiladi)."""
+    narx = NARX.get("tts", 2)
+    kb = InlineKeyboardMarkup()
+    kb.add(InlineKeyboardButton(f"{_TTS_BTN.get(_til(cid), _TTS_BTN['uz'])} — {narx} 🪙", callback_data="tts_last"))
+    return kb
+
+
+def _plain_for_tts(data: dict, kind: str) -> str:
+    """Yaratilgan hujjatdan ovozga o'qiladigan toza matn."""
+    parts = []
+    if kind == "konspekt":
+        parts.append(str(data.get("sarlavha", "")))
+        parts.append(str(data.get("qisqa_mazmun", "")))
+        parts += [str(g) for g in (data.get("asosiy_goyalar") or [])]
+        for t in data.get("tushunchalar") or []:
+            if isinstance(t, dict):
+                parts.append(f"{t.get('termin', '')} — {t.get('tarif', '')}.")
+    else:
+        parts.append(str(data.get("kirish", "")))
+        for b in data.get("boblar") or []:
+            if isinstance(b, dict):
+                parts.append(str(b.get("nomi", "")))
+                parts.append(str(b.get("matn", "")))
+        parts.append(str(data.get("xulosa", "")))
+    return "\n".join(p.strip() for p in parts if p and p.strip())
+
+
 # ═══════════════════════════════════════════════════════════════════
 # 1. KONSPEKT
 # ═══════════════════════════════════════════════════════════════════
@@ -625,7 +662,8 @@ tushunchalar soni: {n_terms} gacha. Markdown ishlatma."""
             cap = (f"{_t(cid, 'konspekt_done')}\n\n<b>{security.esc(sar)}</b>\n"
                    f"{security.esc(str(data.get('qisqa_mazmun', ''))[:500])}\n\n"
                    f"{_t(cid, 'coins', c=_api.get_coins(cid))}")
-            _send_doc(cid, fname, _safe_name(sar, "Konspekt"), cap[:1024], "📚 Konspekt", sar)
+            _api.update_holat(cid, "tts_text", _plain_for_tts(data, "konspekt"))
+            _send_doc(cid, fname, _safe_name(sar, "Konspekt"), cap[:1024], "📚 Konspekt", sar, kb=_tts_kb(cid))
             if short:
                 _send(cid, short, reply_markup=_api.main_kb(cid))
             else:
@@ -815,9 +853,17 @@ def masala_boshlash(msg):
     _send(cid, _t(cid, "masala_start", narx=NARX["masala"]), reply_markup=_api.back_kb(cid))
 
 
-_MASALA_PROMPT = """You are an expert tutor in mathematics, physics, chemistry, economics, statistics and programming.
+_MASALA_PROMPT = """You are an expert tutor in mathematics, physics, chemistry, biology, economics, statistics and programming.
 {lang}
-Solve the problem {src} step by step so that a university student understands the method.
+Solve the problem {src} step by step so that a student understands the method.
+The input may be handwritten or scanned — read it carefully; if something is unreadable, say which part.
+
+SUBJECT-SPECIFIC RULES:
+- Chemistry: write formulas with Unicode subscripts/superscripts (H₂SO₄, Fe³⁺, →, ⇌), balance every equation,
+  name the reaction type, and show molar-mass / mole calculations step by step.
+- Biology diagrams or schemes: name each labelled (or numbered) structure, explain its function,
+  and explain the process the scheme shows (e.g. mitosis phases, photosynthesis, food chain).
+- Tables or graphs: state what they show and draw the conclusion that was asked for.
 
 FORMAT (plain text, NO LaTeX, NO markdown symbols like ** or #; use Unicode math: ×, ÷, √, ², ³, π, ≤, ≥, ∫, Σ, →):
 📌 {h1}
@@ -1020,7 +1066,9 @@ boblar soni 3 ta. Markdown ishlatma."""
         try:
             prog.delete()
             cap = f"{_t(cid, 'mustaqil_done')}\n\n{_t(cid, 'coins', c=_api.get_coins(cid))}"
-            _send_doc(cid, fname, _safe_name(mavzu, "Mustaqil_ish"), cap[:1024], "🗂 Mustaqil ish",
+            _api.update_holat(cid, "tts_text", _plain_for_tts(data, "mustaqil"))
+            _send_doc(cid, fname, _safe_name(mavzu, "Mustaqil_ish"), cap[:1024], "🗂 Mustaqil ish", kb=_tts_kb(cid),
+                      javob_matn=
                       f"OTM: {otm}\nFan: {fan}\nMavzu: {mavzu}\nMuallif: {ism}\nUslub: {uslub.upper()}")
             _send(cid, _api.tx(cid, "yangi"), reply_markup=_api.main_kb(cid))
         finally:

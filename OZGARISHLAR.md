@@ -1,4 +1,19 @@
-# Academic Bot — 11-versiya: o'zgarishlar ro'yxati (12.11.2026)
+# Academic Bot — o'zgarishlar ro'yxati
+
+## 12-versiya (16.11.2026) — foydalanuvchilar takliflari asosida
+| Taklif | Nima qilindi |
+|---|---|
+| Kimyo, biologiya sxemalarini rasmdan yechish | 🧮 Masala yechish endi kimyoviy reaksiyalarni tenglaydi, reaksiya turini aytadi, biologik sxemadagi har bir qismni nomlab tushuntiradi (qo'lda yozilgan va skaner ham) |
+| Audio (Text-to-Voice) | 🎧 **Ovozli matn** — matn/Word/PDF/rasmni MP3 ga aylantirish, 8 ta ovoz (o'zbek ayol/erkak, rus, ingliz, qozoq, turk). Konspekt va mustaqil ish ostida "🎧 Ovozli tinglash" tugmasi |
+| Kitob/PDF asosida test, rasmdan test | 🧠 **Fayldan test** — PDF, Word, rasm yoki matndan; aniq betlar (masalan 20-35) yoki bob bo'yicha; 10/20/30 savol; daraja; material tilida (IELTS uchun inglizcha) |
+| Test oq bo'lsin | Fayldan test Word fayli oq, rangsiz, chop etishga tayyor: F.I.Sh./guruh/sana qatori, oxirida javoblar kaliti va izohlar |
+| Sinf sardorlari uchun bo'lim | 🧑‍🏫 **Sinf sardori** — bayonnoma, tadbir ssenariysi, tarbiyaviy soat rejasi, e'lon/taklifnoma, faoliyat hisoboti |
+| Taqdimot boshqa tillarda (qoraqalpoq, qozoq...) | Taqdimot tili alohida tanlanadi: o'zbek (lotin/kirill), qoraqalpoq, rus, ingliz, qozoq, qirg'iz, tojik, turk, nemis |
+| Shablonni o'zimiz qo'yaylik | Taqdimotda "📎 O'z shablonimni yuklayman": foydalanuvchining .pptx shabloni foni, bezaklari, ranglari va shriftlari bilan to'ldiriladi |
+| 22 tanga nechtaga yetadi, tanga yig'ish qiyin | To'ldirish va Kabinetda "tangangiz nechtaga yetadi" hisob-kitobi va tekin tanga yig'ish yo'llari ko'rsatiladi |
+| To'ldirishda yangi xizmatlar yo'q | Narxlar ro'yxatiga barcha 7 ta yangi xizmat qo'shildi (uch tilda) |
+
+## 11-versiya (12.11.2026)
 
 ## Fayllar
 | Fayl | Vazifasi |

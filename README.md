@@ -46,8 +46,10 @@ Narxlar tangada (🪙). Admin uchun barcha xizmatlar bepul.
 |---|---|---|
 | 📚 Konspekt | 4 | Matn, Word, PDF yoki rasmdan konspekt: qisqa mazmun, asosiy g'oyalar, atamalar lug'ati, savollar |
 | 🎯 Imtihonga tayyorlov | 5 | Flash-kartalar, 10 ta test (Telegram ichida interaktiv quiz), ehtimoliy savollar, kunlik reja |
-| 🧮 Masala yechish | 3 | Rasm yoki matndagi masalani bosqichma-bosqich yechish (matematika, fizika, iqtisod va h.k.) |
+| 🧮 Masala yechish | 3 | Rasm yoki matndagi masalani bosqichma-bosqich yechish: matematika, fizika, **kimyoviy reaksiyalar**, **biologik sxemalar** (qo'lda yozilgan yoki skaner) |
 | 🧪 Test savollari | 4 | Mavzu bo'yicha test savollari |
+| 🧠 Fayldan test | 4 | PDF darslik, Word, rasm yoki matndan test: kerakli **betlar yoki bob** bo'yicha, 10/20/30 savol, daraja tanlash, oq toza Word + Telegram ichida interaktiv test. CEFR, IELTS, milliy sertifikat uchun |
+| 🎧 Ovozli matn | 2 | Matn, fayl yoki rasmni MP3 audioga aylantirish (o'zbek, rus, ingliz, qozoq, turk ovozlari). Konspekt va mustaqil ish ostida "Ovozli tinglash" tugmasi bor |
 
 ### Matn bilan ishlash
 
@@ -66,6 +68,7 @@ Narxlar tangada (🪙). Admin uchun barcha xizmatlar bepul.
 | 🗣 Spiker nutqi | 4 | Taqdimot faylidan spiker matni |
 | 💼 CV | 9 | Rezyume (Word) |
 | 🔬 Gipoteza | 5 | Ilmiy muammo va gipoteza shakllantirish |
+| 🧑‍🏫 Sinf sardori | 4 | Yig'ilish bayonnomasi, tadbir ssenariysi, tarbiyaviy soat rejasi, e'lon/taklifnoma, faoliyat hisoboti |
 
 Tayyor hujjatni bot ichida **tahrirlash** ham mumkin ("✏️ Hujjatni tahrirlash" tugmasi).
 
@@ -90,6 +93,12 @@ Shablonlar faqat rangi bilan emas, **maketi** bilan ham farq qiladi:
 | Jadval, taqqoslash, statistika kartalari, xulosa | 4 xildan |
 
 Diagrammalar PowerPoint'ning haqiqiy diagrammalari, ya'ni raqamlarni keyin o'zingiz tahrirlay olasiz.
+
+**Taqdimot tili** interfeys tilidan alohida tanlanadi: o'zbek (lotin va kirill), qoraqalpoq, rus, ingliz, qozoq,
+qirg'iz, tojik, turk, nemis.
+
+**O'z shabloningiz:** galereyadagi "📎 O'z shablonimni yuklayman" tugmasi orqali istalgan PowerPoint shablonini (.pptx)
+yuborish mumkin — bot uning foni, bezaklari, ranglari va shriftlarini saqlab, ichini to'ldiradi.
 Har bir slaydda sarlavha ostida slaydning asosiy fikrini tushuntiruvchi izoh bor.
 
 Shablonlar ro'yxati: Akademik, Minimal, Korporativ, Texno, Tabiat, Gradient, Ijodiy, Milliy naqsh, Qora-oltin,
@@ -104,6 +113,7 @@ Academic_ai_bot/
 ├── bot.py                # Asosiy bot: menyu, xizmatlar, tanga tizimi, admin panel
 ├── pptx_themes.py        # Taqdimot shablonlari dvigateli (15 shablon)
 ├── xizmatlar_yangi.py    # Konspekt, Imtihonga tayyorlov, Masala yechish, Mustaqil ish
+├── xizmatlar_qoshimcha.py# Fayldan test, Ovozli matn, Sinf sardori
 ├── security.py           # Xavfsizlik qatlami
 ├── cloud_db.py           # Bazani Telegram'da saqlash (Render uchun)
 ├── requirements.txt      # Python kutubxonalari
@@ -174,6 +184,7 @@ python bot.py
 - Haftalik bonus, promokodlar va obunalar (Lite, Standart) bor.
 - Hisob karta orqali to'ldiriladi, to'lovni admin `/topupconfirm` bilan tasdiqlaydi.
 - AI xato bersa, sarflangan tangalar avtomatik qaytariladi.
+- "💳 Tanga to'ldirish" va "👤 Kabinet" da tangangiz qaysi xizmatdan nechta olishga yetishi ko'rsatiladi.
 
 ---
 
@@ -225,7 +236,7 @@ Agar kalit tasodifan oshkor bo'lsa, uni darhol yangilang: @BotFather'da `/revoke
    (HTTP(s), har 5 daqiqa) — aks holda bepul xizmat 15 daqiqadan keyin uxlab qoladi.
 
 **Baza qanday saqlanadi:** Render'ning bepul diski vaqtinchalik — har deploy yoki qayta ishga tushishda fayllar o'chadi.
-Shuning uchun `cloud_db.py` bazani admin chatiga fayl qilib yuboradi va qadab qo'yadi, har 5 daqiqada yangilab turadi.
+Shuning uchun `cloud_db.py` bazani admin chatiga fayl qilib yuboradi va qadab qo'yadi, har 2 daqiqada yangilab turadi.
 Bot qayta ishga tushganda bazani shu qadalgan fayldan o'zi tiklaydi. **Bu xabarni o'chirmang va qadalganini olib tashlamang.**
 
 ### Linux server (VPS)

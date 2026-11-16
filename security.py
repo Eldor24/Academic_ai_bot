@@ -318,6 +318,36 @@ def check_docx_bytes(data: bytes) -> tuple[bool, str]:
     return True, ""
 
 
+def check_office_bytes(data: bytes, required_part: str) -> tuple[bool, str]:
+    """PPTX/XLSX kabi Office fayllar uchun umumiy tekshiruv (zip-bomba, makros, kerakli qism)."""
+    if data[:4] != b"PK\x03\x04":
+        return False, "not_zip"
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as z:
+            infos = z.infolist()
+            if len(infos) > MAX_DOCX_ENTRIES:
+                return False, "too_many_entries"
+            total = 0
+            names = set()
+            for i in infos:
+                n = i.filename
+                if n.startswith("/") or ".." in n.split("/"):
+                    return False, "path_traversal"
+                total += i.file_size
+                if total > 150 * 1024 * 1024:
+                    return False, "zip_bomb"
+                if i.compress_size and i.file_size / max(i.compress_size, 1) > 200:
+                    return False, "zip_bomb"
+                names.add(n)
+            if required_part not in names:
+                return False, "wrong_type"
+            if any(n.lower().endswith(("vbaproject.bin", ".exe", ".dll", ".js")) for n in names):
+                return False, "macro"
+    except zipfile.BadZipFile:
+        return False, "bad_zip"
+    return True, ""
+
+
 def check_pdf_bytes(data: bytes, max_pages: int = 80) -> tuple[bool, str]:
     if data[:5] != b"%PDF-":
         return False, "not_pdf"

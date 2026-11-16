@@ -479,8 +479,21 @@ def _dot_grid(sl, th, color, x0=0.25, y0=0.25, nx=27, ny=15, step=0.5, size=0.02
                 _box(sl, th, x0 + gx * step, y0 + gy * step, size, size, color, MSO_SHAPE.OVAL)
 
 
+def _blank(prs):
+    """Bo'sh maket: standart shablonda 6-maket, foydalanuvchi shablonida eng kam placeholderli maket."""
+    lay = getattr(prs, "_ab_blank", None)
+    if lay is None:
+        lays = list(prs.slide_layouts)
+        lay = lays[6] if len(lays) > 6 and lays[6].name.lower().startswith("blank") else \
+            min(lays, key=lambda l: len(l.placeholders))
+        prs._ab_blank = lay
+    return lay
+
+
 def _decor(sl, th: Theme):
     d = th.decor
+    if d == "template":
+        return          # foydalanuvchi shablonining o'z foni va bezaklari saqlanadi
     _bg(sl, th, "bg")
     if d == "classic":
         _box(sl, th, 0, 0, SW, 0.09, "primary"); _box(sl, th, 0, 0.09, SW, 0.025, "accent")
@@ -638,7 +651,7 @@ def _lead(sl, th, rect, izoh):
 
 
 def _start(prs, th, sd, num):
-    sl = prs.slides.add_slide(prs.slide_layouts[6])
+    sl = prs.slides.add_slide(_blank(prs))
     _decor(sl, th)
     izoh = _clean(sd.get("izoh", ""))
     if sd.get("tipo") in _NO_IZOH or len(izoh) < 8:
@@ -840,7 +853,7 @@ def slide_agenda(prs, th, sd, num, total, topic):
     n = len(items)
     v = th.v["agenda"]
     if v == "left_panel":
-        sl = prs.slides.add_slide(prs.slide_layouts[6])
+        sl = prs.slides.add_slide(_blank(prs))
         _bg(sl, th, "bg")
         pw = 4.8
         if th.grad:
@@ -1578,13 +1591,14 @@ def slide_conclusion(prs, th, sd, num, total, topic):
 # TITUL — 15 variant
 # ═══════════════════════════════════════════════════════════════════
 def _title_slide(prs, th: Theme, mavzu: str, ism: str, lb: dict):
-    sl = prs.slides.add_slide(prs.slide_layouts[6])
+    sl = prs.slides.add_slide(_blank(prs))
     v = th.v["title"]
     hf = th.font_head
     year = str(datetime.date.today().year)
     by = f"{lb.get('bajardi', 'Bajardi')}: {ism}" if ism else ""
     kind = lb.get("taqdimot", "Taqdimot")
-    _bg(sl, th, "title_bg")
+    if v != "template_title":
+        _bg(sl, th, "title_bg")
 
     def block(x, w, y_kind, y_title, h_title, y_by, align=PP_ALIGN.LEFT, size=44, rule=None):
         _txt(sl, th, x, y_kind, w, 0.45, kind, 14, "accent", True, align=align, caps=True, spc=3)
@@ -1718,6 +1732,8 @@ def _title_slide(prs, th: Theme, mavzu: str, ism: str, lb: dict):
         _txt(sl, th, 0.85, 1.8, 6.2, 3.1, mavzu, 42, "primary", True, hf, anchor=MSO_ANCHOR.MIDDLE, fit=True, min_size=24)
         _box(sl, th, 0.9, 5.05, 1.2, 0.05, "accent2")
         _txt(sl, th, 0.9, 5.25, 6, 0.5, by, 20, "text")
+    elif v == "template_title":
+        block(1.0, SW - 2.0, 1.45, 1.95, 2.4, 4.85, align=PP_ALIGN.CENTER, size=42, rule="accent")
     elif v == "chalk":
         _box(sl, th, 0, 0, SW, SH, None, line="#7A5230", line_w=18)
         _box(sl, th, 0.55, 0.55, SW - 1.1, SH - 1.1, None, line="#F5F1E3", line_w=0.5)
@@ -1733,7 +1749,7 @@ def _title_slide(prs, th: Theme, mavzu: str, ism: str, lb: dict):
 
 
 def _thanks_slide(prs, th: Theme, lb: dict, ism: str):
-    sl = prs.slides.add_slide(prs.slide_layouts[6])
+    sl = prs.slides.add_slide(_blank(prs))
     v = th.v["title"]
     thanks = lb.get("rahmat", "E'tiboringiz uchun rahmat!")
     q = lb.get("savollar", "Savollaringiz bormi?")
@@ -1760,6 +1776,8 @@ def _thanks_slide(prs, th: Theme, lb: dict, ism: str):
     elif v == "typographic":
         _bg(sl, th, "bg")
         _box(sl, th, 0.75, 0.55, SW - 1.5, 0.04, "primary"); _box(sl, th, 0.75, SH - 0.6, SW - 1.5, 0.04, "primary")
+    elif v == "template_title":
+        pass            # shablonning o'z foni
     else:
         _bg(sl, th, "title_bg")
         if th.dark:
@@ -1793,17 +1811,183 @@ _RENDER = {
 }
 
 
+# ═══════════════════════════════════════════════════════════════════
+# TAQDIMOT KONTENT TILLARI
+# ═══════════════════════════════════════════════════════════════════
+DOC_LANGS = {
+    "uz":     {"nom": "🇺🇿 O'zbek (lotin)",   "cmd": "Barcha matnni O'ZBEK tilida, LOTIN yozuvida yoz."},
+    "uz_cyr": {"nom": "🇺🇿 Ўзбек (кирилл)",   "cmd": "Барча матнни ЎЗБЕК тилида, КИРИЛЛ ёзувида ёз (Ўзбекистон кирилл алифбоси: ў, қ, ғ, ҳ)."},
+    "kaa":    {"nom": "Qaraqalpaq tili",      "cmd": "Barlıq tekstti QARAQALPAQ tilinde, latın jazıwında jaz (á, ó, ú, ı, ń, ǵ háriplerin qollan). "
+                                                     "Write ALL text in the KARAKALPAK language (Latin script)."},
+    "ru":     {"nom": "🇷🇺 Русский",           "cmd": "Пиши ВЕСЬ текст ТОЛЬКО на РУССКОМ языке."},
+    "en":     {"nom": "🇬🇧 English",           "cmd": "Write ALL text ONLY in ENGLISH."},
+    "kk":     {"nom": "🇰🇿 Қазақ тілі",        "cmd": "Барлық мәтінді ҚАЗАҚ тілінде (кирилл) жаз. Write ALL text in KAZAKH (Cyrillic)."},
+    "ky":     {"nom": "🇰🇬 Кыргыз тили",       "cmd": "Бардык текстти КЫРГЫЗ тилинде жаз. Write ALL text in KYRGYZ (Cyrillic)."},
+    "tg":     {"nom": "🇹🇯 Тоҷикӣ",            "cmd": "Тамоми матнро бо забони ТОҶИКӢ (кириллӣ) нависед. Write ALL text in TAJIK (Cyrillic)."},
+    "tr":     {"nom": "🇹🇷 Türkçe",            "cmd": "Tüm metni TÜRKÇE yaz. Write ALL text in TURKISH."},
+    "de":     {"nom": "🇩🇪 Deutsch",           "cmd": "Schreibe den GESAMTEN Text auf DEUTSCH. Write ALL text in GERMAN."},
+}
+DEFAULT_LABELS.update({
+    "uz_cyr": {"bajardi": "Бажарди", "rahmat": "Эътиборингиз учун раҳмат!", "savollar": "Саволларингиз борми?",
+               "taqdimot": "Тақдимот", "afzallik": "Афзалликлар", "kamchilik": "Камчиликлар"},
+    "kaa": {"bajardi": "Orınlaǵan", "rahmat": "Itibarıńız ushın raxmet!", "savollar": "Sorawlarıńız barma?",
+            "taqdimot": "Prezentaciya", "afzallik": "Artıqmashılıqları", "kamchilik": "Kemshilikleri"},
+    "kk": {"bajardi": "Орындаған", "rahmat": "Назарларыңызға рахмет!", "savollar": "Сұрақтарыңыз бар ма?",
+           "taqdimot": "Презентация", "afzallik": "Артықшылықтары", "kamchilik": "Кемшіліктері"},
+    "ky": {"bajardi": "Аткарган", "rahmat": "Көңүл бурганыңыз үчүн рахмат!", "savollar": "Суроолоруңуз барбы?",
+           "taqdimot": "Презентация", "afzallik": "Артыкчылыктары", "kamchilik": "Кемчиликтери"},
+    "tg": {"bajardi": "Иҷро кард", "rahmat": "Ташаккур барои диққататон!", "savollar": "Савол доред?",
+           "taqdimot": "Презентатсия", "afzallik": "Бартариҳо", "kamchilik": "Камбудиҳо"},
+    "tr": {"bajardi": "Hazırlayan", "rahmat": "İlginiz için teşekkürler!", "savollar": "Sorularınız var mı?",
+           "taqdimot": "Sunum", "afzallik": "Avantajlar", "kamchilik": "Dezavantajlar"},
+    "de": {"bajardi": "Vorgelegt von", "rahmat": "Vielen Dank für Ihre Aufmerksamkeit!", "savollar": "Fragen?",
+           "taqdimot": "Präsentation", "afzallik": "Vorteile", "kamchilik": "Nachteile"},
+})
+
+
+# ═══════════════════════════════════════════════════════════════════
+# FOYDALANUVCHI SHABLONI (.pptx)
+# ═══════════════════════════════════════════════════════════════════
+def _blend(c1: str, c2: str, t: float) -> str:
+    a, b = _hex(c1), _hex(c2)
+    return "#" + "".join(f"{int(a[i] + (b[i] - a[i]) * t):02X}" for i in range(3))
+
+
+def _lum(c: str) -> float:
+    r, g, b = _hex(c)
+    return 0.299 * r + 0.587 * g + 0.114 * b
+
+
+def _template_colors(prs) -> tuple[dict, dict]:
+    """Shablon mavzusidan (theme1.xml) ranglar va shriftlarni o'qiydi."""
+    from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+    colors, fonts = {}, {}
+    try:
+        theme_part = prs.slide_master.part.part_related_by(RT.THEME)
+        root = etree.fromstring(theme_part.blob)
+        ns = {"a": "http://schemas.openxmlformats.org/drawingml/2006/main"}
+        cs = root.find(".//a:clrScheme", ns)
+        for el in cs:
+            name = etree.QName(el).localname
+            c = el.find("a:srgbClr", ns)
+            if c is None:
+                c = el.find("a:sysClr", ns)
+                val = c.get("lastClr") if c is not None else None
+            else:
+                val = c.get("val")
+            if val:
+                colors[name] = "#" + val.upper()
+        for kind, key in (("majorFont", "head"), ("minorFont", "body")):
+            lat = root.find(f".//a:{kind}/a:latin", ns)
+            if lat is not None and lat.get("typeface") and not lat.get("typeface").startswith("+"):
+                fonts[key] = lat.get("typeface")
+    except Exception:
+        pass
+    return colors, fonts
+
+
+def _template_bg(prs, colors: dict) -> str:
+    """Shablon fonining asosiy rangi (taxminan)."""
+    for obj in [prs.slide_master] + list(prs.slide_layouts)[:2]:
+        try:
+            bg = obj._element.find(".//" + qn("p:bg"))
+            if bg is None:
+                continue
+            c = bg.find(".//" + qn("a:srgbClr"))
+            if c is not None:
+                return "#" + c.get("val").upper()
+            sc = bg.find(".//" + qn("a:schemeClr"))
+            if sc is not None:
+                m = {"bg1": "lt1", "bg2": "lt2", "tx1": "dk1", "tx2": "dk2"}.get(sc.get("val"), sc.get("val"))
+                if m in colors:
+                    return colors[m]
+        except Exception:
+            pass
+    return colors.get("lt1", "#FFFFFF")
+
+
+def _theme_from_template(prs) -> Theme:
+    col, fonts = _template_colors(prs)
+    bg = _template_bg(prs, col)
+    dark = _lum(bg) < 110
+    dk1, lt1 = col.get("dk1", "#1F2937"), col.get("lt1", "#FFFFFF")
+    acc1, acc2 = col.get("accent1", "#2F5597"), col.get("accent2", "#ED7D31")
+    text = lt1 if dark else dk1
+    if _lum(text) > 110 and not dark:
+        text = "#222222"
+    if _lum(text) < 110 and dark:
+        text = "#F2F2F2"
+    primary = (col.get("lt2", text) if dark else col.get("dk2", dk1))
+    if abs(_lum(primary) - _lum(bg)) < 90:
+        primary = text
+    chart = [col[k] for k in ("accent1", "accent2", "accent3", "accent4", "accent5", "accent6") if k in col] or \
+        ["#2F5597", "#ED7D31", "#A5A5A5", "#FFC000", "#5B9BD5", "#70AD47"]
+    return Theme(
+        key="custom", decor="template",
+        names={"uz": "📎 O'z shabloningiz", "ru": "📎 Ваш шаблон", "en": "📎 Your template"},
+        desc={"uz": "", "ru": "", "en": ""},
+        v=dict(title="template_title", header="underline", text="quote_card", list="rows", agenda="columns",
+               bar="column", pie="doughnut", table="banded", compare="cards_vs", stats="cards",
+               timeline="horizontal", concl="check_rows"),
+        bg=bg, title_bg=bg, primary=primary, accent=acc1, accent2=acc2, text=text,
+        muted=_blend(text, bg, 0.45), card=_blend(bg, text, 0.07), on_title=primary,
+        chart=chart, font_head=fonts.get("head", "Calibri"), font_body=fonts.get("body", "Calibri"),
+        dark=dark, line=_blend(bg, text, 0.15),
+    )
+
+
+def _open_template(path: str):
+    """Shablonni ochadi, slaydlarini o'chiradi va 16:9 (13.333 x 7.5) o'lchamga keltiradi."""
+    prs = Presentation(path)
+    lst = prs.slides._sldIdLst
+    for sid in list(lst):
+        try:
+            prs.part.drop_rel(sid.rId)
+        except Exception:
+            pass
+        lst.remove(sid)
+    W, H = Inches(SW), Inches(SH)
+    if prs.slide_width != W or prs.slide_height != H:
+        fx, fy = W / prs.slide_width, H / prs.slide_height
+        for obj in [prs.slide_master] + list(prs.slide_layouts):
+            for sh in obj.shapes:
+                try:
+                    if sh.left is not None:
+                        sh.left, sh.top = int(sh.left * fx), int(sh.top * fy)
+                        sh.width, sh.height = int(sh.width * fx), int(sh.height * fy)
+                except Exception:
+                    pass
+        prs.slide_width, prs.slide_height = W, H
+    return prs
+
+
+def check_template(path: str) -> tuple[bool, str]:
+    """Yuklangan .pptx shablon sifatida ishlatsa bo'ladimi."""
+    try:
+        prs = Presentation(path)
+        if not list(prs.slide_layouts):
+            return False, "no_layouts"
+        return True, ""
+    except Exception as e:
+        return False, str(e)[:100]
+
+
 def build_presentation(slides: list, mavzu: str, ism: str, theme_key: str,
                        til: str = "uz", out_path: str = "taqdimot.pptx",
-                       labels: dict | None = None) -> str:
-    th = get_theme(theme_key)
+                       labels: dict | None = None, template_path: str | None = None) -> str:
     lb = dict(DEFAULT_LABELS.get(til, DEFAULT_LABELS["uz"]))
     if labels:
         lb.update({k: v for k, v in labels.items() if v})
-    prs = Presentation()
-    prs.slide_width, prs.slide_height = Inches(SW), Inches(SH)
-    prs.core_properties.title = _clean(mavzu)[:200]
-    prs.core_properties.author = _clean(ism)[:100] or "Academic Bot"
+    if template_path and os.path.exists(template_path):
+        prs = _open_template(template_path)
+        th = _theme_from_template(prs)
+    else:
+        th = get_theme(theme_key)
+        prs = Presentation()
+        prs.slide_width, prs.slide_height = Inches(SW), Inches(SH)
+    if not template_path:   # ba'zi shablonlarda (LibreOffice) core.xml boshqacha ulangan — tegmaymiz
+        prs.core_properties.title = _clean(mavzu)[:200]
+        prs.core_properties.author = _clean(ism)[:100] or "Academic Bot"
     total = len(slides) + 2
     _title_slide(prs, th, mavzu, ism, lb)
     for i, sd in enumerate(slides):
