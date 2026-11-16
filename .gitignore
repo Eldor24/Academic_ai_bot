@@ -1,0 +1,33 @@
+# ── Maxfiy ma'lumotlar (HECH QACHON GitHub'ga yuklanmasin) ──
+.env
+*.env
+!.env.example
+serverga yuklash*.txt
+
+# ── Foydalanuvchilar bazasi va zaxiralar ──
+users.json
+users.json.bak
+users_*.json
+Baza_Zaxira/
+
+# ── Loglar ──
+*.log
+*.log.*
+
+# ── Python ──
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# ── Bot yaratgan vaqtinchalik hujjatlar ──
+*.pptx
+*.docx
+*.pdf
+Claude outputs/
+
+# ── Eski versiya va tizim fayllari ──
+eski_versiya/
+.DS_Store
+Thumbs.db
+desktop.ini
