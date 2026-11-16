@@ -105,6 +105,7 @@ Academic_ai_bot/
 ├── pptx_themes.py        # Taqdimot shablonlari dvigateli (15 shablon)
 ├── xizmatlar_yangi.py    # Konspekt, Imtihonga tayyorlov, Masala yechish, Mustaqil ish
 ├── security.py           # Xavfsizlik qatlami
+├── cloud_db.py           # Bazani Telegram'da saqlash (Render uchun)
 ├── requirements.txt      # Python kutubxonalari
 ├── .env.example          # Sozlamalar namunasi (.env shu asosda yaratiladi)
 ├── ishga_tushirish.bat   # Windows'da bir bosishda ishga tushirish
@@ -161,6 +162,8 @@ python bot.py
 | `LOG_CHANNEL_ID` | — | Bot harakatlari yuboriladigan kanal ID si (`0` = o'chirilgan) |
 | `CARD_NUMBER` | — | Hisobni to'ldirish uchun karta raqami |
 | `CARD_OWNER` | — | Karta egasi |
+| `DB_CHAT_ID` | — | Bulut baza saqlanadigan chat (bo'sh = admin chati) |
+| `CLOUD_DB` | — | `1` bo'lsa bulut baza Render'dan tashqarida ham yoqiladi |
 
 ---
 
@@ -187,7 +190,7 @@ Faqat `ADMIN_ID` egasi ishlata oladi. Barcha admin buyruqlari `admin_audit.log` 
 | Promokodlar | `/newpromo`, `/delpromo`, `/promolist`, `/promostat`, `/promoguide` |
 | Obunalar | `/delob` |
 | Xabar tarqatish | `/broadcast`, `/send`, `/send_confirm`, `/cancel_broadcast` |
-| Baza | `/getdb`, `/dbinfo`, `/cleanup` |
+| Baza | `/getdb`, `/loaddb`, `/dbinfo`, `/cleanup` |
 
 Foydalanuvchi buyruqlari: `/start`, `/kabinet`, `/topup`, `/promo`, `/obuna`, `/lang`.
 
@@ -211,6 +214,21 @@ Agar kalit tasodifan oshkor bo'lsa, uni darhol yangilang: @BotFather'da `/revoke
 ---
 
 ## 🌐 Serverga joylash
+
+### Render.com (bepul)
+
+1. Render'da **New → Web Service**, shu GitHub repozitoriyasini ulang.
+2. Build Command: `pip install -r requirements.txt`, Start Command: `python bot.py`, Instance Type: **Free**.
+3. **Environment** bo'limiga `.env` dagi qiymatlarni kiriting.
+4. Bot ishga tushgach, Telegram'da admin sifatida `/loaddb` yuboring va `users.json` faylini jo'nating.
+5. Render bergan `https://….onrender.com` manzilini [UptimeRobot](https://uptimerobot.com) ga qo'shing
+   (HTTP(s), har 5 daqiqa) — aks holda bepul xizmat 15 daqiqadan keyin uxlab qoladi.
+
+**Baza qanday saqlanadi:** Render'ning bepul diski vaqtinchalik — har deploy yoki qayta ishga tushishda fayllar o'chadi.
+Shuning uchun `cloud_db.py` bazani admin chatiga fayl qilib yuboradi va qadab qo'yadi, har 5 daqiqada yangilab turadi.
+Bot qayta ishga tushganda bazani shu qadalgan fayldan o'zi tiklaydi. **Bu xabarni o'chirmang va qadalganini olib tashlamang.**
+
+### Linux server (VPS)
 
 Linux serverga SSH kalit bilan joylash, systemd xizmatini sozlash va yangilash tartibi:
 [SERVERGA_YUKLASH.md](SERVERGA_YUKLASH.md).

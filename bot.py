@@ -1479,7 +1479,22 @@ def onboarding_doc_belgila(uid: int):
             ob["birinchi_doc"] = True
     _mark_dirty()
 
+# ── Bulut baza (Render kabi vaqtinchalik diskli hostinglar uchun) ──
+# Lokal users.json yo'q/bo'sh bo'lsa — Telegram'da qadalgan zaxiradan tiklanadi (cloud_db.py)
+import cloud_db
+CLOUD_DB = None
+if cloud_db.enabled():
+    CLOUD_DB = cloud_db.CloudDB(bot, cloud_db.chat_id(ADMIN_ID), USERS_FILE)
+    CLOUD_DB.restore_if_needed()
+
 users_db = load_users()
+
+
+def _cloud_snapshot() -> bytes:
+    with USERS_DB_LOCK:
+        return json.dumps(users_db, ensure_ascii=False, indent=1).encode("utf-8")
+
+
 def birinchi_doc_bepulmi(uid: int) -> bool:
     
     with USERS_DB_LOCK:
@@ -12322,6 +12337,85 @@ def h_promo(msg):
 # ═══════════════════════════════════════════════
 ADMIN_PANEL_BTN = "👨‍💻 Admin panel"
 
+# ═══════════════════════════════════════════════
+# /loaddb — users.json ni Telegram orqali botga yuklash (admin)
+# ═══════════════════════════════════════════════
+_LOADDB_WAIT: set = set()
+
+
+@bot.message_handler(commands=["loaddb"])
+@admin_only
+def h_loaddb(msg):
+    _LOADDB_WAIT.add(msg.chat.id)
+    bot.send_message(
+        msg.chat.id,
+        "📥 <b>Bazani yuklash</b>\n\n"
+        "Endi <code>users.json</code> faylini shu chatga yuboring.\n"
+        "⚠️ Hozirgi baza fayldagisi bilan <b>to'liq almashtiriladi</b> "
+        "(eskisi serverda zaxira sifatida saqlanadi).\n\n"
+        "Bekor qilish: /cancel_loaddb",
+        parse_mode="HTML",
+    )
+
+
+@bot.message_handler(commands=["cancel_loaddb"])
+@admin_only
+def h_loaddb_cancel(msg):
+    _LOADDB_WAIT.discard(msg.chat.id)
+    bot.send_message(msg.chat.id, "❌ Bazani yuklash bekor qilindi.")
+
+
+@bot.message_handler(
+    content_types=["document"],
+    func=lambda m: m.chat.id == ADMIN_ID and (
+        m.chat.id in _LOADDB_WAIT or (m.caption or "").strip().startswith("/loaddb")),
+)
+def h_loaddb_file(msg):
+    cid = msg.chat.id
+    _LOADDB_WAIT.discard(cid)
+    d = msg.document
+    if not (d.file_name or "").lower().endswith(".json") or (d.file_size or 0) > 20 * 1024 * 1024:
+        bot.send_message(cid, "⚠️ .json fayl yuboring (20 MB gacha). Qaytadan: /loaddb")
+        return
+    try:
+        raw = bot.download_file(bot.get_file(d.file_id).file_path)
+        data = json.loads(raw.decode("utf-8"))
+        if not (isinstance(data, dict) and isinstance(data.get("all_users"), list)
+                and isinstance(data.get("coins", {}), dict)):
+            raise ValueError("bu fayl bot bazasi formatida emas (all_users / coins yo'q)")
+    except Exception as e:
+        bot.send_message(cid, f"❌ Faylni o'qib bo'lmadi: {_html_escape(str(e))}", parse_mode="HTML")
+        return
+    try:
+        stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        with USERS_DB_LOCK:
+            old_n = len(users_db.get("all_users", []))
+            with open(f"users_oldin_loaddb_{stamp}.json", "w", encoding="utf-8") as f:
+                json.dump(users_db, f, ensure_ascii=False)
+            with open(USERS_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            yangi = load_users()                # majburiy bo'limlar to'ldiriladi
+            users_db.clear()
+            users_db.update(yangi)
+            save_users(users_db)
+        if CLOUD_DB is not None:
+            CLOUD_DB.push(_cloud_snapshot(), force=True)
+        security.audit(ADMIN_ID, "loaddb", f"{old_n} -> {len(users_db.get('all_users', []))}")
+        bot.send_message(
+            cid,
+            "✅ <b>Baza yuklandi!</b>\n\n"
+            f"👥 Foydalanuvchilar: {old_n} → <b>{len(users_db.get('all_users', []))}</b>\n"
+            f"🪙 Jami tangalar: <b>{sum(users_db.get('coins', {}).values())}</b>\n"
+            f"🎟 Promokodlar: <b>{len(users_db.get('promokodlar', {}))}</b>\n"
+            + ("\n☁️ Telegram'ga ham saqlandi — bot qayta ishga tushsa ham baza tiklanadi."
+               if CLOUD_DB is not None else ""),
+            parse_mode="HTML",
+        )
+        log.info(f"📥 /loaddb: baza almashtirildi ({old_n} -> {len(users_db.get('all_users', []))})")
+    except Exception as e:
+        log.error(f"/loaddb xato: {e}", exc_info=True)
+        bot.send_message(cid, f"❌ Bazani almashtirishda xato: {_html_escape(str(e))}", parse_mode="HTML")
+
 
 @bot.message_handler(func=lambda m: m.text == ADMIN_PANEL_BTN and m.chat.id == ADMIN_ID)
 def h_admin_panel_btn(msg):
@@ -12346,6 +12440,7 @@ def h_admin_panel(msg):
         "<code>/obstat</code> — Obuna statistikasi\n"
         "<code>/dbinfo</code> — Baza holati\n"
         "<code>/getdb</code> — Bazani yuklab olish\n"
+        "<code>/loaddb</code> — Bazani botga yuklash (users.json)\n"
         "<code>/users</code> — CSV fayl (Excel)\n"
         "<code>/userinfo &lt;uid&gt;</code> — Foydalanuvchi ma'lumoti\n\n"
 
@@ -20931,6 +21026,11 @@ def _graceful_shutdown(signum=None, frame=None):
         log.info("✅ Ma'lumotlar xavfsiz saqlandi.")
     except Exception as e:
         log.error(f"Shutdown saqlash xatosi: {e}")
+    if CLOUD_DB is not None:
+        try:
+            CLOUD_DB.push(_cloud_snapshot())
+        except Exception as e:
+            log.error(f"Shutdown bulut saqlash xatosi: {e}")
     if signum is not None:
         # Signal kelgan bo'lsa — jarayonni haqiqatan to'xtatamiz (systemd 90s kutib qolmasin)
         os._exit(0)
@@ -20971,6 +21071,7 @@ def setup_bot_commands():
             BotCommand("promolist",    "Faol promokodlar"),
             BotCommand("broadcast",    "Hammaga xabar yuborish"),
             BotCommand("getdb",        "Bazani yuklab olish"),
+            BotCommand("loaddb",       "Bazani botga yuklash (users.json)"),
         ]
         bot.set_my_commands(admin_cmds, scope=BotCommandScopeChat(ADMIN_ID))
         log.info(f"✅ Admin menyusi o'rnatildi (ADMIN_ID={ADMIN_ID}).")
@@ -21014,8 +21115,38 @@ if __name__ == "__main__":
     log.info("✅ Yangi xizmatlar: /addob /obstat /broadcast")
     # ✅ Har 1-2 daqiqa...da users.json diskka saqlash
     _periodic_save_thread_start()
+    if CLOUD_DB is not None:
+        CLOUD_DB.push(_cloud_snapshot())     # ishga tushganda darhol bir marta
+        CLOUD_DB.start(_cloud_snapshot, interval=300)
     avtomatik_zaxira_kanalga()
     log.info("✅ Barcha background threadlar ishga tushdi.")
+
+    # ── Render / boshqa hostinglar uchun health sahifa ──
+    # Render "Web Service" dastur PORT ga ulanishini kutadi. PORT bo'lmasa (lokal, VPS) — o'chiq.
+    # Uptime-monitor (masalan UptimeRobot) shu manzilga har 5 daqiqada murojaat qilsa, bot uxlamaydi.
+    if os.getenv("PORT"):
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+        class _HealthHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                body = b"Academic Bot ishlayapti"
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_HEAD(self):
+                self.send_response(200)
+                self.end_headers()
+
+            def log_message(self, *args):
+                pass  # har bir ping logni to'ldirmasin
+
+        _port = int(os.getenv("PORT"))
+        _srv = ThreadingHTTPServer(("0.0.0.0", _port), _HealthHandler)
+        threading.Thread(target=_srv.serve_forever, daemon=True).start()
+        log.info(f"🌐 Health sahifa ishga tushdi: port {_port}")
 
     while True:
         try:
