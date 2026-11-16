@@ -11854,6 +11854,8 @@ def main_kb(cid: int, show_tahrir: bool = False):
     m.add(KeyboardButton(tx(cid, "btn_cv")), KeyboardButton(tx(cid, "btn_gipoteza")))
     # ── Kabinet ──
     m.add(KeyboardButton(tx(cid, "btn_kabinet")), KeyboardButton(tx(cid, "btn_topup")))
+    if cid == ADMIN_ID:
+        m.add(KeyboardButton(ADMIN_PANEL_BTN))
     if show_tahrir:
         til = holat.get(cid, {}).get("til", "uz")
         m.add(KeyboardButton(TAHRIR_BTN.get(til, "✏️ Hujjatni tahrirlash")))
@@ -12318,6 +12320,15 @@ def h_promo(msg):
 # ═══════════════════════════════════════════════
 # BOT — ADMIN HANDLERLARI
 # ═══════════════════════════════════════════════
+ADMIN_PANEL_BTN = "👨‍💻 Admin panel"
+
+
+@bot.message_handler(func=lambda m: m.text == ADMIN_PANEL_BTN and m.chat.id == ADMIN_ID)
+def h_admin_panel_btn(msg):
+    """Bosh menyudagi 'Admin panel' tugmasi (faqat admin ko'radi)."""
+    h_admin_panel(msg)
+
+
 @bot.message_handler(commands=["admin"])
 @admin_only
 def h_admin_panel(msg):
@@ -20947,6 +20958,24 @@ def setup_bot_commands():
         log.info("✅ Telegram 'Menu' buyruqlari o'rnatildi.")
     except Exception as e:
         log.error(f"❌ Menyuni o'rnatishda xatolik: {e}")
+    # Admin uchun alohida menyu: faqat ADMIN_ID ga ko'rinadi
+    try:
+        from telebot.types import BotCommandScopeChat
+        admin_cmds = [BotCommand("admin", "👨‍💻 Admin panel")] + commands + [
+            BotCommand("stat",         "Asosiy statistika"),
+            BotCommand("fullstat",     "To'liq statistika"),
+            BotCommand("activestat",   "Bugungi/haftalik faollar"),
+            BotCommand("userinfo",     "Foydalanuvchi ma'lumoti: /userinfo <id>"),
+            BotCommand("addcoin",      "Tanga qo'shish: /addcoin <id> <soni>"),
+            BotCommand("topupconfirm", "To'lovni tasdiqlash: /topupconfirm <id> <soni>"),
+            BotCommand("promolist",    "Faol promokodlar"),
+            BotCommand("broadcast",    "Hammaga xabar yuborish"),
+            BotCommand("getdb",        "Bazani yuklab olish"),
+        ]
+        bot.set_my_commands(admin_cmds, scope=BotCommandScopeChat(ADMIN_ID))
+        log.info(f"✅ Admin menyusi o'rnatildi (ADMIN_ID={ADMIN_ID}).")
+    except Exception as e:
+        log.error(f"❌ Admin menyusini o'rnatishda xatolik: {e}")
  # ═══════════════════════════════════════════════
 # ISHGA TUSHIRISH
 # ═══════════════════════════════════════════════
