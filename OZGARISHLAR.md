@@ -1,5 +1,11 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 12.1-versiya (16.11.2026)
+- 🧠 **Test markazi**: ikki rejim — materialdan test tuzish va tayyor testni Telegram quizga aylantirish (2 tanga)
+- 📋 **Namuna asosida test**: namuna test yuborilsa savollar aynan shu formatda (variantlar soni, uslub); namuna Word bo'lsa natija uning sahifa sozlamalari, shrifti va kolontitullari bilan chiqadi
+- 💰 **AI token nazorati** (`ai_budget.py`): kunlik umumiy limit va admin ogohlantirishi, foydalanuvchiga kunlik limit, javob uzunligi cheklovi, katta so'rovlar bloklanadi, `/aistat` statistika
+- 📚 Katta kitobdan test: AI ga butun kitob emas, teng oraliqlardan olingan ~24 000 belgi yuboriladi
+
 ## 12-versiya (16.11.2026) — foydalanuvchilar takliflari asosida
 | Taklif | Nima qilindi |
 |---|---|

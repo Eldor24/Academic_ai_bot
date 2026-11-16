@@ -234,7 +234,8 @@ DOC_NARX = {
     "masala":       3,   # Masala yechish (rasmdan)
     "mustaqil":     7,   # Mustaqil ish + APA/GOST/MLA adabiyotlar
     # ── FOYDALANUVCHI TAKLIFLARI (xizmatlar_qoshimcha.py) ──
-    "ftest":        4,   # Fayl/rasmdan test (PDF, Word, rasm) + Telegram quiz
+    "ftest":        4,   # Test markazi: materialdan test (PDF, Word, rasm) + namuna asosida
+    "quiz":         2,   # Test markazi: tayyor testni Telegram quizga aylantirish
     "tts":          2,   # Matnni ovozga (MP3)
     "sardor":       4,   # Sinf sardori: bayonnoma, ssenariy, tarbiyaviy soat...
 }
@@ -260,6 +261,12 @@ def _ai_jarayon_boshlash(cid: int) -> bool:
     True  — foydalanuvchi bo'sh edi, jarayon boshlandi.
     False — foydalanuvchi allaqachon jarayonda, bloklash kerak.
     """
+    with _AI_JARAYON_LOCK:
+        if cid in _AI_JARAYON:
+            return False
+    # Kunlik AI limitlari (token byudjeti va foydalanuvchi limiti)
+    if not AI_BUDGET.allow_job(cid):
+        return False
     with _AI_JARAYON_LOCK:
         if cid in _AI_JARAYON:
             return False
@@ -1498,6 +1505,27 @@ users_db = load_users()
 def _cloud_snapshot() -> bytes:
     with USERS_DB_LOCK:
         return json.dumps(users_db, ensure_ascii=False, indent=1).encode("utf-8")
+
+
+# ── AI token nazorati (ai_budget.py) ──
+# Barcha DeepSeek va Gemini chaqiruvlari hisoblanadi; kunlik va foydalanuvchi limitlari
+import ai_budget
+AI_BUDGET = ai_budget.AIBudget(
+    get_db=lambda: users_db,
+    mark_dirty=lambda: _mark_dirty(),
+    db_lock=USERS_DB_LOCK,
+    admin_id=ADMIN_ID,
+    notify=lambda uid, t: bot.send_message(uid, t, parse_mode="HTML"),
+    tz=pytz.timezone("Asia/Tashkent"),
+)
+AI_BUDGET.wrap_openai(client)
+AI_BUDGET.wrap_genai(_genai_client)
+
+
+def _ai_band_xabar(cid: int) -> str:
+    """AI ish boshlanmaganda ko'rsatiladigan xabar: limit tugagan bo'lsa — limit haqida, aks holda 'jarayonda'."""
+    til = holat.get(cid, {}).get("til", "uz")
+    return AI_BUDGET.deny_text(cid, til) or tx(cid, "ai_jarayonda")
 
 
 def birinchi_doc_bepulmi(uid: int) -> bool:
@@ -2827,7 +2855,8 @@ I18N = {
             "• 🎯 Imtihonga tayyorlov = 5 tanga 🆕\n"
             "• 🧮 Masala yechish = 3 tanga 🆕\n"
             "• 🗂 Mustaqil ish (Word) = 7 tanga 🆕\n"
-            "• 🧠 Fayldan test (PDF/rasm) = 4 tanga 🆕\n"
+            "• 🧠 Test markazi: materialdan test = 4 tanga 🆕\n"
+            "• 🎯 Tayyor testni quizga aylantirish = 2 tanga 🆕\n"
             "• 🎧 Ovozli matn (MP3) = 2 tanga 🆕\n"
             "• 🧑‍🏫 Sinf sardori hujjatlari = 4 tanga 🆕\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -3480,7 +3509,8 @@ I18N = {
             "• 🎯 Подготовка к экзамену = 5 монет 🆕\n"
             "• 🧮 Решение задач = 3 монеты 🆕\n"
             "• 🗂 Самостоятельная работа (Word) = 7 монет 🆕\n"
-            "• 🧠 Тест из файла (PDF/фото) = 4 монеты 🆕\n"
+            "• 🧠 Тест-центр: тест по материалу = 4 монеты 🆕\n"
+            "• 🎯 Готовый тест → квиз = 2 монеты 🆕\n"
             "• 🎧 Текст в аудио (MP3) = 2 монеты 🆕\n"
             "• 🧑‍🏫 Документы старосты = 4 монеты 🆕\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -4204,7 +4234,8 @@ I18N = {
             "• 🎯 Exam prep = 5 coins 🆕\n"
             "• 🧮 Problem solver = 3 coins 🆕\n"
             "• 🗂 Independent work (Word) = 7 coins 🆕\n"
-            "• 🧠 Quiz from file (PDF/photo) = 4 coins 🆕\n"
+            "• 🧠 Quiz center: quiz from material = 4 coins 🆕\n"
+            "• 🎯 Ready test → quiz = 2 coins 🆕\n"
             "• 🎧 Text to audio (MP3) = 2 coins 🆕\n"
             "• 🧑‍🏫 Class leader documents = 4 coins 🆕\n\n"
             "━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -12379,6 +12410,13 @@ def h_promo(msg):
 # ═══════════════════════════════════════════════
 ADMIN_PANEL_BTN = "👨‍💻 Admin panel"
 
+
+@bot.message_handler(commands=["aistat"])
+@admin_only
+def h_aistat(msg):
+    """AI token sarfi statistikasi (ai_budget.py)."""
+    bot.send_message(msg.chat.id, AI_BUDGET.stats_text(), parse_mode="HTML")
+
 # ═══════════════════════════════════════════════
 # /loaddb — users.json ni Telegram orqali botga yuklash (admin)
 # ═══════════════════════════════════════════════
@@ -12483,6 +12521,7 @@ def h_admin_panel(msg):
         "<code>/dbinfo</code> — Baza holati\n"
         "<code>/getdb</code> — Bazani yuklab olish\n"
         "<code>/loaddb</code> — Bazani botga yuklash (users.json)\n"
+        "<code>/aistat</code> — AI token sarfi va limitlar 💰\n"
         "<code>/users</code> — CSV fayl (Excel)\n"
         "<code>/userinfo &lt;uid&gt;</code> — Foydalanuvchi ma'lumoti\n\n"
 
@@ -15009,7 +15048,7 @@ def h_tahrir_so_rov(msg):
                          reply_markup=main_kb(cid), parse_mode="HTML")
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         return
@@ -15351,7 +15390,7 @@ def h_qayta_uslub_tanlash(call):
         set_holat(cid, {"til": saved_til})
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["qayta"])
@@ -15556,7 +15595,7 @@ def h_original_kuch(call):
         set_holat(cid, {"til": saved_til})
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["original"])
@@ -15771,7 +15810,7 @@ def h_tarjima_maqsad_til(call):
         set_holat(cid, {"til": til})
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["tarjima"])
@@ -16054,7 +16093,7 @@ def _yaratish_referat(msg):
         set_holat(cid, {"til": saved_til})
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["referat"])
@@ -16205,7 +16244,7 @@ def h_test_daraja(call):
         set_holat(cid, {"til": til})
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["test"])
@@ -16496,7 +16535,7 @@ def _nutq_yaratish_ishga_tushir(msg):
         set_holat(cid, {"til": saved_til})
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["nutq"])
@@ -17135,7 +17174,7 @@ def h_cv_til_done(call):
         set_holat(cid, {"til": saved_til})  # ✅ LOCK bilan
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["cv"])
@@ -17256,7 +17295,7 @@ def h_antiplagiat_matn(msg):
         set_holat(cid, {"til": til})    # ✅ LOCK bilan
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["antiplagiat"])
@@ -17359,7 +17398,7 @@ def h_gipoteza_daraja(call):
         set_holat(cid, {"til": saved_til})
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["gipoteza"])
@@ -17494,7 +17533,7 @@ def h_spiker_fayl(msg):
         set_holat(cid, {"til": saved_til})
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["spiker"])
@@ -17675,7 +17714,7 @@ def h_grammatika_matn(msg):
         set_holat(cid, {"til": saved_til})
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["grammatika"])
@@ -18400,7 +18439,7 @@ def _yaratish_maqola(msg):
         pop_holat_key(cid, "qadam")
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["maqola"])
@@ -18528,7 +18567,7 @@ def _yaratish_tezis(msg):
         pop_holat_key(cid, "qadam")
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX["tezis"])
@@ -18655,7 +18694,7 @@ def _yaratish(msg, is_docx: bool):
         holat.setdefault(cid, {}).pop("qadam", None)
         return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         add_coins(cid, DOC_NARX[tur])
@@ -20774,7 +20813,7 @@ def _esse_tekshir_va_yuborish(msg_or_call, esse_matn: str):
             set_holat(cid, {"til": saved_til})
             return
     if not _ai_jarayon_boshlash(cid):
-        _bm = bot.send_message(cid, tx(cid, "ai_jarayonda"), parse_mode="HTML")
+        _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
         if not bepul:
@@ -21028,6 +21067,7 @@ xizmatlar_yangi.register(bot, _NS(
     sanitize=sanitize_user_input, add_page_numbers=add_footer_page_number,
     increment_docs=_increment_docs_count, log_action=log_action, log_javob=_log_bot_javob,
     log_xato=_log_bot_xatolik, user_info=_user_info_from_msg, ADMIN_ID=ADMIN_ID,
+    band_xabar=_ai_band_xabar,
 ))
 xizmatlar_qoshimcha.register(bot)
 
@@ -21237,6 +21277,7 @@ def setup_bot_commands():
             BotCommand("broadcast",    "Hammaga xabar yuborish"),
             BotCommand("getdb",        "Bazani yuklab olish"),
             BotCommand("loaddb",       "Bazani botga yuklash (users.json)"),
+            BotCommand("aistat",       "AI token sarfi va limitlar"),
         ]
         bot.set_my_commands(admin_cmds, scope=BotCommandScopeChat(ADMIN_ID))
         log.info(f"✅ Admin menyusi o'rnatildi (ADMIN_ID={ADMIN_ID}).")

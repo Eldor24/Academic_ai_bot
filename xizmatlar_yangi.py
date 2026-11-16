@@ -255,7 +255,7 @@ def _run_job(msg_or_cid, tur: str, wait_key: str, worker, xizmat_nomi: str):
     if not _api.deduct(cid, tur):
         _api.update_holat(cid, "qadam", None); return
     if not _api.ai_start(cid):
-        _send(cid, _t(cid, "busy"))
+        _send(cid, _api.band_xabar(cid) if hasattr(_api, "band_xabar") else _t(cid, "busy"))
         if cid != _api.ADMIN_ID:
             _api.add_coins(cid, NARX[tur])
         return

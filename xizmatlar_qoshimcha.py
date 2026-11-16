@@ -33,12 +33,12 @@ log = logging.getLogger(__name__)
 # ═══════════════════════════════════════════════════════════════════
 # NARX, TUGMA, MATNLAR (xizmatlar_yangi lug'atlariga qo'shiladi)
 # ═══════════════════════════════════════════════════════════════════
-X.NARX.update({"ftest": 4, "tts": 2, "sardor": 4})
+X.NARX.update({"ftest": 4, "quiz": 2, "tts": 2, "sardor": 4})
 
 for _til, _b in {
-    "uz": {"ftest": "🧠 Fayldan test", "tts": "🎧 Ovozli matn", "sardor": "🧑‍🏫 Sinf sardori"},
-    "ru": {"ftest": "🧠 Тест из файла", "tts": "🎧 Текст в аудио", "sardor": "🧑‍🏫 Староста / классный час"},
-    "en": {"ftest": "🧠 Quiz from file", "tts": "🎧 Text to audio", "sardor": "🧑‍🏫 Class leader"},
+    "uz": {"ftest": "🧠 Test markazi", "tts": "🎧 Ovozli matn", "sardor": "🧑‍🏫 Sinf sardori"},
+    "ru": {"ftest": "🧠 Тест-центр", "tts": "🎧 Текст в аудио", "sardor": "🧑‍🏫 Староста / классный час"},
+    "en": {"ftest": "🧠 Quiz center", "tts": "🎧 Text to audio", "sardor": "🧑‍🏫 Class leader"},
 }.items():
     X.BTN[_til].update(_b)
 
@@ -159,8 +159,93 @@ _TXT = {
         "sd_short": "⚠️ Please write a bit more detail (at least 10 characters).",
     },
 }
+_TXT2 = {
+    "uz": {
+        "tm_menu": ("🧠 <b>Test markazi</b>\n\n"
+                    "📖 <b>Materialdan test tuzish</b> — {n1} 🪙\n"
+                    "Darslik (PDF), Word, rasm yoki matn yuborasiz → bot shu material asosida yangi test tuzadi. "
+                    "Kerakli betlar yoki bobni ko'rsatish, o'z <b>namuna testingizni</b> berish mumkin.\n\n"
+                    "🎯 <b>Tayyor testni quizga aylantirish</b> — {n2} 🪙\n"
+                    "Qo'lingizdagi tayyor testni (Word, PDF, rasm, matn) yuborasiz → bot uni Telegram ichida "
+                    "yechiladigan interaktiv quizga aylantiradi. Guruhga forward qilsangiz, talabalar ham yechadi."),
+        "tm_b1": "📖 Materialdan test tuzish", "tm_b2": "🎯 Tayyor testni quizga aylantirish",
+        "ft_namuna": ("📋 <b>Namuna testingiz bormi?</b>\n\n"
+                      "Namuna yuborsangiz (Word, PDF, rasm yoki matn), savollar aynan shu ko'rinishda tuziladi: "
+                      "variantlar soni, savol uslubi va uzunligi. Namuna <b>Word</b> bo'lsa, natija o'sha faylning "
+                      "sahifa sozlamalari, shrifti va kolontitullari bilan chiqadi.\n\n"
+                      "Namuna bo'lmasa — standart formatni tanlang:"),
+        "ft_std": "➡️ Standart format (A, B, C, D)",
+        "fq_start": ("🎯 <b>Tayyor testni quizga aylantirish</b> — {narx} 🪙\n\n"
+                     "Tayyor testni yuboring: 📄 Word, 📕 PDF, 📷 rasm yoki ✍️ matn.\n"
+                     "• To'g'ri javoblar belgilangan yoki oxirida kalit bo'lsa — o'sha olinadi\n"
+                     "• Belgilanmagan bo'lsa — AI aniqlaydi va buni alohida aytadi\n"
+                     "• 50 tagacha savol"),
+        "fq_wait": "🎯 Test o'qilmoqda va quizga aylantirilmoqda... (20-60 soniya)",
+        "fq_done": ("✅ <b>Quiz tayyor: {n} ta savol</b>{taxmin}\n\n"
+                    "«Boshlash» tugmasini bosing — savollar shu yerda ketma-ket chiqadi.\n"
+                    "💡 Savollarni guruhingizga <b>forward</b> qilsangiz, talabalar ham yechishi mumkin."),
+        "fq_taxmin": "\n⚠️ {k} ta savolda to'g'ri javob belgilanmagan edi — AI aniqladi, tekshirib oling.",
+        "fq_start_btn": "▶️ Quizni boshlash",
+        "fq_none": "⚠️ Matndan test savollari topilmadi. Savol va A/B/C/D variantlari bor faylni yuboring.",
+    },
+    "ru": {
+        "tm_menu": ("🧠 <b>Тест-центр</b>\n\n"
+                    "📖 <b>Тест по материалу</b> — {n1} 🪙\n"
+                    "Отправьте учебник (PDF), Word, фото или текст → бот составит новый тест по материалу. "
+                    "Можно указать страницы/главу и дать свой <b>образец теста</b>.\n\n"
+                    "🎯 <b>Готовый тест → квиз</b> — {n2} 🪙\n"
+                    "Отправьте готовый тест (Word, PDF, фото, текст) → бот превратит его в интерактивный квиз "
+                    "в Telegram. Перешлите в группу — студенты тоже смогут решать."),
+        "tm_b1": "📖 Тест по материалу", "tm_b2": "🎯 Готовый тест → квиз",
+        "ft_namuna": ("📋 <b>Есть образец теста?</b>\n\n"
+                      "Если отправите образец (Word, PDF, фото или текст), вопросы будут составлены точно в таком же виде: "
+                      "число вариантов, стиль и длина вопросов. Если образец в <b>Word</b>, результат сохранит его "
+                      "поля, шрифт и колонтитулы.\n\nНет образца — выберите стандартный формат:"),
+        "ft_std": "➡️ Стандартный формат (A, B, C, D)",
+        "fq_start": ("🎯 <b>Готовый тест → квиз</b> — {narx} 🪙\n\n"
+                     "Отправьте готовый тест: 📄 Word, 📕 PDF, 📷 фото или ✍️ текст.\n"
+                     "• Если правильные ответы отмечены или есть ключ — берём их\n"
+                     "• Если нет — ИИ определит и предупредит об этом\n"
+                     "• до 50 вопросов"),
+        "fq_wait": "🎯 Читаю тест и делаю квиз... (20-60 секунд)",
+        "fq_done": ("✅ <b>Квиз готов: {n} вопросов</b>{taxmin}\n\n"
+                    "Нажмите «Начать» — вопросы появятся здесь по очереди.\n"
+                    "💡 <b>Перешлите</b> вопросы в группу — студенты тоже смогут решать."),
+        "fq_taxmin": "\n⚠️ В {k} вопросах ответ не был отмечен — его определил ИИ, проверьте.",
+        "fq_start_btn": "▶️ Начать квиз",
+        "fq_none": "⚠️ В тексте не найдено тестовых вопросов. Отправьте файл с вопросами и вариантами A/B/C/D.",
+    },
+    "en": {
+        "tm_menu": ("🧠 <b>Quiz center</b>\n\n"
+                    "📖 <b>Quiz from material</b> — {n1} 🪙\n"
+                    "Send a textbook (PDF), Word file, photo or text → the bot writes a new quiz from it. "
+                    "You can choose pages/chapter and give your own <b>sample test</b>.\n\n"
+                    "🎯 <b>Ready test → interactive quiz</b> — {n2} 🪙\n"
+                    "Send an existing test (Word, PDF, photo, text) → the bot turns it into an interactive Telegram quiz. "
+                    "Forward it to your group so students can take it too."),
+        "tm_b1": "📖 Quiz from material", "tm_b2": "🎯 Ready test → quiz",
+        "ft_namuna": ("📋 <b>Do you have a sample test?</b>\n\n"
+                      "Send a sample (Word, PDF, photo or text) and the questions will follow it exactly: number of "
+                      "options, question style and length. If the sample is a <b>Word</b> file, the result keeps its "
+                      "margins, font and headers.\n\nNo sample — choose the standard format:"),
+        "ft_std": "➡️ Standard format (A, B, C, D)",
+        "fq_start": ("🎯 <b>Ready test → quiz</b> — {narx} 🪙\n\n"
+                     "Send your test: 📄 Word, 📕 PDF, 📷 photo or ✍️ text.\n"
+                     "• If correct answers are marked or there is a key — they are used\n"
+                     "• If not — AI determines them and tells you\n"
+                     "• up to 50 questions"),
+        "fq_wait": "🎯 Reading the test and building the quiz... (20-60 seconds)",
+        "fq_done": ("✅ <b>Quiz ready: {n} questions</b>{taxmin}\n\n"
+                    "Press «Start» — the questions appear here one by one.\n"
+                    "💡 <b>Forward</b> them to your group so students can take it too."),
+        "fq_taxmin": "\n⚠️ {k} questions had no marked answer — AI determined it, please check.",
+        "fq_start_btn": "▶️ Start quiz",
+        "fq_none": "⚠️ No test questions found. Send a file with questions and A/B/C/D options.",
+    },
+}
 for _til, _d in _TXT.items():
     X.T[_til].update(_d)
+    X.T[_til].update(_TXT2[_til])
 
 _t, _send, _til_of, _qadam, _q = X._t, X._send, X._til, X._qadam, X._q
 
@@ -181,7 +266,8 @@ def _valid_quiz(raw, cap: int) -> list:
     for q in raw or []:
         if not isinstance(q, dict):
             continue
-        vs = [str(v).strip()[:100] for v in (q.get("variantlar") or []) if str(v).strip()][:4]
+        vs = [re.sub(r"^[A-Ea-e][).]\s+", "", str(v).strip())[:100] for v in (q.get("variantlar") or [])
+              if str(v).strip()][:5]
         try:
             tg = int(q.get("togri", -1))
         except (TypeError, ValueError):
@@ -189,7 +275,7 @@ def _valid_quiz(raw, cap: int) -> list:
         if len(vs) < 2 or not (0 <= tg < len(vs)) or len(set(vs)) != len(vs):
             continue
         out.append({"savol": str(q.get("savol", "")).strip()[:300] or "?", "variantlar": vs, "togri": tg,
-                    "izoh": str(q.get("izoh", "")).strip()[:200]})
+                    "izoh": str(q.get("izoh", "")).strip()[:200], "taxminiy": bool(q.get("taxminiy"))})
     return out[:cap]
 
 
@@ -210,12 +296,56 @@ def send_quiz(cid: int, test: list):
 _PAGES_RE = re.compile(r"(\d{1,4})\s*[-–—]\s*(\d{1,4})")
 
 
+# AI ga yuboriladigan material hajmi (token tejash): ~24 000 belgi ≈ 7-9 ming token
+MATERIAL_LIMIT = 24000
+
+
+def sample_text(text: str, limit: int = MATERIAL_LIMIT, parts: int = 8) -> str:
+    """
+    Katta matndan (butun kitob) AI ga butunini emas, teng oraliqlardan olingan bo'laklarni yuboradi.
+    Shunda 300 betlik kitob ham bitta oddiy so'rov narxida qayta ishlanadi.
+    """
+    text = text or ""
+    if len(text) <= limit:
+        return text
+    win = limit // parts
+    step = (len(text) - win) / (parts - 1)
+    chunks = []
+    for i in range(parts):
+        a = int(i * step)
+        a = text.rfind("\n", max(0, a - 200), a) + 1 or a
+        chunks.append(text[a:a + win].strip())
+    return "\n…\n".join(chunks)
+
+
 def ftest_boshlash(msg):
     cid = msg.chat.id
-    if not X._coins_ok(cid, "ftest"):
+    X._new_session(cid, "ftest", "tm_menu")
+    kb = InlineKeyboardMarkup(row_width=1)
+    kb.add(InlineKeyboardButton(_t(cid, "tm_b1"), callback_data="tm_material"),
+           InlineKeyboardButton(_t(cid, "tm_b2"), callback_data="tm_quiz"))
+    _send(cid, _t(cid, "tm_menu", n1=X.NARX["ftest"], n2=X.NARX["quiz"]), reply_markup=kb)
+
+
+def _tm_mode(call):
+    cid = call.message.chat.id
+    _bot().answer_callback_query(call.id)
+    if _qadam(cid) != "tm_menu":
         return
-    X._new_session(cid, "ftest", "ft_src")
-    _send(cid, _t(cid, "ft_start", narx=X.NARX["ftest"]), reply_markup=_api().back_kb(cid))
+    try:
+        _bot().edit_message_reply_markup(cid, call.message.message_id, reply_markup=None)
+    except Exception:
+        pass
+    if call.data == "tm_material":
+        if not X._coins_ok(cid, "ftest"):
+            return
+        _api().update_holat(cid, "qadam", "ft_src")
+        _send(cid, _t(cid, "ft_start", narx=X.NARX["ftest"]), reply_markup=_api().back_kb(cid))
+    else:
+        if not X._coins_ok(cid, "quiz"):
+            return
+        _api().update_holat(cid, "qadam", "fq_src")
+        _send(cid, _t(cid, "fq_start", narx=X.NARX["quiz"]), reply_markup=_api().back_kb(cid))
 
 
 def _ft_src(msg):
@@ -296,13 +426,46 @@ def _ft_daraja(call):
     _bot().answer_callback_query(call.id)
     if _qadam(cid) != "ft_daraja":
         return
-    daraja = call.data.split("_", 1)[1]
-    _api().update_holat(cid, "qadam", "ft_jarayon")
+    _api().update_holat(cid, "ft_daraja", call.data.split("_", 1)[1])
+    _api().update_holat(cid, "qadam", "ft_namuna")
     try:
         _bot().edit_message_reply_markup(cid, call.message.message_id, reply_markup=None)
     except Exception:
         pass
+    kb = InlineKeyboardMarkup()
+    kb.add(InlineKeyboardButton(_t(cid, "ft_std"), callback_data="ftnm_skip"))
+    _send(cid, _t(cid, "ft_namuna"), reply_markup=kb)
+
+
+def _ft_namuna_skip(call):
+    cid = call.message.chat.id
+    _bot().answer_callback_query(call.id)
+    if _qadam(cid) != "ft_namuna":
+        return
+    try:
+        _bot().edit_message_reply_markup(cid, call.message.message_id, reply_markup=None)
+    except Exception:
+        pass
+    _api().update_holat(cid, "ft_namuna_src", None)
+    _ft_start_job(cid)
+
+
+def _ft_namuna_input(msg):
+    cid = msg.chat.id
+    if _api().is_back(msg):
+        return
+    src = X._capture(msg)
+    if not src:
+        _send(cid, _t(cid, "ft_bad_src")); return
+    _api().update_holat(cid, "ft_namuna_src", src)
+    _ft_start_job(cid)
+
+
+def _ft_start_job(cid: int):
+    _api().update_holat(cid, "qadam", "ft_jarayon")
     h = dict(_api().holat.get(cid, {}))
+    daraja = h.get("ft_daraja", "aralash")
+    namuna_src = h.get("ft_namuna_src")
     src, qism, soni, til = h.get("ft_src") or {}, h.get("ft_qism", ""), h.get("ft_soni", 10), _til_of(cid)
     daraja_nom = {"oson": "oson (asosiy tushunchalar)", "orta": "o'rta",
                   "qiyin": "qiyin (tahlil va qo'llash)", "aralash": "aralash: oson, o'rta va qiyin"}[daraja]
@@ -313,33 +476,43 @@ def _ft_daraja(call):
             matn = _pdf_text(src["file_id"], (int(m.group(1)), int(m.group(2))) if m else None)
         else:
             matn = X._extract(src, til)
-        matn = security.sanitize_long_text(matn, 45000)
+        matn = sample_text(security.sanitize_long_text(matn, 400000))     # token tejash
         if len(matn) < 80:
             raise X.UserFacingError("ft_short")
+        namuna_txt, namuna_docx = "", None
+        if namuna_src:
+            namuna_txt = security.sanitize_long_text(X._extract(namuna_src, til), 4000)[:4000]
+            if namuna_src.get("type") == "document" and namuna_src.get("name", "").endswith(".docx"):
+                namuna_docx = X._download(namuna_src["file_id"])
         prog.update("🧠 …")
         fokus = (f"Faqat materialning shu qismidan savol tuz: «{qism}»." if qism and not m else
                  "Butun materialdan teng taqsimlab savol tuz.")
+        namuna_qoida = (f"""
+NAMUNA TEST (format uchun, MAZMUNINI olma!): savollarni AYNAN shu namunadagidek tuz — variantlar soni (2-5),
+savol uslubi va uzunligi, variantlar uslubi, til. Faqat bitta to'g'ri javobli savollar bo'lsin.
+{security.wrap_user_block(namuna_txt, "NAMUNA")}
+""" if namuna_txt else "Har bir savolda 4 ta variant (A, B, C, D) bo'lsin.")
         prompt = f"""Sen tajribali test tuzuvchi o'qituvchisan (DTM, CEFR, IELTS, milliy sertifikat uslubida).
 Quyidagi o'quv materiali asosida {soni} ta test savoli tuz. {fokus}
 Qiyinlik: {daraja_nom}.
 Savollar va variantlar MATERIAL QAYSI TILDA BO'LSA O'SHA TILDA bo'lsin (masalan ingliz tilidagi matn uchun inglizcha).
 Faqat materialdagi ma'lumotga asoslan, o'zingdan fakt to'qima. Har bir savolning faqat bitta to'g'ri javobi bo'lsin,
-noto'g'ri variantlar ishonarli bo'lsin, to'g'ri javob o'rni (A/B/C/D) aralash bo'lsin.
-
+noto'g'ri variantlar ishonarli bo'lsin, to'g'ri javob o'rni aralash bo'lsin.
+{namuna_qoida}
 {security.wrap_user_block(matn, "O'QUV MATERIALI")}
 
 FAQAT JSON qaytar:
 {{"mavzu": "material mavzusi (3-8 so'z)",
- "test": [{{"savol": "savol (250 belgigacha)", "variantlar": ["A","B","C","D"], "togri": 0,
+ "test": [{{"savol": "savol (250 belgigacha)", "variantlar": ["...", "...", "...", "..."], "togri": 0,
            "izoh": "nega to'g'ri — 1 gap (150 belgigacha)"}}]}}
-"test" ichida aynan {soni} ta savol bo'lsin. Markdown ishlatma."""
+"variantlar" ichida harf (A, B...) yozma. "test" ichida aynan {soni} ta savol bo'lsin. Markdown ishlatma."""
         data = X._ai_json(prompt, 8000)
         test = _valid_quiz(data.get("test"), soni)
         if len(test) < max(3, soni // 3):
             raise RuntimeError(f"test juda kam: {len(test)}")
         prog.update("📄 Word fayl tayyorlanmoqda...")
         mavzu = str(data.get("mavzu") or "Test")
-        fname = _ft_docx(cid, mavzu, test, daraja, til)
+        fname = _ft_docx(cid, mavzu, test, daraja, til, base_docx=namuna_docx)
         _api().update_holat(cid, "ftest_test", test)
         kb = InlineKeyboardMarkup()
         kb.add(InlineKeyboardButton(_t(cid, "imtihon_quiz_btn"), callback_data="ft_quiz"))
@@ -356,24 +529,37 @@ FAQAT JSON qaytar:
     X._run_job(cid, "ftest", "ft_wait", worker, "Fayldan test")
 
 
-def _ft_docx(cid, mavzu, test, daraja, til) -> str:
-    """Oq, toza, chop etishga tayyor test (rangsiz)."""
+def _ft_docx(cid, mavzu, test, daraja, til, base_docx: bytes | None = None) -> str:
+    """Oq, toza, chop etishga tayyor test (rangsiz). base_docx — foydalanuvchi namunasi (sahifa, shrift, kolontitul)."""
     L = {"uz": ("TEST", "Savollar soni", "Daraja", "F.I.Sh.", "Guruh/sinf", "Sana", "JAVOBLAR KALITI", "Izohlar",
                 {"oson": "oson", "orta": "o'rta", "qiyin": "qiyin", "aralash": "aralash"}),
          "ru": ("ТЕСТ", "Количество вопросов", "Уровень", "Ф.И.О.", "Группа/класс", "Дата", "КЛЮЧ ОТВЕТОВ", "Пояснения",
                 {"oson": "лёгкий", "orta": "средний", "qiyin": "сложный", "aralash": "смешанный"}),
          "en": ("QUIZ", "Questions", "Level", "Name", "Group/class", "Date", "ANSWER KEY", "Explanations",
                 {"oson": "easy", "orta": "medium", "qiyin": "hard", "aralash": "mixed"})}[til]
-    doc = Document()
+    doc = None
+    if base_docx:
+        try:
+            doc = Document(io.BytesIO(base_docx))
+            body = doc.element.body
+            for el in list(body):
+                if el.tag != qn("w:sectPr"):          # namuna mazmunini olib tashlaymiz, sozlamalar qoladi
+                    body.remove(el)
+        except Exception as e:
+            log.warning(f"Namuna docx ochilmadi, standart format: {e}")
+            doc = None
+    if doc is None:
+        doc = Document()
+        sec = doc.sections[0]
+        sec.page_width, sec.page_height = Cm(21), Cm(29.7)
+        sec.left_margin = sec.right_margin = Cm(2)
+        sec.top_margin = sec.bottom_margin = Cm(1.6)
+        st = doc.styles["Normal"]
+        st.font.name = "Times New Roman"
+        st.font.size = Pt(13)
+        st.element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
+        st.paragraph_format.space_after = Pt(0)
     sec = doc.sections[0]
-    sec.page_width, sec.page_height = Cm(21), Cm(29.7)
-    sec.left_margin = sec.right_margin = Cm(2)
-    sec.top_margin = sec.bottom_margin = Cm(1.6)
-    st = doc.styles["Normal"]
-    st.font.name = "Times New Roman"
-    st.font.size = Pt(13)
-    st.element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
-    st.paragraph_format.space_after = Pt(0)
 
     p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r = p.add_run(f"{L[0]}: {mavzu.upper()}"); r.bold = True; r.font.size = Pt(15)
@@ -393,7 +579,7 @@ def _ft_docx(cid, mavzu, test, daraja, til) -> str:
             p = doc.add_paragraph()
             p.paragraph_format.left_indent = Cm(0.8)
             p.paragraph_format.keep_with_next = j < len(q["variantlar"]) - 1
-            p.add_run(f"{'ABCD'[j]})  {v}")
+            p.add_run(f"{'ABCDE'[j]})  {v}")
     doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
     p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r = p.add_run(L[6]); r.bold = True; r.font.size = Pt(14)
@@ -406,7 +592,7 @@ def _ft_docx(cid, mavzu, test, daraja, til) -> str:
         r_, c_ = i % rows, i // rows
         cell = t.cell(r_, c_)
         cell.text = ""
-        run = cell.paragraphs[0].add_run(f"{i + 1} — {'ABCD'[q['togri']]}")
+        run = cell.paragraphs[0].add_run(f"{i + 1} — {'ABCDE'[q['togri']]}")
         run.font.size = Pt(12)
         cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
     if any(q["izoh"] for q in test):
@@ -415,12 +601,13 @@ def _ft_docx(cid, mavzu, test, daraja, til) -> str:
         for i, q in enumerate(test, 1):
             if q["izoh"]:
                 p = doc.add_paragraph()
-                p.add_run(f"{i}. ({'ABCD'[q['togri']]}) ").bold = True
+                p.add_run(f"{i}. ({'ABCDE'[q['togri']]}) ").bold = True
                 r = p.add_run(q["izoh"]); r.font.size = Pt(11)
-    try:
-        _api().add_page_numbers(sec)
-    except Exception:
-        pass
+    if not base_docx:
+        try:
+            _api().add_page_numbers(sec)
+        except Exception:
+            pass
     return X._save(doc, mavzu, "_Test.docx")
 
 
@@ -434,6 +621,58 @@ def _ft_quiz(call):
         except Exception:
             pass
         send_quiz(cid, test)
+
+
+# ── Tayyor testni quizga aylantirish ──────────────────────────────
+def _fq_src(msg):
+    cid = msg.chat.id
+    if _api().is_back(msg):
+        return
+    src = X._capture(msg)
+    if not src:
+        _send(cid, _t(cid, "ft_bad_src")); return
+    _api().update_holat(cid, "qadam", "fq_jarayon")
+    til = _til_of(cid)
+    X._log_start(msg, "🎯 Testdan quiz", src.get("text", f"[{src['type']}] {src.get('name', '')}")[:300])
+
+    def worker(cid, prog):
+        matn = security.sanitize_long_text(X._extract(src, til), 30000)[:30000]
+        if len(matn) < 30:
+            raise X.UserFacingError("fq_none")
+        prompt = f"""Quyidagi matn — TAYYOR TEST. Uni JSON ga o'tkaz. Savol va variantlar matnini O'ZGARTIRMA
+(faqat ortiqcha raqam/harf belgilarini olib tashla), tilini ham o'zgartirma.
+To'g'ri javob: belgilangan bo'lsa (*, +, qalin, "javob:", oxiridagi kalit jadvali) — shuni ol, "taxminiy": false.
+Hech qayerda belgilanmagan bo'lsa — o'zing aniqla va "taxminiy": true qo'y.
+Variantsiz (ochiq) savollarni tashlab ket. Ko'pi bilan 50 ta savol.
+
+{security.wrap_user_block(matn, "TAYYOR TEST")}
+
+FAQAT JSON qaytar:
+{{"mavzu": "test mavzusi (3-8 so'z)",
+ "test": [{{"savol": "...", "variantlar": ["...", "..."], "togri": 0, "taxminiy": false, "izoh": ""}}]}}
+Markdown ishlatma."""
+        data = X._ai_json(prompt, 8000)
+        test = _valid_quiz(data.get("test"), 50)
+        if not test:
+            raise X.UserFacingError("fq_none")
+        mavzu = str(data.get("mavzu") or "Quiz")
+        _api().update_holat(cid, "ftest_test", test)
+        k = sum(1 for q in test if q.get("taxminiy"))
+        fname = _ft_docx(cid, mavzu, test, "aralash", til)
+        kb = InlineKeyboardMarkup()
+        kb.add(InlineKeyboardButton(_t(cid, "fq_start_btn"), callback_data="ft_quiz"))
+        try:
+            prog.delete()
+            cap = _t(cid, "fq_done", n=len(test), taxmin=_t(cid, "fq_taxmin", k=k) if k else "")
+            X._send_doc(cid, fname, X._safe_name(mavzu, "Quiz"),
+                        (cap + "\n\n" + _t(cid, "coins", c=_api().get_coins(cid)))[:1024],
+                        "🎯 Testdan quiz", f"{mavzu} | {len(test)} savol | taxminiy {k}", kb=kb)
+            _send(cid, _api().tx(cid, "yangi"), reply_markup=_api().main_kb(cid))
+        finally:
+            X._cleanup(fname)
+        _api().update_holat(cid, "qadam", None)
+
+    X._run_job(cid, "quiz", "fq_wait", worker, "Testdan quiz")
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -805,7 +1044,11 @@ def register(bot):
         wrapped.__name__ = fn.__name__
         return wrapped
 
+    bot.register_callback_query_handler(guard(_tm_mode), func=lambda c: c.data in ("tm_material", "tm_quiz"))
     bot.register_message_handler(guard(_ft_src), func=_q("ft_src"), content_types=ct)
+    bot.register_message_handler(guard(_ft_namuna_input), func=_q("ft_namuna"), content_types=ct)
+    bot.register_callback_query_handler(guard(_ft_namuna_skip), func=lambda c: c.data == "ftnm_skip")
+    bot.register_message_handler(guard(_fq_src), func=_q("fq_src"), content_types=ct)
     bot.register_message_handler(guard(_ft_qism_text), func=_q("ft_qism"))
     bot.register_callback_query_handler(guard(_ft_qism_all), func=lambda c: c.data == "ftq_all")
     bot.register_callback_query_handler(guard(_ft_soni), func=lambda c: c.data.startswith("ftn_"))

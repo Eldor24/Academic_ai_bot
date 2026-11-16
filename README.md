@@ -48,7 +48,8 @@ Narxlar tangada (🪙). Admin uchun barcha xizmatlar bepul.
 | 🎯 Imtihonga tayyorlov | 5 | Flash-kartalar, 10 ta test (Telegram ichida interaktiv quiz), ehtimoliy savollar, kunlik reja |
 | 🧮 Masala yechish | 3 | Rasm yoki matndagi masalani bosqichma-bosqich yechish: matematika, fizika, **kimyoviy reaksiyalar**, **biologik sxemalar** (qo'lda yozilgan yoki skaner) |
 | 🧪 Test savollari | 4 | Mavzu bo'yicha test savollari |
-| 🧠 Fayldan test | 4 | PDF darslik, Word, rasm yoki matndan test: kerakli **betlar yoki bob** bo'yicha, 10/20/30 savol, daraja tanlash, oq toza Word + Telegram ichida interaktiv test. CEFR, IELTS, milliy sertifikat uchun |
+| 🧠 Test markazi: materialdan test | 4 | PDF darslik, Word, rasm yoki matndan test: kerakli **betlar yoki bob** bo'yicha, 10/20/30 savol, daraja tanlash. **Namuna test** yuborilsa, savollar aynan o'sha formatda tuziladi (namuna Word bo'lsa — uning sahifa sozlamalari va kolontitullari bilan). Oq toza Word + Telegram ichida interaktiv test |
+| 🎯 Test markazi: tayyor test → quiz | 2 | Tayyor testni (Word, PDF, rasm, matn) Telegram quizga aylantiradi; guruhga forward qilsa talabalar ham yechadi |
 | 🎧 Ovozli matn | 2 | Matn, fayl yoki rasmni MP3 audioga aylantirish (o'zbek, rus, ingliz, qozoq, turk ovozlari). Konspekt va mustaqil ish ostida "Ovozli tinglash" tugmasi bor |
 
 ### Matn bilan ishlash
@@ -113,7 +114,8 @@ Academic_ai_bot/
 ├── bot.py                # Asosiy bot: menyu, xizmatlar, tanga tizimi, admin panel
 ├── pptx_themes.py        # Taqdimot shablonlari dvigateli (15 shablon)
 ├── xizmatlar_yangi.py    # Konspekt, Imtihonga tayyorlov, Masala yechish, Mustaqil ish
-├── xizmatlar_qoshimcha.py# Fayldan test, Ovozli matn, Sinf sardori
+├── xizmatlar_qoshimcha.py# Test markazi, Ovozli matn, Sinf sardori
+├── ai_budget.py          # AI token sarfini nazorat qilish va limitlar
 ├── security.py           # Xavfsizlik qatlami
 ├── cloud_db.py           # Bazani Telegram'da saqlash (Render uchun)
 ├── requirements.txt      # Python kutubxonalari
@@ -174,6 +176,9 @@ python bot.py
 | `CARD_OWNER` | — | Karta egasi |
 | `DB_CHAT_ID` | — | Bulut baza saqlanadigan chat (bo'sh = admin chati) |
 | `CLOUD_DB` | — | `1` bo'lsa bulut baza Render'dan tashqarida ham yoqiladi |
+| `AI_DAILY_TOKENS` | — | Kunlik AI token limiti (standart 3 000 000) |
+| `AI_USER_DAILY_JOBS` | — | Foydalanuvchiga kunlik AI ishlar soni (standart 25) |
+| `AI_MAX_TOKENS_PER_CALL` | — | Bitta AI javobi uzunligi (standart 8000) |
 
 ---
 
@@ -202,6 +207,7 @@ Faqat `ADMIN_ID` egasi ishlata oladi. Barcha admin buyruqlari `admin_audit.log` 
 | Obunalar | `/delob` |
 | Xabar tarqatish | `/broadcast`, `/send`, `/send_confirm`, `/cancel_broadcast` |
 | Baza | `/getdb`, `/loaddb`, `/dbinfo`, `/cleanup` |
+| AI sarfi | `/aistat` — bugungi tokenlar, eng faol foydalanuvchilar, oxirgi 7 kun |
 
 Foydalanuvchi buyruqlari: `/start`, `/kabinet`, `/topup`, `/promo`, `/obuna`, `/lang`.
 
@@ -218,6 +224,10 @@ Foydalanuvchi buyruqlari: `/start`, `/kabinet`, `/topup`, `/promo`, `/obuna`, `/
 - AI so'rovlarida foydalanuvchi matni ko'rsatma sifatida bajarilmaydi (prompt-injection himoyasi).
 - Matnda `<` yoki `&` bo'lsa ham xabar yetib boradi.
 - Serverda `.env` ruxsatlari avtomatik `600` qilinadi.
+- **AI token nazorati** (`ai_budget.py`): kunlik umumiy token limiti (80% da adminga ogohlantirish, 100% da
+  yangi ishlar to'xtaydi), har bir foydalanuvchiga kunlik AI ishlar limiti, bitta javob uzunligi cheklovi,
+  juda katta so'rovlar bloklanadi. Katta kitobdan test tuzilganda AI ga butun kitob emas, ~24 000 belgilik
+  tanlangan bo'laklar yuboriladi.
 
 **Muhim:** `.env`, `users.json` va loglarni hech qachon GitHub'ga yuklamang. Ular `.gitignore` da turibdi.
 Agar kalit tasodifan oshkor bo'lsa, uni darhol yangilang: @BotFather'da `/revoke`, DeepSeek va Gemini panelida yangi kalit oling.
