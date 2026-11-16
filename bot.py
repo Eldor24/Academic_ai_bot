@@ -2297,8 +2297,11 @@ def avtomatik_zaxira_kanalga():
                     sana = hozir_yuborish.strftime("%Y-%m-%d_%H-%M")
                     zaxira_nomi = f"users_{sana}.json"
 
+                    # Diskdagi fayl 30 soniyagacha eski bo'lishi mumkin — xotiradagi ENG OXIRGI holatni yozamiz
                     with USERS_DB_LOCK:
-                        shutil.copy2(USERS_FILE, zaxira_nomi)
+                        save_users(users_db)
+                        with open(zaxira_nomi, "w", encoding="utf-8") as _zf:
+                            json.dump(users_db, _zf, ensure_ascii=False, indent=2)
 
                     with open(zaxira_nomi, "rb") as f:
                         bot.send_document(
@@ -21117,7 +21120,7 @@ if __name__ == "__main__":
     _periodic_save_thread_start()
     if CLOUD_DB is not None:
         CLOUD_DB.push(_cloud_snapshot())     # ishga tushganda darhol bir marta
-        CLOUD_DB.start(_cloud_snapshot, interval=300)
+        CLOUD_DB.start(_cloud_snapshot, interval=120)   # har 2 daqiqada (o'zgargan bo'lsa)
     avtomatik_zaxira_kanalga()
     log.info("✅ Barcha background threadlar ishga tushdi.")
 
