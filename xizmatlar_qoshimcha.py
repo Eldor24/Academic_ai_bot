@@ -177,8 +177,9 @@ _TXT2 = {
         "ft_std": "➡️ Standart format (A, B, C, D)",
         "fq_start": ("🎯 <b>Tayyor testni quizga aylantirish</b> — {narx} 🪙\n\n"
                      "Tayyor testni yuboring: 📄 Word, 📕 PDF, 📷 rasm yoki ✍️ matn.\n"
-                     "• To'g'ri javoblar belgilangan yoki oxirida kalit bo'lsa — o'sha olinadi\n"
-                     "• Belgilanmagan bo'lsa — AI aniqlaydi va buni alohida aytadi\n"
+                     "• Keyin to'g'ri javob qanday belgilanganini o'zingiz yozasiz "
+                     "(masalan: <i>doim birinchi qator</i>, <i>qalin yozilgan</i>, <i>* belgisi bor</i>)\n"
+                     "• Belgilanmagan bo'lsa — o'tkazib yuborasiz, AI aniqlaydi va buni alohida aytadi\n"
                      "• 50 tagacha savol"),
         "fq_wait": "🎯 Test o'qilmoqda va quizga aylantirilmoqda... (20-60 soniya)",
         "fq_done": ("✅ <b>Quiz tayyor: {n} ta savol</b>{taxmin}\n\n"
@@ -204,8 +205,9 @@ _TXT2 = {
         "ft_std": "➡️ Стандартный формат (A, B, C, D)",
         "fq_start": ("🎯 <b>Готовый тест → квиз</b> — {narx} 🪙\n\n"
                      "Отправьте готовый тест: 📄 Word, 📕 PDF, 📷 фото или ✍️ текст.\n"
-                     "• Если правильные ответы отмечены или есть ключ — берём их\n"
-                     "• Если нет — ИИ определит и предупредит об этом\n"
+                     "• Затем вы сами напишете, как отмечен правильный ответ "
+                     "(например: <i>всегда первая строка</i>, <i>выделен жирным</i>, <i>есть *</i>)\n"
+                     "• Если не отмечен — пропустите, ИИ определит и предупредит\n"
                      "• до 50 вопросов"),
         "fq_wait": "🎯 Читаю тест и делаю квиз... (20-60 секунд)",
         "fq_done": ("✅ <b>Квиз готов: {n} вопросов</b>{taxmin}\n\n"
@@ -231,8 +233,9 @@ _TXT2 = {
         "ft_std": "➡️ Standard format (A, B, C, D)",
         "fq_start": ("🎯 <b>Ready test → quiz</b> — {narx} 🪙\n\n"
                      "Send your test: 📄 Word, 📕 PDF, 📷 photo or ✍️ text.\n"
-                     "• If correct answers are marked or there is a key — they are used\n"
-                     "• If not — AI determines them and tells you\n"
+                     "• Then you tell the bot how the correct answer is marked "
+                     "(e.g. <i>always the first line</i>, <i>in bold</i>, <i>has a *</i>)\n"
+                     "• Not marked — skip, the AI decides and tells you\n"
                      "• up to 50 questions"),
         "fq_wait": "🎯 Reading the test and building the quiz... (20-60 seconds)",
         "fq_done": ("✅ <b>Quiz ready: {n} questions</b>{taxmin}\n\n"
@@ -624,6 +627,127 @@ def _ft_quiz(call):
 
 
 # ── Tayyor testni quizga aylantirish ──────────────────────────────
+# Formatlash belgilari: fayldan matn olinganda qalin / tagiga chizilgan / rangli / belgilangan qismlar
+# yo'qolmasligi uchun maxsus belgilar bilan o'raladi. AI va foydalanuvchi ko'rsatmasi shularga tayanadi.
+MARKS_HELP = ("FORMATLASH BELGILARI (fayldagi ko'rinish saqlangan): **matn** = qalin (bold); "
+              "__matn__ = tagiga chizilgan; [[matn]] = rangli yoki marker bilan belgilangan; "
+              "((matn)) = rasmda aylana ichiga olingan, ✓ bilan belgilangan yoki ustiga chizilgan.")
+
+
+def _docx_marked(data: bytes) -> str:
+    doc = Document(io.BytesIO(data))
+    out = []
+
+    def para_text(p):
+        parts = []
+        for r in p.runs:
+            t = r.text
+            if not t.strip():
+                parts.append(t); continue
+            col = None
+            try:
+                if r.font.color is not None and r.font.color.type is not None and r.font.color.rgb is not None:
+                    col = str(r.font.color.rgb)
+            except Exception:
+                col = None
+            hl = r.font.highlight_color is not None
+            if hl or (col and col not in ("000000", "FFFFFF")):
+                t = f"[[{t.strip()}]]"
+            if r.font.underline:
+                t = f"__{t.strip()}__"
+            if r.bold or (r.style is not None and r.style.font.bold):
+                t = f"**{t.strip()}**"
+            parts.append(t)
+        return "".join(parts)
+
+    for p in doc.paragraphs:
+        tx = para_text(p)
+        if tx.strip():
+            out.append(tx)
+    for t in doc.tables:
+        for row in t.rows:
+            out.append(" | ".join(" ".join(para_text(p) for p in c.paragraphs).strip() for c in row.cells))
+    return "\n".join(out)
+
+
+def _pdf_marked(data: bytes, max_pages: int = 40) -> str:
+    import fitz
+    lines = []
+    with fitz.open(stream=data, filetype="pdf") as pdf:
+        for i in range(min(pdf.page_count, max_pages)):
+            for blk in pdf[i].get_text("dict").get("blocks", []):
+                for ln in blk.get("lines", []):
+                    parts = []
+                    for sp in ln.get("spans", []):
+                        t = sp.get("text", "")
+                        if not t.strip():
+                            parts.append(t); continue
+                        bold = (sp.get("flags", 0) & 16) or "bold" in sp.get("font", "").lower()
+                        col = sp.get("color", 0)
+                        if col not in (0, 0xFFFFFF):
+                            t = f"[[{t.strip()}]]"
+                        if bold:
+                            t = f"**{t.strip()}**"
+                        parts.append(t)
+                    s_ = "".join(parts).strip()
+                    if s_:
+                        lines.append(s_)
+        if len("".join(lines)) < 200:      # skanerlangan PDF
+            imgs = [pdf[i].get_pixmap(matrix=fitz.Matrix(1.5, 1.5)).tobytes("jpeg") for i in range(min(pdf.page_count, 8))]
+            return _ocr_marked(imgs)
+    return "\n".join(lines)
+
+
+def _ocr_marked(images: list) -> str:
+    prompt = ("Transcribe ALL text from these test pages exactly, line by line. Keep how answers are marked: "
+              "wrap bold text in **...**, underlined text in __...__, highlighted/colored text in [[...]], "
+              "and an option that is circled, ticked (✓), crossed or otherwise hand-marked in ((...)). "
+              "Output only the text.")
+    return X._gemini([(X._jpeg(b), "image/jpeg") for b in images[:8]], prompt)
+
+
+def _extract_marked(src: dict, til: str) -> str:
+    if src.get("type") == "photo":
+        return _ocr_marked([X._download(src["file_id"])])
+    if src.get("type") == "document":
+        name = src.get("name", "")
+        if name.endswith(".docx"):
+            return _docx_marked(X._download(src["file_id"]))
+        if name.endswith(".pdf"):
+            return _pdf_marked(X._download(src["file_id"]))
+    return X._extract(src, til)
+
+
+_FQ_BELGI = {
+    "uz": ("✍️ <b>To'g'ri javoblar qanday belgilangan?</b>\n\n"
+           "O'z so'zingiz bilan aniq yozing, masalan:\n"
+           "• <i>to'g'ri javob har doim birinchi qatorda</i>\n"
+           "• <i>to'g'ri javob oldida * belgisi bor</i>\n"
+           "• <i>to'g'ri javob qalin (bold) yozilgan</i> yoki <i>sariq rang bilan belgilangan</i>\n"
+           "• <i>oxirida kalit bor: 1-B, 2-A ...</i>\n"
+           "• <i>javoblar: 1-2, 2-4, 3-1</i> (raqam = nechanchi qator)\n\n"
+           "Bilmasangiz yoki belgilanmagan bo'lsa — o'tkazib yuboring, AI o'zi aniqlaydi."),
+    "ru": ("✍️ <b>Как отмечены правильные ответы?</b>\n\n"
+           "Напишите своими словами, например:\n"
+           "• <i>правильный ответ всегда в первой строке</i>\n"
+           "• <i>перед правильным ответом стоит *</i>\n"
+           "• <i>правильный ответ выделен жирным</i> или <i>жёлтым цветом</i>\n"
+           "• <i>в конце есть ключ: 1-B, 2-A ...</i>\n"
+           "• <i>ответы: 1-2, 2-4, 3-1</i> (число = номер строки)\n\n"
+           "Если не отмечены — пропустите, ИИ определит сам."),
+    "en": ("✍️ <b>How are the correct answers marked?</b>\n\n"
+           "Describe it in your own words, e.g.:\n"
+           "• <i>the correct answer is always the first line</i>\n"
+           "• <i>the correct answer has a * before it</i>\n"
+           "• <i>the correct answer is in bold</i> or <i>highlighted in yellow</i>\n"
+           "• <i>there is a key at the end: 1-B, 2-A ...</i>\n"
+           "• <i>answers: 1-2, 2-4, 3-1</i> (number = line position)\n\n"
+           "If they are not marked — skip, the AI will work them out."),
+}
+_FQ_SKIP = {"uz": "⏭ O'tkazib yuborish (AI aniqlasin)", "ru": "⏭ Пропустить (определит ИИ)",
+            "en": "⏭ Skip (let AI decide)"}
+
+
 def _fq_src(msg):
     cid = msg.chat.id
     if _api().is_back(msg):
@@ -631,19 +755,88 @@ def _fq_src(msg):
     src = X._capture(msg)
     if not src:
         _send(cid, _t(cid, "ft_bad_src")); return
-    _api().update_holat(cid, "qadam", "fq_jarayon")
+    _api().update_holat(cid, "fq_src", src)
+    _api().update_holat(cid, "qadam", "fq_belgi")
     til = _til_of(cid)
+    kb = InlineKeyboardMarkup()
+    kb.add(InlineKeyboardButton(_FQ_SKIP.get(til, _FQ_SKIP["uz"]), callback_data="fqb_skip"))
+    _send(cid, _FQ_BELGI.get(til, _FQ_BELGI["uz"]), reply_markup=kb)
     X._log_start(msg, "🎯 Testdan quiz", src.get("text", f"[{src['type']}] {src.get('name', '')}")[:300])
 
+
+def _fq_belgi_text(msg):
+    cid = msg.chat.id
+    if _api().is_back(msg):
+        return
+    _fq_start_job(cid, security.sanitize_long_text(msg.text or "", 500))
+
+
+def _fq_belgi_skip(call):
+    cid = call.message.chat.id
+    _bot().answer_callback_query(call.id)
+    if _qadam(cid) != "fq_belgi":
+        return
+    try:
+        _bot().edit_message_reply_markup(cid, call.message.message_id, reply_markup=None)
+    except Exception:
+        pass
+    _fq_start_job(cid, "")
+
+
+_KEEP_LAST = re.compile(r"(barcha|hammasi|hech biri|yuqoridagi|all of the|none of the|все |ни один|выше)", re.I)
+
+
+def _shuffle_if_patterned(test: list) -> list:
+    """
+    To'g'ri javob deyarli hammasida bitta joyda bo'lsa (masalan doim 1-qator) — Telegram'da
+    javob ko'rinib qolmasligi uchun variantlar aralashtiriladi ('Barchasi to'g'ri' kabilar oxirida qoladi).
+    """
+    import random
+    if len(test) < 4:
+        return test
+    from collections import Counter
+    pos, cnt = Counter(q["togri"] for q in test).most_common(1)[0]
+    if cnt / len(test) < 0.8:
+        return test
+    for q in test:
+        vs = q["variantlar"]
+        correct = vs[q["togri"]]
+        fixed = [v for v in vs if _KEEP_LAST.search(v)]
+        movable = [v for v in vs if v not in fixed]
+        random.shuffle(movable)
+        q["variantlar"] = movable + fixed
+        q["togri"] = q["variantlar"].index(correct)
+    return test
+
+
+def _fq_start_job(cid: int, belgi: str):
+    _api().update_holat(cid, "qadam", "fq_jarayon")
+    src = _api().holat.get(cid, {}).get("fq_src") or {}
+    til = _til_of(cid)
+    belgi = (belgi or "").strip()
+
     def worker(cid, prog):
-        matn = security.sanitize_long_text(X._extract(src, til), 30000)[:30000]
+        matn = security.sanitize_long_text(_extract_marked(src, til), 30000)[:30000]
         if len(matn) < 30:
             raise X.UserFacingError("fq_none")
+        if belgi:
+            javob_qoida = f"""TO'G'RI JAVOB QOIDASI — FOYDALANUVCHI AYTDI, QAT'IY SHUNGA AMAL QIL:
+{security.wrap_user_block(belgi, "JAVOB QANDAY BELGILANGAN")}
+- "qator"/"variant" raqami — savoldan keyingi variantlar tartibi (1 = birinchi variant).
+- Qoida bo'yicha javobi aniq topilgan savollarda "taxminiy": false.
+- Qoida bo'yicha javobi topilmagan savolda o'zing aniqla va "taxminiy": true qo'y.
+- Belgining o'zini (*, +, raqam, harf) variant matnidan olib tashla."""
+        else:
+            javob_qoida = """To'g'ri javob: belgilangan bo'lsa (*, +, qalin, rangli, aylantirilgan, "javob:", oxiridagi kalit) — shuni ol,
+"taxminiy": false. Hech qayerda belgilanmagan bo'lsa — o'zing aniqla va "taxminiy": true qo'y."""
         prompt = f"""Quyidagi matn — TAYYOR TEST. Uni JSON ga o'tkaz. Savol va variantlar matnini O'ZGARTIRMA
-(faqat ortiqcha raqam/harf belgilarini olib tashla), tilini ham o'zgartirma.
-To'g'ri javob: belgilangan bo'lsa (*, +, qalin, "javob:", oxiridagi kalit jadvali) — shuni ol, "taxminiy": false.
-Hech qayerda belgilanmagan bo'lsa — o'zing aniqla va "taxminiy": true qo'y.
-Variantsiz (ochiq) savollarni tashlab ket. Ko'pi bilan 50 ta savol.
+(faqat tartib raqami, A)/B) harflari va formatlash belgilarini olib tashla), tilini ham o'zgartirma.
+Savollarda harf bo'lmasligi mumkin — har bir savoldan keyingi qatorlar uning variantlari.
+{MARKS_HELP}
+
+{javob_qoida}
+
+Variantsiz (ochiq) savollarni tashlab ket. Ko'pi bilan 50 ta savol. Variantlarni ARALASHTIRMA — asl tartibda qoldir.
 
 {security.wrap_user_block(matn, "TAYYOR TEST")}
 
@@ -653,8 +846,13 @@ FAQAT JSON qaytar:
 Markdown ishlatma."""
         data = X._ai_json(prompt, 8000)
         test = _valid_quiz(data.get("test"), 50)
+        for q in test:      # qolib ketgan formatlash belgilarini tozalash
+            q["savol"] = re.sub(r"\*\*|__|\[\[|\]\]|\(\(|\)\)", "", q["savol"]).strip()
+            q["variantlar"] = [re.sub(r"\*\*|__|\[\[|\]\]|\(\(|\)\)|^\s*[*+✓]\s*", "", v).strip() or v
+                               for v in q["variantlar"]]
         if not test:
             raise X.UserFacingError("fq_none")
+        test = _shuffle_if_patterned(test)
         mavzu = str(data.get("mavzu") or "Quiz")
         _api().update_holat(cid, "ftest_test", test)
         k = sum(1 for q in test if q.get("taxminiy"))
@@ -666,7 +864,7 @@ Markdown ishlatma."""
             cap = _t(cid, "fq_done", n=len(test), taxmin=_t(cid, "fq_taxmin", k=k) if k else "")
             X._send_doc(cid, fname, X._safe_name(mavzu, "Quiz"),
                         (cap + "\n\n" + _t(cid, "coins", c=_api().get_coins(cid)))[:1024],
-                        "🎯 Testdan quiz", f"{mavzu} | {len(test)} savol | taxminiy {k}", kb=kb)
+                        "🎯 Testdan quiz", f"{mavzu} | {len(test)} savol | taxminiy {k} | qoida: {belgi[:100]}", kb=kb)
             _send(cid, _api().tx(cid, "yangi"), reply_markup=_api().main_kb(cid))
         finally:
             X._cleanup(fname)
@@ -936,7 +1134,7 @@ def _sd_info(msg):
 Quyidagi ma'lumot asosida hujjat tayyorla. Hujjat turi va tuzilmasi:
 {SD_TURLAR[tur]['tuzilma']}
 
-Foydalanuvchi bergan ma'lumot (bo'lmagan joylarni ______ bilan to'ldirish uchun bo'sh qoldir, ism-familiya to'qima):
+Foydalanuvchi bergan ma'lumot. Unda yo'q ism-familiya, sana, raqam, qatnashchilar soni, qaror yoki o'tkazilgan tadbirlarni O'YLAB TOPMA — o'rniga ______ qoldir (foydalanuvchi keyin o'zi to'ldiradi). Hisobotda faqat foydalanuvchi aytgan ishlar va raqamlar bo'lsin:
 {security.wrap_user_block(info, "MA'LUMOT")}
 
 FAQAT JSON qaytar:
@@ -1049,6 +1247,8 @@ def register(bot):
     bot.register_message_handler(guard(_ft_namuna_input), func=_q("ft_namuna"), content_types=ct)
     bot.register_callback_query_handler(guard(_ft_namuna_skip), func=lambda c: c.data == "ftnm_skip")
     bot.register_message_handler(guard(_fq_src), func=_q("fq_src"), content_types=ct)
+    bot.register_message_handler(guard(_fq_belgi_text), func=_q("fq_belgi"))
+    bot.register_callback_query_handler(guard(_fq_belgi_skip), func=lambda c: c.data == "fqb_skip")
     bot.register_message_handler(guard(_ft_qism_text), func=_q("ft_qism"))
     bot.register_callback_query_handler(guard(_ft_qism_all), func=lambda c: c.data == "ftq_all")
     bot.register_callback_query_handler(guard(_ft_soni), func=lambda c: c.data.startswith("ftn_"))

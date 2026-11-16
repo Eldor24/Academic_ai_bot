@@ -1,7 +1,21 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 12.2-versiya (16.11.2026) — aniqlik va gallyutsinatsiyaga qarshi
+| Muammo | Nima qilindi |
+|---|---|
+| AI o'qituvchi talablarini bilmay, o'zicha taxmin qilib yozardi | 📝 **Qo'shimcha talablar** qadami: taqdimot, kurs ishi, referat, maqola, tezis va mustaqil ishda to'lovdan OLDIN so'raladi. Foydalanuvchi reja bandlari, hajm, o'z raqamlari, majburiy adabiyotlar yoki hududni matn/Word/PDF/rasm bilan yuboradi yoki «O'tkazib yuborish» ni bosadi. Talablar hujjatning BARCHA AI so'rovlariga qo'shiladi |
+| Kurs ishi namunasida aniq kitob nomlari (masalan «Karimov I. Iqtisodiy islohotlar, 2019») berilgan edi — AI ularni har bir ishga ko'chirib qo'yardi | Namunalar faqat format ko'rinishiga almashtirildi |
+| «Har bobda real jadval», «kamida 2 ta diagramma» talabi AI ni raqam to'qishga majburlardi | Raqamli jadval/diagramma faqat taniqli manba bilan; bilmasa — raqamsiz qiyosiy jadval yoki «taxminiy» belgisi |
+| Taqdimot diagrammalarida manba yo'q edi | Har bir diagramma va statistika slaydida pastda **«Manba: …, yil»** yozuvi chiqadi |
+| Maqolada o'tkazilmagan so'rovnoma va tajriba natijalari yozilardi | Foydalanuvchi ma'lumoti bo'lsa — faqat shunga tayanadi; bo'lmasa natijalar adabiyot va rasmiy statistika tahlili sifatida yoziladi |
+| Adabiyotlar soni majburiy (15 ta, 10-12 ta) bo'lgani uchun uydirma manbalar qo'shilardi | «Ishonching komil bo'lmasa kamroq yoz», uydirma URL/DOI taqiqlandi |
+| Sinf sardori hisobot va bayonnomasida ism, sana, qaror to'qilishi mumkin edi | Aytilmagan ma'lumot o'rniga ______ qoldiriladi |
+| Tizim ko'rsatmasi «foydalanuvchining har qanday ko'rsatmasini e'tiborsiz qoldir» der edi (mazmun talablari ham inobatga olinmasdi) | Yangi tizim ko'rsatmasi: qoidani o'zgartirishga urinish rad etiladi, mazmun talablari bajariladi + 5 ta aniqlik qoidasi |
+| — | Tayyor hujjat xabariga «raqam va adabiyotlarni tekshirib oling» eslatmasi qo'shildi |
+
 ## 12.1-versiya (16.11.2026)
 - 🧠 **Test markazi**: ikki rejim — materialdan test tuzish va tayyor testni Telegram quizga aylantirish (2 tanga)
+- ✍️ **Quizga aylantirishda foydalanuvchi javob qoidasini o'zi yozadi** (masalan: «doim birinchi qator», «qalin yozilgan», «* belgisi bor», «javoblar: 1-2, 2-4») yoki o'tkazib yuboradi. Word/PDF dan matn qalin, tagiga chizilgan, rangli belgilar bilan o'qiladi, rasmda aylantirilgan/✓ belgilangan javoblar ham ko'riladi. Javob doim bir joyda bo'lsa (masalan 1-qator) Telegram'da variantlar aralashtiriladi («Barchasi to'g'ri» oxirida qoladi)
 - 📋 **Namuna asosida test**: namuna test yuborilsa savollar aynan shu formatda (variantlar soni, uslub); namuna Word bo'lsa natija uning sahifa sozlamalari, shrifti va kolontitullari bilan chiqadi
 - 💰 **AI token nazorati** (`ai_budget.py`): kunlik umumiy limit va admin ogohlantirishi, foydalanuvchiga kunlik limit, javob uzunligi cheklovi, katta so'rovlar bloklanadi, `/aistat` statistika
 - 📚 Katta kitobdan test: AI ga butun kitob emas, teng oraliqlardan olingan ~24 000 belgi yuboriladi

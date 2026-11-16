@@ -18,6 +18,7 @@ import json
 import logging
 import os
 import re
+import contextlib
 import threading
 import time
 
@@ -264,7 +265,8 @@ def _run_job(msg_or_cid, tur: str, wait_key: str, worker, xizmat_nomi: str):
 
     def _run():
         try:
-            with _api.QUEUE_LOCK:
+            ctx = _api.ai_ctx(cid) if hasattr(_api, "ai_ctx") else contextlib.nullcontext()
+            with _api.QUEUE_LOCK, ctx:
                 worker(cid, prog)
             _api.increment_docs(cid)
         except (UserFacingError, security.UnsafeFileError) as e:
@@ -1029,12 +1031,67 @@ def _mi_uslub(call):
     uslub = call.data.rsplit("_", 1)[1]
     if uslub not in ("gost", "apa", "mla"):
         return
-    _api.update_holat(cid, "qadam", "mi_jarayon")
     try:
         _bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=None)
     except Exception:
         pass
+    _api.update_holat(cid, "mi_uslub_tanlov", uslub)
+    qt = getattr(_api, "qtalab", None)
+    if not qt:
+        _mi_start(cid)
+        return
+    # Qo'shimcha talablar — o'qituvchi talablari, o'z ma'lumotlari, majburiy adabiyotlar (ixtiyoriy)
+    _api.update_holat(cid, "qosh_talab", "")
+    _api.update_holat(cid, "qadam", "mi_talab")
+    til = _til(cid)
+    kb = InlineKeyboardMarkup()
+    kb.add(InlineKeyboardButton(qt["skip"].get(til, qt["skip"]["uz"]), callback_data="mitalab_skip"))
+    _send(cid, qt["txt"].get(til, qt["txt"]["uz"]), reply_markup=kb)
+
+
+def _mi_talab_skip(call):
+    cid = call.message.chat.id
+    _bot.answer_callback_query(call.id)
+    if _qadam(cid) != "mi_talab":
+        return
+    try:
+        _bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=None)
+    except Exception:
+        pass
+    _api.update_holat(cid, "qosh_talab", "")
+    _mi_start(cid)
+
+
+def _mi_talab_input(msg):
+    cid = msg.chat.id
+    if msg.content_type == "text" and _api.is_back(msg):
+        _api.update_holat(cid, "qadam", None)
+        _send(cid, _api.tx(cid, "yangi"), reply_markup=_api.main_kb(cid))
+        return
+    qt = _api.qtalab
+    til = _til(cid)
+    matn = ""
+    src = _capture(msg)
+    if src:
+        try:
+            matn = _extract(src, til)
+        except Exception as e:
+            log.warning(f"[{cid}] Mustaqil ish talablarini o'qib bo'lmadi: {e}")
+    if msg.content_type != "text" and msg.caption:
+        matn = (msg.caption.strip() + "\n" + (matn or "")).strip()
+    matn = security.sanitize_long_text(matn or "", qt["max"])
+    if len(matn) < 3:
+        _send(cid, qt["bad"].get(til, qt["bad"]["uz"]))
+        return
+    _api.update_holat(cid, "qosh_talab", matn)
+    _send(cid, qt["ok"].get(til, qt["ok"]["uz"]))
+    _mi_start(cid)
+
+
+def _mi_start(cid: int):
+    _api.update_holat(cid, "qadam", "mi_jarayon")
     h = dict(_api.holat.get(cid, {}))
+    uslub = h.get("mi_uslub_tanlov", "gost")
     til = _til(cid)
     otm = _api.sanitize(h.get("mi_otm", ""), 200)
     fan = _api.sanitize(h.get("mi_fan", ""), 150)
@@ -1046,8 +1103,10 @@ def _mi_uslub(call):
 "{fan}" fanidan "{mavzu}" mavzusida talaba uchun MUSTAQIL ISH matnini yoz (hajmi 8-10 bet, ~3000 so'z).
 Akademik uslub, aniq faktlar, mantiqiy ketma-ketlik. O'zbekiston kontekstini o'rinli joyda qo'sh.
 
-ADABIYOTLAR: 8-10 ta. FAQAT haqiqatda mavjud, taniqli manbalar (darsliklar, qonunlar, mashhur maqolalar,
-rasmiy saytlar). Ishonching komil bo'lmagan manbani yozma. Uydirma DOI yoki URL yozma.
+ADABIYOTLAR: 5-10 ta. FAQAT haqiqatda mavjud, taniqli manbalar (darsliklar, qonunlar, mashhur maqolalar,
+rasmiy saytlar). Ishonching komil bo'lmagan manbani yozma — sonini to'ldirish uchun manba o'ylab topma.
+Uydirma DOI, URL, sahifa raqami yozma (bilmasang "betlar" va "url" bo'sh qolsin).
+RAQAMLAR: statistikani faqat taniqli manbadan, manbasi va yili bilan keltir; bilmasang raqam to'qima.
 
 FAQAT JSON qaytar:
 {{
@@ -1226,4 +1285,6 @@ def register(bot, api):
     bot.register_message_handler(guard(_mi_step("mi_mavzu", "mi_ism", "mustaqil_ism", 300, 5)), func=_q("mi_mavzu"))
     bot.register_message_handler(guard(_mi_step("mi_ism", "mi_uslub", "mustaqil_uslub", 150)), func=_q("mi_ism"))
     bot.register_callback_query_handler(guard(_mi_uslub), func=lambda c: c.data.startswith("mi_uslub_"))
+    bot.register_callback_query_handler(guard(_mi_talab_skip), func=lambda c: c.data == "mitalab_skip")
+    bot.register_message_handler(guard(_mi_talab_input), func=_q("mi_talab"), content_types=ct)
     log.info("✅ Yangi xizmatlar ulandi: Konspekt, Imtihon, Masala, Mustaqil ish")

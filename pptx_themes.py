@@ -1843,6 +1843,10 @@ DEFAULT_LABELS.update({
     "de": {"bajardi": "Vorgelegt von", "rahmat": "Vielen Dank für Ihre Aufmerksamkeit!", "savollar": "Fragen?",
            "taqdimot": "Präsentation", "afzallik": "Vorteile", "kamchilik": "Nachteile"},
 })
+_MANBA_LBL = {"uz": "Manba", "uz_cyr": "Манба", "kaa": "Derek", "ru": "Источник", "en": "Source", "kk": "Дереккөз",
+              "ky": "Булак", "tg": "Манбаъ", "tr": "Kaynak", "de": "Quelle"}
+for _k, _v in _MANBA_LBL.items():
+    DEFAULT_LABELS.setdefault(_k, dict(DEFAULT_LABELS["uz"])).setdefault("manba", _v)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -1972,6 +1976,23 @@ def check_template(path: str) -> tuple[bool, str]:
         return False, str(e)[:100]
 
 
+_DATA_TIPO = {"ustun_diag", "doira_diag", "stat_karta", "jadval_slayd", "chiziq_diag"}
+
+
+def _source_note(prs, th, sd, before, lb):
+    """Raqamli slaydlarda ma'lumot manbasini kichik izoh sifatida ko'rsatadi (uydirma raqamlarning oldini olish)."""
+    manba = _clean(sd.get("manba", ""))
+    if not manba or len(prs.slides) <= before:
+        return
+    if sd.get("tipo") not in _DATA_TIPO and not sd.get("birligi"):
+        return
+    manba = manba if len(manba) <= 140 else manba[:137].rsplit(" ", 1)[0] + "…"
+    sl = prs.slides[len(prs.slides) - 1]
+    label = lb.get("manba", "Manba")
+    _txt(sl, th, SW * 0.38, SH - 0.74, SW * 0.62 - 0.75, 0.24, f"{label}: {manba}", 8, "muted",
+         italic=True, align=PP_ALIGN.RIGHT)
+
+
 def build_presentation(slides: list, mavzu: str, ism: str, theme_key: str,
                        til: str = "uz", out_path: str = "taqdimot.pptx",
                        labels: dict | None = None, template_path: str | None = None) -> str:
@@ -2005,6 +2026,7 @@ def build_presentation(slides: list, mavzu: str, ism: str, theme_key: str,
                 slide_list(prs, th, sd, num, total, mavzu)
             else:
                 slide_text(prs, th, sd, num, total, mavzu)
+            _source_note(prs, th, sd, before, lb)
         except Exception:
             # Bitta slayd xato bersa ham taqdimot to'xtamasin: yarim chizilgan slaydni olib tashlaymiz
             lst = prs.slides._sldIdLst
