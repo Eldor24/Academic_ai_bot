@@ -1,5 +1,11 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 12.3-versiya (19.11.2026) — referal tizimi
+- Referal ishlaydi: do'st havola orqali birinchi marta kirsa, taklif qilgan odamga **+10 tanga** va xabar boradi (bazada 23 kishi orqali 118 ta referal hisoblangan)
+- 🐞 Telegram vaqtincha javob bermasa, bot nomi o'rniga **boshqa botning nomi** («AcademicBot») doimiy saqlanib, barcha referal havolalar shu botga olib borardi — tuzatildi
+- 🔒 Bonus endi faqat botda ro'yxatdan o'tgan va bloklanmagan foydalanuvchiga beriladi; bir odam faqat bitta kishining referali bo'la oladi
+- 📤 Kabinetga «Do'stlarga ulashish» tugmasi qo'shildi — havola tayyor matn bilan bir bosishda yuboriladi
+
 ## 12.2-versiya (16.11.2026) — aniqlik va gallyutsinatsiyaga qarshi
 | Muammo | Nima qilindi |
 |---|---|
