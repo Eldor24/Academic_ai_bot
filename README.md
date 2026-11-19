@@ -114,6 +114,8 @@ Ilmiy tadqiqot, Kosmos neon, Jurnal, Startap pitch, Okean, Sinf doskasi.
 Academic_ai_bot/
 ├── bot.py                # Asosiy bot: menyu, xizmatlar, tanga tizimi, admin panel
 ├── pptx_themes.py        # Taqdimot shablonlari dvigateli (15 shablon)
+├── marketing.py          # Haftada 2 marta xizmatlar haqida avtomatik post, /marketing
+├── sahifalash.py        # Word sahifalarini oldindan hisoblash (mundarija raqamlari, hajm nazorati)
 ├── kurs_ishi.py          # Kurs ishi generatori (25–30 / 65–70 bet, mundarija, snoska, jadval, grafik)
 ├── xizmatlar_yangi.py    # Konspekt, Imtihonga tayyorlov, Masala yechish, Mustaqil ish
 ├── xizmatlar_qoshimcha.py# Test markazi, Ovozli matn, Sinf sardori
@@ -125,6 +127,7 @@ Academic_ai_bot/
 ├── ishga_tushirish.bat   # Windows'da bir bosishda ishga tushirish
 ├── logo.png              # Esse hisoboti va sertifikat uchun logo
 ├── assets/themes/        # Shablonlar ko'rinish rasmlari (botdagi galereya)
+├── assets/fonts/         # Liberation Serif (SIL OFL) — sahifalarni hisoblash uchun
 ├── SERVERGA_YUKLASH.md   # Linux serverga joylash yo'riqnomasi
 └── OZGARISHLAR.md        # Versiya o'zgarishlari
 ```

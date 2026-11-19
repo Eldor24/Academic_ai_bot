@@ -55,15 +55,13 @@ log = logging.getLogger(__name__)
 # ═══════════════════════════════════════════════
 # O'lchov (LibreOffice'da tekshirilgan): TNR 14, 1,5 interval, A4, 3/1,5/2/2 sm → o'zbekcha ~215 so'z/bet
 HAJMLAR = {
-    "standart": dict(boblar=2, rejalar=3, sec_words=530, kirish_words=750, xulosa_par=4,
-                     takliflar=5, adab=(15, 20), bet="25–30", bet_min=25, workers=3),
-    "katta":    dict(boblar=3, rejalar=3, sec_words=1100, kirish_words=1150, xulosa_par=7,
-                     takliflar=7, adab=(25, 35), bet="65–70", bet_min=62, workers=3),
+    "standart": dict(boblar=2, rejalar=3, sec_words=600, kirish_words=750, xulosa_par=4,
+                     takliflar=5, adab=(15, 20), bet="25–30", bet_oraliq=(27, 30), workers=3),
+    "katta":    dict(boblar=3, rejalar=3, sec_words=1300, kirish_words=1150, xulosa_par=7,
+                     takliflar=7, adab=(25, 35), bet="65–70", bet_oraliq=(66, 70), workers=3),
 }
 
-WPP = 215          # so'z / bet (oddiy matn)
-CPL = 68           # belgi / qator
-LPP = 34           # qator / bet (LibreOffice bilan kalibrlangan)
+WPP = 215          # o'zbekcha so'z / bet (TNR 14, 1,5 interval, A4 — o'lchangan)
 
 _API: dict = {}
 
@@ -78,7 +76,7 @@ def setup(call_ai_json, clean_text=None, ai_ctx=None):
 # ═══════════════════════════════════════════════
 LBL = {
     "uz": {
-        "vazirlik": "O'ZBEKISTON RESPUBLIKASI OLIY TA'LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+        "vazirlik": "O'ZBEKISTON RESPUBLIKASI TA'LIM VA ILM-FAN VAZIRLIGI",
         "kurs_ishi": "KURS ISHI", "fan": "Fan", "mavzu": "Mavzu", "bajardi": "Bajardi",
         "guruh": "Guruh", "rahbar": "Ilmiy rahbar", "mundarija": "MUNDARIJA", "kirish": "KIRISH",
         "xulosa": "XULOSA VA TAKLIFLAR", "adab": "FOYDALANILGAN ADABIYOTLAR RO'YXATI",
@@ -102,7 +100,7 @@ LBL = {
         "lang": "Butun matnni FAQAT o'zbek tilida (lotin yozuvida) yoz.",
     },
     "ru": {
-        "vazirlik": "МИНИСТЕРСТВО ВЫСШЕГО ОБРАЗОВАНИЯ, НАУКИ И ИННОВАЦИЙ РЕСПУБЛИКИ УЗБЕКИСТАН",
+        "vazirlik": "МИНИСТЕРСТВО ОБРАЗОВАНИЯ И НАУКИ РЕСПУБЛИКИ УЗБЕКИСТАН",
         "kurs_ishi": "КУРСОВАЯ РАБОТА", "fan": "Дисциплина", "mavzu": "Тема", "bajardi": "Выполнил(а)",
         "guruh": "Группа", "rahbar": "Научный руководитель", "mundarija": "СОДЕРЖАНИЕ", "kirish": "ВВЕДЕНИЕ",
         "xulosa": "ЗАКЛЮЧЕНИЕ И РЕКОМЕНДАЦИИ", "adab": "СПИСОК ИСПОЛЬЗОВАННОЙ ЛИТЕРАТУРЫ",
@@ -126,7 +124,7 @@ LBL = {
         "lang": "Пиши весь текст ТОЛЬКО на русском языке.",
     },
     "en": {
-        "vazirlik": "MINISTRY OF HIGHER EDUCATION, SCIENCE AND INNOVATIONS OF THE REPUBLIC OF UZBEKISTAN",
+        "vazirlik": "MINISTRY OF EDUCATION AND SCIENCE OF THE REPUBLIC OF UZBEKISTAN",
         "kurs_ishi": "COURSE WORK", "fan": "Subject", "mavzu": "Topic", "bajardi": "Prepared by",
         "guruh": "Group", "rahbar": "Scientific supervisor", "mundarija": "TABLE OF CONTENTS",
         "kirish": "INTRODUCTION", "xulosa": "CONCLUSION AND RECOMMENDATIONS", "adab": "LIST OF REFERENCES",
@@ -412,7 +410,8 @@ yana {kerak} ta yangi abzas yoz (har biri 100-130 so'z), oldingi fikrlarni takro
 {chr(10).join('  - ' + x for x in r.get('bandlar', []))}
 Paragrafning oxirgi qismi (davomini shu fikrdan boshla):
 «{oxirgi}»
-Havola, jadval va raqamli statistika qo'shma. Oxirgi abzas paragraf bo'yicha xulosa bo'lsin.
+Havola, jadval va raqamli statistika qo'shma. Yangi abzaslar paragrafning yakuniy xulosasidan OLDIN qo'yiladi —
+shuning uchun ular xulosa bilan tugamasin, yangi jihatlar, misollar va tahlil bilan boyitsin.
 FAQAT JSON: {{"paragraflar":["...","..."]}}"""
 
 
@@ -622,7 +621,7 @@ def _write_section(p, plan, adab, bi, ri) -> dict:
             add = [x for x in add if _words(x) >= 12]
             if not add:
                 break
-            paras += add
+            paras = paras[:-1] + add + paras[-1:]   # yakuniy xulosa abzasi oxirida qoladi
         except Exception as e:
             log.warning(f"Davom ettirish xatosi: {e}")
             break
@@ -748,11 +747,93 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
         data[f"bob{bi + 1}_nomi"] = L(p["til"])["bob"].format(r=ROMAN[bi]) + " " + plan["boblar"][bi]["nomi"]
         data[f"bob{bi + 1}_data"] = {"rejalar": [natija[(bi, ri)] for ri in range(h["rejalar"])]}
 
+    # 5) Hajm kafolati: sahifalar aniq hisoblanadi; kam bo'lsa — paragraflar to'ldiriladi, ko'p bo'lsa — qisqartiriladi
+    _hajmga_moslash(cid, p, plan, data, lambda k, n: prog(T["hajm"].format(bet=h["bet"], k=k, n=n)))
+
     prog(T["format"].format(bet=h["bet"]))
     fname = _out_name(p["mavzu"])
     info = build_docx(data, fname)
     data["bet"] = info["bet"]
+    log.info(f"[{cid}] Kurs ishi tayyor: {info['bet']} bet, {info['jadval']} jadval, {info['rasm']} rasm, "
+             f"{info['snoska']} snoska")
     return fname, data
+
+
+def _sahifalar(data: dict) -> int:
+    B, _, _ = _flow(data, "99")
+    return SH.paginate(B)[1]
+
+
+def _hajmga_moslash(cid, p, plan, data, prog=None):
+    lo, hi = HAJMLAR[p["hajm"]]["bet_oraliq"]
+    maqsad = (lo + hi) // 2
+    nbob = data["bob_soni"]
+    keys = [(bi, ri) for bi in range(nbob) for ri in range(len(data[f"bob{bi + 1}_data"]["rejalar"]))]
+
+    def bloklar(bi, ri):
+        return data[f"bob{bi + 1}_data"]["rejalar"][ri]["matn"].split(" [ABZAS] ")
+
+    def saqla(bi, ri, bl):
+        data[f"bob{bi + 1}_data"]["rejalar"][ri]["matn"] = " [ABZAS] ".join(bl)
+
+    def matnli(x):
+        return not x.startswith("[JADVAL:") and not x.startswith("[GRAFIK:")
+
+    ctx = _API.get("ai_ctx")
+    hammasi = list(keys)
+    for urinish in range(4):
+        keys = list(hammasi)
+        bet = _sahifalar(data)
+        log.info(f"[{cid}] Kurs ishi hajmi: {bet} bet (kerak {lo}-{hi}), urinish {urinish + 1}")
+        if lo <= bet <= hi:
+            return
+        if bet > hi:                                  # ortiqcha — o'rta abzaslarni olib tashlaymiz
+            ortiq = (bet - hi + 0.5) * WPP
+            while ortiq > 0:
+                eng = max(keys, key=lambda k: sum(_words(x) for x in bloklar(*k) if matnli(x)))
+                bl = bloklar(*eng)
+                cand = [i for i in range(1, len(bl) - 1) if matnli(bl[i]) and "{" not in bl[i]]
+                cand = [i for i in cand if not re.search(r"\[\d+\]", bl[i])] or cand   # havolalilar — oxirgi navbatda
+                if len([x for x in bl if matnli(x)]) <= 4 or not cand:
+                    keys = [k for k in keys if k != eng]
+                    if not keys:
+                        break
+                    continue
+                i = cand[len(cand) // 2]
+                ortiq -= _words(bl[i])
+                del bl[i]
+                saqla(*eng, bl)
+            continue
+        # kam — eng qisqa paragraflarni davom ettiramiz (parallel)
+        kerak_soz = (maqsad - bet) * WPP
+        tartib = sorted(keys, key=lambda k: sum(_words(x) for x in bloklar(*k) if matnli(x)))
+        soni = min(len(tartib), max(1, math.ceil(kerak_soz / 450)))
+        har = max(2, min(8, math.ceil(kerak_soz / soni / 115)))
+        if prog:
+            prog(urinish + 1, 4)
+
+        def ish(k):
+            bi, ri = k
+            mavjud = [x for x in bloklar(bi, ri) if matnli(x)]
+            run = lambda: _ask(_davom_prompt(p, plan, bi, ri, mavjud, har), f"{bi + 1}.{ri + 1} to'ldirish",
+                               max_tokens=5000)
+            try:
+                if ctx:
+                    with ctx(cid):
+                        dv = run()
+                else:
+                    dv = run()
+            except Exception as e:
+                log.warning(f"Hajm to'ldirish xatosi {k}: {e}")
+                return k, []
+            add = [_strip_refs(_clean(x)) for x in (dv.get("paragraflar") or []) if isinstance(x, str)]
+            return k, [x for x in add if _words(x) >= 12]
+
+        with cf.ThreadPoolExecutor(max_workers=3) as ex:
+            for k, add in ex.map(ish, tartib[:soni]):
+                if add:
+                    bl = bloklar(*k)
+                    saqla(*k, bl[:-1] + add + bl[-1:])     # xulosa abzasi oxirida qoladi
 
 
 PROG = {
@@ -762,6 +843,7 @@ PROG = {
         "bob": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n📖 Paragraflar yozilmoqda: <b>{k}/{n}</b>\n"
                "<i>Jadvallar, grafiklar va snoskalar bilan</i>",
         "xulosa": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n🧾 Xulosa va takliflar yozilmoqda...",
+        "hajm": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n📏 Hajm tekshirilmoqda va to'ldirilmoqda ({k}/{n})...",
         "format": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n📎 Mundarija, snoskalar va formatlash...",
     },
     "ru": {
@@ -770,6 +852,7 @@ PROG = {
         "bob": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n📖 Пишутся параграфы: <b>{k}/{n}</b>\n"
                "<i>С таблицами, графиками и сносками</i>",
         "xulosa": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n🧾 Пишутся заключение и рекомендации...",
+        "hajm": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n📏 Проверка и доведение объёма ({k}/{n})...",
         "format": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n📎 Содержание, сноски и оформление...",
     },
     "en": {
@@ -778,6 +861,7 @@ PROG = {
         "bob": "⏳ <b>Creating the course work</b> ({bet} pages)\n\n📖 Writing sections: <b>{k}/{n}</b>\n"
                "<i>With tables, charts and footnotes</i>",
         "xulosa": "⏳ <b>Creating the course work</b> ({bet} pages)\n\n🧾 Writing the conclusion...",
+        "hajm": "⏳ <b>Creating the course work</b> ({bet} pages)\n\n📏 Checking and completing the volume ({k}/{n})...",
         "format": "⏳ <b>Creating the course work</b> ({bet} pages)\n\n📎 Contents, footnotes and formatting...",
     },
 }
@@ -862,6 +946,23 @@ def _setup_doc(doc):
         f.first_line_indent = Cm(0)
         f.page_break_before = upper
 
+    # Snoska uslublari (Word va LibreOffice bir xil ko'rsatishi uchun)
+    try:
+        fs = st["Footnote Text"]
+    except KeyError:
+        fs = st.add_style("Footnote Text", WD_STYLE_TYPE.PARAGRAPH)
+        fs.base_style = n
+    _style_font(fs, 10)
+    fs.paragraph_format.line_spacing = 1.0
+    fs.paragraph_format.space_before = Pt(0)
+    fs.paragraph_format.space_after = Pt(0)
+    fs.paragraph_format.first_line_indent = Cm(0)
+    try:
+        fr = st["Footnote Reference"]
+    except KeyError:
+        fr = st.add_style("Footnote Reference", WD_STYLE_TYPE.CHARACTER)
+    fr.font.superscript = True
+
     for name, ind, bold in (("TOC 1", 0.0, True), ("TOC 2", 0.6, False)):
         try:
             s = st[name]
@@ -872,15 +973,12 @@ def _setup_doc(doc):
         f = s.paragraph_format
         f.alignment = WD_ALIGN_PARAGRAPH.LEFT
         f.left_indent = Cm(ind)
+        f.right_indent = Cm(1.0)                     # uzun nom raqam ustuniga kirmasdan ko'chadi
         f.first_line_indent = Cm(0)
         f.line_spacing = 1.15
         f.space_after = Pt(4 if bold else 2)
         f.tab_stops.add_tab_stop(Cm(16.5), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
 
-    # Word ochilganda mundarija sahifa raqamlarini yangilash
-    upd = OxmlElement("w:updateFields")
-    upd.set(qn("w:val"), "true")
-    doc.settings.element.append(upd)
 
     # Sahifa raqami (pastda markazda)
     ft = sec.footer
@@ -943,9 +1041,11 @@ def _fn_root(doc):
         if rel.reltype == _FN_REL:
             return rel._target._element
     xml = (f'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:footnotes xmlns:w="{_W}">'
-           '<w:footnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>'
-           '<w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r>'
-           '</w:p></w:footnote></w:footnotes>').encode()
+           '<w:footnote w:type="separator" w:id="-1"><w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="100" '
+           'w:lineRule="exact"/></w:pPr><w:r><w:rPr><w:sz w:val="10"/></w:rPr><w:separator/></w:r></w:p></w:footnote>'
+           '<w:footnote w:type="continuationSeparator" w:id="0"><w:p><w:pPr><w:spacing w:before="0" w:after="0" '
+           'w:line="100" w:lineRule="exact"/></w:pPr><w:r><w:rPr><w:sz w:val="10"/></w:rPr><w:continuationSeparator/>'
+           '</w:r></w:p></w:footnote></w:footnotes>').encode()
     part = XmlPart(PackURI("/word/footnotes.xml"), _FN_CT, etree.fromstring(xml), doc.part.package)
     doc.part.relate_to(part, _FN_REL)
     return part._element
@@ -953,6 +1053,9 @@ def _fn_root(doc):
 
 def _sup_rpr(size_half=None):
     rpr = OxmlElement("w:rPr")
+    rs = OxmlElement("w:rStyle")
+    rs.set(qn("w:val"), "FootnoteReference")
+    rpr.append(rs)
     rf = OxmlElement("w:rFonts")
     for a in ("w:ascii", "w:hAnsi", "w:cs"):
         rf.set(qn(a), FONT)
@@ -980,6 +1083,16 @@ def _add_footnote(doc, para, text: str, fid: int):
     fn.set(qn("w:id"), str(fid))
     p = OxmlElement("w:p")
     ppr = OxmlElement("w:pPr")
+    ps = OxmlElement("w:pStyle")
+    ps.set(qn("w:val"), "FootnoteText")
+    ppr.append(ps)
+    sp = OxmlElement("w:spacing")                     # snoska — yakka interval, 10 pt
+    for a, v in (("w:before", "0"), ("w:after", "0"), ("w:line", "240"), ("w:lineRule", "auto")):
+        sp.set(qn(a), v)
+    ppr.append(sp)
+    ind = OxmlElement("w:ind")
+    ind.set(qn("w:firstLine"), "0")
+    ppr.append(ind)
     jc = OxmlElement("w:jc")
     jc.set(qn("w:val"), "both")
     ppr.append(jc)
@@ -1063,44 +1176,21 @@ def _cell_border(tbl):
     tblPr.append(b)
 
 
-def _insert_table(doc, t: dict, num: int, til: str):
-    lb = L(til)
-    _para(doc, lb["jadval"].format(n=num), size=14, italic=True, align=WD_ALIGN_PARAGRAPH.RIGHT,
-          indent=False, sb=6, keep=True, ls=1.0)
-    _para(doc, t["nomi"], size=14, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, indent=False, sa=4,
-          keep=True, ls=1.0)
-    ncol = len(t["ustunlar"])
-    tbl = doc.add_table(rows=1 + len(t["qatorlar"]), cols=ncol)
-    tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    _cell_border(tbl)
-    for ci, val in enumerate(t["ustunlar"]):
-        c = tbl.rows[0].cells[ci]
-        c.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        c.paragraphs[0].paragraph_format.first_line_indent = Cm(0)
-        c.paragraphs[0].paragraph_format.line_spacing = 1.0
-        _set_font(c.paragraphs[0].add_run(str(val)), 12, bold=True)
-    trPr = tbl.rows[0]._tr.get_or_add_trPr()
-    hdr = OxmlElement("w:tblHeader")
-    hdr.set(qn("w:val"), "true")
-    trPr.append(hdr)                                   # sarlavha qatori har sahifada takrorlanadi
-    for ri, row in enumerate(t["qatorlar"]):
-        for ci in range(ncol):
-            c = tbl.rows[ri + 1].cells[ci]
-            pp = c.paragraphs[0]
-            pp.paragraph_format.first_line_indent = Cm(0)
-            pp.paragraph_format.line_spacing = 1.0
-            val = str(row[ci]) if ci < len(row) else ""
-            pp.alignment = WD_ALIGN_PARAGRAPH.CENTER if (ci > 0 and len(val) < 18) else WD_ALIGN_PARAGRAPH.LEFT
-            _set_font(pp.add_run(val), 12)
-    _para(doc, f"{lb['manba']}: {t['manba']}", size=12, italic=True, indent=False, sb=2, sa=8, ls=1.0,
-          align=WD_ALIGN_PARAGRAPH.LEFT)
-    rows_lines = sum(max(1, math.ceil(max(len(str(c)) for c in r) / max(8, 90 // ncol))) for r in
-                     [t["ustunlar"]] + t["qatorlar"])
-    return 3.0 + rows_lines * 0.75
-
-
 # ── Grafik ──
+_PNG_CACHE: dict = {}
+
+
 def _chart_png(g: dict) -> bytes | None:
+    key = json.dumps(g, ensure_ascii=False, sort_keys=True, default=str)
+    if key in _PNG_CACHE:
+        return _PNG_CACHE[key]
+    png = _chart_png_draw(g)
+    if png and len(_PNG_CACHE) < 64:
+        _PNG_CACHE[key] = png
+    return png
+
+
+def _chart_png_draw(g: dict) -> bytes | None:
     try:
         import matplotlib
         matplotlib.use("Agg")
@@ -1153,184 +1243,186 @@ def _chart_png(g: dict) -> bytes | None:
     return buf.getvalue()
 
 
-def _insert_chart(doc, g: dict, num: int, til: str) -> float:
+
+# ═══════════════════════════════════════════════
+# HUJJAT TUZILMASI → SAHIFALASH → WORD
+# ═══════════════════════════════════════════════
+import sahifalash as SH
+
+_AL = {"j": WD_ALIGN_PARAGRAPH.JUSTIFY, "c": WD_ALIGN_PARAGRAPH.CENTER, "r": WD_ALIGN_PARAGRAPH.RIGHT,
+       "l": WD_ALIGN_PARAGRAPH.LEFT}
+
+
+def _P(text="", size=14, bold=False, italic=False, ind=1.25, left=0.0, ls=1.5, sb=0, sa=0, align="j",
+       keep=False, pbb=False, segs=None, style=None, **kw):
+    b = {"k": "p", "segs": segs if segs is not None else ([("t", text, bold, italic)] if text else []),
+         "size": size, "ind": ind, "left": left, "ls": ls, "sb": sb, "sa": sa, "align": align, "keep": keep,
+         "pbb": pbb, "style": style}
+    b.update(kw)
+    return b
+
+
+def _ref_segs(text: str, snoskalar: dict, adab: list) -> list:
+    segs = []
+    for i, seg in enumerate(re.split(r"\[(\d+)\]", text)):
+        if i % 2 == 0:
+            if seg:
+                segs.append(("t", seg, False, False))
+        else:
+            src = snoskalar.get(seg) or snoskalar.get(str(seg))
+            if not src:
+                try:
+                    src = adab[int(seg) - 1]["matn"]
+                except Exception:
+                    src = ""
+            src = _clean(src)
+            if len(src) >= 8:
+                segs.append(("fn", src.rstrip(".") + "."))
+    return segs
+
+
+def _table_blocks(t: dict, num: int, til: str) -> list:
+    lb = L(til)
+    return [
+        _P(lb["jadval"].format(n=num), italic=True, ind=0, ls=1.0, sb=6, align="r", keep=True),
+        _P(t["nomi"], bold=True, ind=0, ls=1.0, sa=4, align="c", keep=True),
+        {"k": "tbl", "cols": [str(c) for c in t["ustunlar"]], "rows": [[str(c) for c in r] for r in t["qatorlar"]],
+         "size": 12, "hdr_bold": True, "sa": 0},
+        _P(f"{lb['manba']}: {t['manba']}", size=12, italic=True, ind=0, ls=1.0, sb=2, sa=8, align="l"),
+    ]
+
+
+def _chart_blocks(g: dict, num: int, til: str) -> list:
     png = _chart_png(g)
     if not png:
-        return 0.0
+        return []
+    try:
+        from PIL import Image
+        w, h = Image.open(io.BytesIO(png)).size
+        h_cm = 15.0 * h / w
+    except Exception:
+        h_cm = 8.33
     lb = L(til)
-    p = _para(doc, indent=False, align=WD_ALIGN_PARAGRAPH.CENTER, sb=6, keep=True, ls=1.0)
-    p.add_run().add_picture(io.BytesIO(png), width=Cm(15.0))
-    cap = _para(doc, "", indent=False, align=WD_ALIGN_PARAGRAPH.CENTER, sb=4, ls=1.0, keep=True)
-    _set_font(cap.add_run(lb["rasm"].format(n=num) + " "), 14, bold=True)
-    _set_font(cap.add_run(g["nomi"]), 14, bold=False)
-    _para(doc, f"{lb['manba']}: {g['manba']}", size=12, italic=True, indent=False, sa=8, ls=1.0,
-          align=WD_ALIGN_PARAGRAPH.CENTER)
-    return 14.0
+    return [
+        _P("", ind=0, ls=1.0, sb=6, align="c", keep=True, png=png, img_h=h_cm * SH.PT_CM),
+        _P(segs=[("t", lb["rasm"].format(n=num) + " ", True, False), ("t", g["nomi"], False, False)],
+           ind=0, ls=1.0, sb=4, align="c", keep=True),
+        _P(f"{lb['manba']}: {g['manba']}", size=12, italic=True, ind=0, ls=1.0, sa=8, align="c"),
+    ]
 
 
-def _lines(text: str) -> float:
-    return max(1, math.ceil((len(text) + 8) / CPL))
-
-
-def build_docx(data: dict, out_path: str, page_map: dict | None = None) -> dict:
-    """data (v2) dan Word hujjatini quradi. page_map — sarlavha → aniq sahifa (bo'lsa)."""
+def _flow(data: dict, bet_matn: str = "99") -> tuple[list, list, dict]:
+    """Hujjatni abstrakt bloklarga aylantiradi. Qaytaradi: bloklar, mundarija yozuvlari, hisoblagichlar."""
     til = data.get("til", "uz")
     lb = L(til)
     t = data.get("titul", {})
-    doc = Document()
-    _setup_doc(doc)
     nbob = int(data.get("bob_soni") or sum(1 for k in data if re.fullmatch(r"bob\d+_data", k)))
     adab = data.get("plan", {}).get("adabiyotlar", []) or []
     if adab and isinstance(adab[0], str):
         adab = [{"tur": "asosiy", "matn": re.sub(r"^\d+[\.\)]\s*", "", a)} for a in adab]
+    B: list = []
 
-    # ── 1. TITUL ──
+    # ── 1. Titul ──
     yil = datetime.datetime.now().year
     shahar = shahar_aniqla(t.get("otm", ""), til)
-    _para(doc, lb["vazirlik"], bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, indent=False, ls=1.15, sa=12)
-    _para(doc, (t.get("otm") or "").upper(), bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, indent=False, ls=1.15,
-          sa=4)
+    B.append(_P(lb["vazirlik"], bold=True, ind=0, ls=1.15, sa=12, align="c"))
+    B.append(_P((t.get("otm") or "").upper(), bold=True, ind=0, ls=1.15, sa=4, align="c"))
     if t.get("fakultet"):
-        _para(doc, t["fakultet"], align=WD_ALIGN_PARAGRAPH.CENTER, indent=False, ls=1.15)
-    p = _para(doc, "", align=WD_ALIGN_PARAGRAPH.CENTER, indent=False, sb=150, sa=18, ls=1.0)
-    r = p.add_run(lb["kurs_ishi"])
-    _set_font(r, 26, bold=True)
-    r.font.spacing = Pt(3)
-    p = _para(doc, "", align=WD_ALIGN_PARAGRAPH.CENTER, indent=False, ls=1.15, sa=6)
-    _set_font(p.add_run(f"{lb['fan']}: "), 14, bold=True)
-    _set_font(p.add_run(t.get("fan", "")), 14)
-    p = _para(doc, "", align=WD_ALIGN_PARAGRAPH.CENTER, indent=False, ls=1.15)
-    _set_font(p.add_run(f"{lb['mavzu']}: "), 14, bold=True)
-    _set_font(p.add_run(f"«{(t.get('mavzu') or '').strip()}»"), 14, bold=True)
+        B.append(_P(t["fakultet"], ind=0, ls=1.15, align="c"))
+    B.append(_P(segs=[("t", lb["kurs_ishi"], True, False)], size=26, ind=0, ls=1.0, sb=150, sa=18, align="c",
+                spacing=3))
+    B.append(_P(segs=[("t", f"{lb['fan']}: ", True, False), ("t", t.get("fan", ""), False, False)],
+                ind=0, ls=1.15, sa=6, align="c"))
+    B.append(_P(segs=[("t", f"{lb['mavzu']}: ", True, False), ("t", f"«{(t.get('mavzu') or '').strip()}»", True, False)],
+                ind=0, ls=1.15, align="c"))
     sb = 120
     for lbl, val in ((lb["bajardi"], t.get("ism")), (lb["guruh"], t.get("guruh")),
                      (lb["rahbar"], t.get("rahbar") or "____________________")):
-        if not val:
-            continue
-        p = _para(doc, "", indent=False, left=8.0, sb=sb, ls=1.15, align=WD_ALIGN_PARAGRAPH.LEFT)
-        _set_font(p.add_run(f"{lbl}: "), 14, bold=True)
-        _set_font(p.add_run(val), 14)
-        sb = 4
-    # Uzun OTM/mavzu nomi titulni 2-betga surib yubormasligi uchun pastki bo'shliqni kamaytiramiz
+        if val:
+            B.append(_P(segs=[("t", f"{lbl}: ", True, False), ("t", val, False, False)], ind=0, left=8.0, ls=1.15,
+                        sb=sb, align="l"))
+            sb = 4
     extra = max(0, math.ceil(len(t.get("otm") or "") / 60) - 1) + max(0, math.ceil(len(t.get("mavzu") or "") / 60) - 2) \
         + max(0, math.ceil(len(t.get("fakultet") or "") / 70) - 1) + max(0, math.ceil(len(t.get("rahbar") or "") / 28) - 1)
-    p = _para(doc, f"{shahar} – {yil}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, indent=False,
-              sb=max(20, 150 - 22 * extra), ls=1.0)
+    B.append(_P(f"{shahar} – {yil}", bold=True, ind=0, ls=1.0, sb=max(20, 150 - 22 * extra), align="c"))
 
-    # ── 2. MUNDARIJA (Word maydoni + tayyor ko'rinish) ──
-    p = _para(doc, lb["mundarija"], bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, indent=False, sa=12)
-    p.paragraph_format.page_break_before = True
-    toc_entries = [(1, lb["kirish"])]
+    # ── 2. Mundarija ──
+    B.append(_P(lb["mundarija"], bold=True, ind=0, sa=12, align="c", pbb=True))
+    toc = [(1, lb["kirish"])]
     for bi in range(nbob):
-        toc_entries.append((1, data.get(f"bob{bi + 1}_nomi", f"{ROMAN[bi]}")))
+        toc.append((1, data.get(f"bob{bi + 1}_nomi", ROMAN[bi])))
         for rj in data.get(f"bob{bi + 1}_data", {}).get("rejalar", []):
-            toc_entries.append((2, _clean(rj.get("sarlavha", ""))))
-    toc_entries += [(1, lb["xulosa"]), (1, lb["adab"])]
-    toc_paras = []
-    for i, (lvl, txt) in enumerate(toc_entries):
-        tp = doc.add_paragraph(style="TOC 1" if lvl == 1 else "TOC 2")
-        if i == 0:                                    # maydon boshlanishi
-            for kind, instr in (("begin", None), (None, ' TOC \\o "1-2" \\h \\z \\u '), ("separate", None)):
-                rr = tp.add_run()
-                if kind:
-                    fc = OxmlElement("w:fldChar")
-                    fc.set(qn("w:fldCharType"), kind)
-                    if kind == "begin":
-                        fc.set(qn("w:dirty"), "true")
-                    rr._r.append(fc)
-                else:
-                    it = OxmlElement("w:instrText")
-                    it.set(qn("xml:space"), "preserve")
-                    it.text = instr
-                    rr._r.append(it)
-        _set_font(tp.add_run(txt + "\t"), 14, bold=(lvl == 1))
-        toc_paras.append(tp)
-    end = toc_paras[-1].add_run()
-    fc = OxmlElement("w:fldChar")
-    fc.set(qn("w:fldCharType"), "end")
-    end._r.append(fc)
+            toc.append((2, _clean(rj.get("sarlavha", ""))))
+    toc += [(1, lb["xulosa"]), (1, lb["adab"])]
+    toc_idx = []
+    for i, (lvl, txt) in enumerate(toc):
+        toc_idx.append(len(B))
+        B.append(_P(segs=[("t", txt, lvl == 1, False)], ind=0, left=0.0 if lvl == 1 else 0.6, right=1.0, ls=1.15,
+                    sa=4 if lvl == 1 else 2, align="l", style="TOC 1" if lvl == 1 else "TOC 2",
+                    toc_text=txt, toc_first=(i == 0), toc_last=(i == len(toc) - 1)))
+    heads = []                                     # mundarija tartibida sarlavha bloklari
 
-    # Sahifa hisobi (mundarija uchun taxminiy; LibreOffice bo'lsa — aniq)
-    cur = [3.0]                                       # 1 — titul, 2 — mundarija
-    toc_pages = []
+    def H(text, level):
+        heads.append(len(B))
+        B.append(_P(text, bold=True, ind=0, ls=1.5, sa=12 if level == 1 else 6, align="c", keep=True,
+                    pbb=(level == 1), style="Heading 1" if level == 1 else "Heading 2"))
 
-    def new_page():
-        cur[0] = float(math.ceil(cur[0] - 1e-6)) if cur[0] % 1 > 0.02 else cur[0]
+    cnt = {"jadval": 0, "rasm": 0}
 
-    def add_lines(n):
-        cur[0] += n / LPP
-
-    def heading(text, level):
-        if level == 1:
-            new_page()
-        toc_pages.append(int(cur[0]))
-        hp = doc.add_paragraph(style="Heading 1" if level == 1 else "Heading 2")
-        _set_font(hp.add_run(text), 14, bold=True)
-        add_lines(_lines(text) + (0.6 if level == 1 else 0.4))
-        return hp
-
-    fid = [1]
-    counters = {"jadval": 0, "rasm": 0}
-
-    # ── 3. KIRISH ──
-    heading(lb["kirish"], 1)
+    # ── 3. Kirish ──
+    H(lb["kirish"], 1)
     kir = dict(data.get("plan", {}).get("kirish", {}))
-    if not kir.get("tuzilishi") or data.get("v") == 2:
-        kir["tuzilishi"] = "{TUZILISH}"
-    tuz_para = None
+    kir["tuzilishi"] = "{TUZILISH}"
+    tuz_i = None
     for key in KIRISH_TARTIB + [k for k in kir if k not in KIRISH_TARTIB]:
         val = kir.get(key)
         if not val:
             continue
         label = lb["kirish_lbl"].get(key, "")
         chunks = [c.strip() for c in str(val).split("[ABZAS]") if c.strip()]
-        list_mode = key == "vazifalari"
         for ci, ch in enumerate(chunks):
             ch = _strip_refs(_clean(ch))
-            if list_mode and ci == 0 and label:
-                _para(doc, label, bold=True, keep=True)
-                add_lines(1)
-            pp = _para(doc)
             if ch == "{TUZILISH}":
-                tuz_para = pp
-                add_lines(3)
+                tuz_i = len(B)
+                B.append(_P(segs=[("t", label + " ", True, False), ("t", "{TUZILISH}", False, False)]))
                 continue
-            if ci == 0 and label and not list_mode:
-                _set_font(pp.add_run(label + " "), 14, bold=True)
-            _set_font(pp.add_run(ch), 14)
-            add_lines(_lines(ch))
+            if key == "vazifalari":
+                if ci == 0 and label:
+                    B.append(_P(label, bold=True, keep=True))
+                B.append(_P(ch))
+                continue
+            segs = ([("t", label + " ", True, False)] if (ci == 0 and label) else []) + [("t", ch, False, False)]
+            B.append(_P(segs=segs))
 
-    # ── 4. BOBLAR ──
+    # ── 4. Boblar ──
     for bi in range(nbob):
-        heading(data.get(f"bob{bi + 1}_nomi", ROMAN[bi]), 1)
+        H(data.get(f"bob{bi + 1}_nomi", ROMAN[bi]), 1)
         for rj in data.get(f"bob{bi + 1}_data", {}).get("rejalar", []):
-            heading(_clean(rj.get("sarlavha", "")), 2)
+            H(_clean(rj.get("sarlavha", "")), 2)
             matn = str(rj.get("matn", ""))
             sn = {str(k).strip("[] "): v for k, v in (rj.get("snoskalar") or {}).items()}
             parts = [x for x in re.split(r"(\[JADVAL:[^\]]*\]|\[GRAFIK:[^\]]*\])", matn, flags=re.S) if x.strip()]
-            # jadval/rasm raqamlarini oldindan belgilaymiz ({JADVAL}/{RASM} havolalari uchun)
             tnums, gnums = [], []
             for x in parts:
                 if x.strip().startswith("[JADVAL:"):
-                    tnums.append(counters["jadval"] + len(tnums) + 1)
+                    tnums.append(cnt["jadval"] + len(tnums) + 1)
                 elif x.strip().startswith("[GRAFIK:"):
-                    gnums.append(counters["rasm"] + len(gnums) + 1)
+                    gnums.append(cnt["rasm"] + len(gnums) + 1)
             for x in parts:
                 x = x.strip()
                 if x.startswith("[JADVAL:"):
                     tb = _parse_table_block(x, til)
                     if tb:
-                        counters["jadval"] += 1
-                        add_lines(_insert_table(doc, tb, counters["jadval"], til))
+                        cnt["jadval"] += 1
+                        B.extend(_table_blocks(tb, cnt["jadval"], til))
                     continue
                 if x.startswith("[GRAFIK:"):
                     g = _dec_chart(x[len("[GRAFIK:"):-1])
                     if g and len(g["qiymatlar"]) >= 2:
-                        counters["rasm"] += 1
-                        h_ = _insert_chart(doc, g, counters["rasm"], til)
-                        if not h_:
-                            counters["rasm"] -= 1
-                        add_lines(h_)
+                        cb = _chart_blocks(g, cnt["rasm"] + 1, til)
+                        if cb:
+                            cnt["rasm"] += 1
+                            B.extend(cb)
                     continue
                 for ab in x.split("[ABZAS]"):
                     ab = _clean(ab)
@@ -1338,108 +1430,156 @@ def build_docx(data: dict, out_path: str, page_map: dict | None = None) -> dict:
                         continue
                     ab = ab.replace("{JADVAL}", lb["jref"].format(n=tnums[0]) if tnums else "")
                     ab = ab.replace("{RASM}", lb["rref"].format(n=gnums[0]) if gnums else "")
-                    ab = re.sub(r"\(\s*\)", "", ab).replace("  ", " ")
-                    pp = _para(doc)
-                    _text_with_refs(doc, pp, ab, sn, adab, fid)
-                    nref = len(re.findall(r"\[\d+\]", ab))
-                    add_lines(_lines(ab) + nref * 0.9)
+                    ab = re.sub(r"\(\s*\)", "", ab).replace("  ", " ").strip()
+                    B.append(_P(segs=_ref_segs(ab, sn, adab)))
 
-    # ── 5. XULOSA ──
-    heading(lb["xulosa"], 1)
+    # ── 5. Xulosa ──
+    H(lb["xulosa"], 1)
     for ch in str(data.get("xulosa_data", {}).get("xulosa", "")).split("[ABZAS]"):
         ch = _strip_refs(_clean(ch))
         if not ch:
             continue
-        if ch == lb["takliflar"] or ch.rstrip(":") == lb["takliflar"].rstrip(":"):
-            _para(doc, lb["takliflar"], bold=True, keep=True, sb=6)
-            add_lines(1.2)
-            continue
-        _para(doc, ch)
-        add_lines(_lines(ch))
+        if ch.rstrip(":") == lb["takliflar"].rstrip(":"):
+            B.append(_P(lb["takliflar"], bold=True, keep=True, sb=6))
+        else:
+            B.append(_P(ch))
 
-    # ── 6. ADABIYOTLAR ──
-    heading(lb["adab"], 1)
+    # ── 6. Adabiyotlar ──
+    H(lb["adab"], 1)
+    groups = [g for g in GURUH_TARTIB if any(a.get("tur", "asosiy") == g for a in adab)]
     n = 1
-    gi = 0
-    by_group = [g for g in GURUH_TARTIB if any(a.get("tur") == g for a in adab)]
-    show_groups = len(by_group) > 1
-    for g in GURUH_TARTIB:
-        items = [a for a in adab if a.get("tur", "asosiy") == g]
-        if not items:
-            continue
-        if show_groups:
-            _para(doc, f"{ROMAN[gi]}. {lb['guruhlar'][g]}", bold=True, indent=False, sb=6, sa=2, keep=True,
-                  align=WD_ALIGN_PARAGRAPH.CENTER)
-            add_lines(1.3)
-            gi += 1
-        for a in items:
-            pp = _para(doc, f"{n}. {_clean(a['matn'])}", indent=False, left=0.0, ls=1.5)
-            pp.paragraph_format.first_line_indent = Cm(0)
-            add_lines(_lines(a["matn"]))
+    for gi, g in enumerate(groups):
+        if len(groups) > 1:
+            B.append(_P(f"{ROMAN[gi]}. {lb['guruhlar'][g]}", bold=True, ind=0, sb=6, sa=2, align="c", keep=True))
+        for a in [a for a in adab if a.get("tur", "asosiy") == g]:
+            B.append(_P(f"{n}. {_clean(a['matn'])}", ind=0, align="j"))
             n += 1
-    jami_bet = int(math.ceil(cur[0]))
 
-    # ── Mundarija sahifa raqamlari va tuzilish matni ──
-    if page_map:
-        pages = [page_map.get(i, toc_pages[i] if i < len(toc_pages) else 0) for i in range(len(toc_entries))]
-        jami_bet = page_map.get("jami", jami_bet)
-    else:
-        pages = toc_pages
-    for tp, pg in zip(toc_paras, pages):
-        _set_font(tp.add_run(str(pg)), 14, bold=False)
-    if tuz_para is not None:
+    # tuzilish matni (sahifa soni keyin qo'yiladi)
+    if tuz_i is not None:
         nrej = sum(len(data.get(f"bob{bi + 1}_data", {}).get("rejalar", [])) for bi in range(nbob))
-        extra = ""
-        if counters["jadval"] or counters["rasm"]:
-            extra = lb["tuz_extra"].format(
-                j=counters["jadval"], r=lb["tuz_rasm"].format(r=counters["rasm"]) if counters["rasm"] else "")
-        _set_font(tuz_para.add_run(lb["kirish_lbl"]["tuzilishi"] + " "), 14, bold=True)
-        _set_font(tuz_para.add_run(lb["tuzilish"].format(b=nbob, p=nrej, extra=extra, bet=jami_bet)), 14)
+        ex = ""
+        if cnt["jadval"] or cnt["rasm"]:
+            ex = lb["tuz_extra"].format(j=cnt["jadval"], r=lb["tuz_rasm"].format(r=cnt["rasm"]) if cnt["rasm"] else "")
+        B[tuz_i]["segs"][1] = ("t", lb["tuzilish"].format(b=nbob, p=nrej, extra=ex, bet=bet_matn), False, False)
+        B[tuz_i]["tuz_tmpl"] = (lb["tuzilish"], nbob, nrej, ex)
+    meta = {"toc": toc, "toc_idx": toc_idx, "heads": heads, "cnt": cnt, "tuz_i": tuz_i}
+    return B, toc, meta
 
-    doc.core_properties.title = t.get("mavzu", "")
-    doc.core_properties.author = t.get("ism", "")
+
+def _render(B: list, meta: dict, page_of: list, out_path: str, title: str = "", author: str = ""):
+    doc = Document()
+    _setup_doc(doc)
+    fid = [1]
+    toc_pages = [page_of[h] for h in meta["heads"]]
+    ti = 0
+    for b in B:
+        if b["k"] == "tbl":
+            _render_table(doc, b)
+            continue
+        if b.get("style"):
+            p = doc.add_paragraph(style=b["style"])
+        else:
+            p = doc.add_paragraph()
+        f = p.paragraph_format
+        if not b.get("style") or b["style"].startswith("TOC") is False and not b["style"].startswith("Heading"):
+            pass
+        if not (b.get("style") or "").startswith(("Heading", "TOC")):
+            f.first_line_indent = Cm(b.get("ind", 0))
+            f.left_indent = Cm(b.get("left", 0))
+            f.line_spacing = b.get("ls", 1.5)
+            f.space_before = Pt(b.get("sb", 0))
+            f.space_after = Pt(b.get("sa", 0))
+            p.alignment = _AL[b.get("align", "j")]
+            f.keep_with_next = bool(b.get("keep"))
+            f.page_break_before = bool(b.get("pbb"))
+        if b.get("png"):
+            p.add_run().add_picture(io.BytesIO(b["png"]), width=Cm(15.0))
+            continue
+        if b.get("toc_text") is not None:
+            lvl1 = b["style"] == "TOC 1"
+            if b.get("toc_first"):
+                for kind, instr in (("begin", None), (None, ' TOC \\o "1-2" \\h \\z \\u '), ("separate", None)):
+                    rr = p.add_run()
+                    if kind:
+                        fc = OxmlElement("w:fldChar")
+                        fc.set(qn("w:fldCharType"), kind)
+                        rr._r.append(fc)
+                    else:
+                        it = OxmlElement("w:instrText")
+                        it.set(qn("xml:space"), "preserve")
+                        it.text = instr
+                        rr._r.append(it)
+            _set_font(p.add_run(b["toc_text"] + "\t"), 14, bold=lvl1)
+            _set_font(p.add_run(str(toc_pages[ti])), 14, bold=False)
+            ti += 1
+            if b.get("toc_last"):
+                rr = p.add_run()
+                fc = OxmlElement("w:fldChar")
+                fc.set(qn("w:fldCharType"), "end")
+                rr._r.append(fc)
+            continue
+        size = b.get("size", 14)
+        for s in b["segs"]:
+            if s[0] == "fn":
+                _add_footnote(doc, p, s[1], fid[0])
+                fid[0] += 1
+            else:
+                r = _set_font(p.add_run(s[1]), size, bold=s[2], italic=s[3])
+                if b.get("spacing"):
+                    r.font.spacing = Pt(b["spacing"])
+    doc.core_properties.title = title
+    doc.core_properties.author = author
     doc.save(out_path)
-
-    info = {"bet": jami_bet, "jadval": counters["jadval"], "rasm": counters["rasm"], "snoska": fid[0] - 1,
-            "toc": toc_entries}
-    if page_map is None:
-        exact = _exact_pages(out_path, toc_entries)
-        if exact:
-            return build_docx(data, out_path, page_map=exact)
-    return info
+    return fid[0] - 1
 
 
-def _exact_pages(path: str, entries: list) -> dict | None:
-    """LibreOffice mavjud bo'lsa — PDFga aylantirib sarlavhalarning aniq sahifasini topadi."""
-    office = shutil.which("soffice") or shutil.which("libreoffice")
-    if not office or os.getenv("KURS_EXACT_TOC", "1") == "0":
-        return None
-    try:
-        import fitz
-    except Exception:
-        return None
-    tmp = tempfile.mkdtemp(prefix="kurs_toc_")
-    try:
-        subprocess.run([office, "--headless", "--convert-to", "pdf", "--outdir", tmp, path],
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=150, check=False)
-        pdf = os.path.join(tmp, os.path.splitext(os.path.basename(path))[0] + ".pdf")
-        if not os.path.exists(pdf):
-            return None
-        d = fitz.open(pdf)
-        texts = [re.sub(r"\s+", " ", d[i].get_text()) for i in range(d.page_count)]
-        res, start = {}, 2                            # mundarijadan keyin qidiramiz
-        for i, (_, txt) in enumerate(entries):
-            key = re.sub(r"\s+", " ", txt).strip()[:45]
-            for pg in range(start, len(texts)):
-                if key and key in texts[pg]:
-                    res[i] = pg + 1
-                    start = pg
-                    break
-        res["jami"] = d.page_count
-        d.close()
-        return res if len(res) > len(entries) * 0.7 else None
-    except Exception as e:
-        log.warning(f"Aniq mundarija hisobi bo'lmadi: {e}")
-        return None
-    finally:
-        shutil.rmtree(tmp, ignore_errors=True)
+def _render_table(doc, b: dict):
+    ncol = len(b["cols"])
+    tbl = doc.add_table(rows=1 + len(b["rows"]), cols=ncol)
+    tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tbl.autofit = False
+    _cell_border(tbl)
+    cw = Cm(16.5 / ncol)
+    for row in tbl.rows:
+        for c in row.cells:
+            c.width = cw
+    for ci, val in enumerate(b["cols"]):
+        c = tbl.rows[0].cells[ci]
+        pp = c.paragraphs[0]
+        pp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        pp.paragraph_format.first_line_indent = Cm(0)
+        pp.paragraph_format.line_spacing = 1.0
+        _set_font(pp.add_run(val), b.get("size", 12), bold=True)
+    trPr = tbl.rows[0]._tr.get_or_add_trPr()
+    hdr = OxmlElement("w:tblHeader")
+    hdr.set(qn("w:val"), "true")
+    trPr.append(hdr)
+    for ri, row in enumerate(b["rows"]):
+        cs = OxmlElement("w:cantSplit")                     # qator sahifalar orasida bo'linmaydi
+        tbl.rows[ri + 1]._tr.get_or_add_trPr().append(cs)
+        for ci in range(ncol):
+            pp = tbl.rows[ri + 1].cells[ci].paragraphs[0]
+            pp.paragraph_format.first_line_indent = Cm(0)
+            pp.paragraph_format.line_spacing = 1.0
+            val = row[ci] if ci < len(row) else ""
+            pp.alignment = WD_ALIGN_PARAGRAPH.CENTER if (ci > 0 and len(val) < 18) else WD_ALIGN_PARAGRAPH.LEFT
+            _set_font(pp.add_run(val), b.get("size", 12))
+
+
+def build_docx(data: dict, out_path: str, page_map: dict | None = None) -> dict:
+    """data (v2) dan Word hujjati: avval sahifalar aniq hisoblanadi, keyin mundarija raqamlari bilan yoziladi."""
+    t = data.get("titul", {})
+    B, toc, meta = _flow(data, "99")
+    page_of, jami = SH.paginate(B)
+    if meta["tuz_i"] is not None:                    # «umumiy hajmi N bet» — haqiqiy son bilan qayta hisob
+        tmpl, nb, nr, ex = B[meta["tuz_i"]]["tuz_tmpl"]
+        for _ in range(2):
+            B[meta["tuz_i"]]["segs"][1] = ("t", tmpl.format(b=nb, p=nr, extra=ex, bet=jami), False, False)
+            page_of, jami2 = SH.paginate(B)
+            if jami2 == jami:
+                break
+            jami = jami2
+    fn = _render(B, meta, page_of, out_path, title=t.get("mavzu", ""), author=t.get("ism", ""))
+    return {"bet": jami, "jadval": meta["cnt"]["jadval"], "rasm": meta["cnt"]["rasm"], "snoska": fn,
+            "toc": toc, "toc_pages": [page_of[h] for h in meta["heads"]]}

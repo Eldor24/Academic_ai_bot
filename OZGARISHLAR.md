@@ -1,5 +1,35 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 13.2-versiya (19.11.2026) — kurs ishi: aniq mundarija va kafolatlangan hajm
+- 📑 **Mundarija sahifa raqamlari endi to'g'ri chiqadi — Ctrl+A / F9 bosish shart emas.** Yangi `sahifalash.py`
+  hujjatni Word'dagidek qatorlarga bo'lib, sahifalarga joylab hisoblaydi (Times New Roman bilan bir xil o'lchamli
+  Liberation Serif shriftining harf kengliklari, 1,5 interval, sarlavhalarning keyingi abzas bilan birga turishi,
+  yetim/beva qatorlar, snoskalar, jadvallar, rasmlar). LibreOffice'da 45 ta hujjatda sinaldi — barcha bo'lim
+  sahifalari va umumiy bet soni mos keldi
+- 📏 **Hajm kafolati:** tayyor ish sahifalab tekshiriladi; standart 27–30, kengaytirilgan 66–70 betdan kam bo'lsa —
+  eng qisqa paragraflar avtomatik to'ldiriladi, ortiq bo'lsa — qisqartiriladi (avval AI qisqa yozsa 54 bet chiqardi)
+- 🏛 Vazirlik nomi yangilandi: **O'zbekiston Respublikasi Ta'lim va ilm-fan vazirligi** / Министерство образования и
+  науки Республики Узбекистан / Ministry of Education and Science of the Republic of Uzbekistan (kurs ishi, referat)
+- Tayyor hujjat xabaridan «Ctrl+A, F9» va «tekshirib oling / taxminiy» eslatmalari, jadval va rasm soni olib tashlandi;
+  aniq hajm ko'rsatiladi: «📄 Hajmi: 68 bet»
+- Taqdimotda ishonchli ma'lumot bo'lmasa «taxminiy» diagramma o'rniga ro'yxat yoki bosqichlar slaydi qo'yiladi
+- Snoskalar: alohida «Footnote Text» uslubi (10 pt, yakka interval), ajratuvchi chiziq ixcham
+- Mundarijadagi uzun bob nomlari sahifa raqami ustuniga kirmasdan ko'chadi
+
+## 13.1-versiya (19.11.2026) — avtomatik marketing postlari (`marketing.py`)
+- 📣 **Haftada 2 marta** (dushanba va payshanba, 18:30) har bir foydalanuvchiga bitta xizmat haqida qisqa, sodda post:
+  21 ta post (taqdimot, kurs ishi, konspekt, test markazi, masala, tekin tanga, imtihon, referat, audio, ...),
+  har kim o'z navbatida oladi — ~10 haftada barcha xizmatlar bilan tanishadi, keyin aylanma takrorlanadi. 3 tilda
+- 👉 Postdagi **«Sinab ko'rish»** tugmasi xizmatni darhol ochadi; narxlar `DOC_NARX` dan avtomatik olinadi
+- 🔕 **«Bunday xabarlar kerak emas»** tugmasi va `/xabarlar` buyrug'i — foydalanuvchi o'zi o'chiradi/yoqadi
+- 🆕 Yangi foydalanuvchilar avval 7 ta tanishuv xabarini oladi (1-xabar 24 soatdan keyin, keyingilari **har 2 kunda**);
+  bu davrda haftalik postlar yuborilmaydi — xabarlar ustma-ust tushmaydi
+- 🚫 Botni bloklaganlarga qayta yuborilmaydi; bot o'chib-yonsa ham bir slot takrorlanmaydi; server uzoq o'chiq bo'lsa tunda yubormaydi
+- 👨‍💻 Admin: `/marketing` (statistika, tugma bosishlar), `/marketing test`, `/marketing yubor`, `/marketing on|off`;
+  har yuborishdan keyin adminga hisobot
+- 🐞 Tanishuv xabarlarida qator ko'chishi o'rniga so'zma-so'z «\n» chiqardi — tuzatildi
+- 🐞 Kurs ishi tugmasi bosilganda oldingi xizmatning qadami qolib ketardi — tuzatildi
+
 ## 13-versiya (19.11.2026) — yangi kurs ishi va arzon narxlar
 ### 📄 Kurs ishi to'liq qayta yozildi (`kurs_ishi.py`)
 | | 📘 Standart | 📚 Kengaytirilgan |
@@ -36,7 +66,7 @@
 - 📅 Har dushanba balans 3 emas, **5** tangagacha to'ldiriladi — haftasiga 1 taqdimot tekin
 - Obunalar: Lite 19 900 → 35 tanga (avval 25), Standart 34 900 → 75 tanga (avval 50)
 - To'ldirish oynasi narxlarni sozlamalardan avtomatik chiqaradi (endi bir joyda o'zgartiriladi), so'mdagi narxi ham ko'rsatiladi
-- Eslatma xabarlaridagi noto'g'ri va'dalar tuzatildi: «Esse tekshirish — BEPUL» (aslida 5 tanga) va «ikkalangiz ham 10 tanga olasiz» (aslida do'stga 5 tanga)
+- Eslatma xabarida «ikkalangiz ham 10 tanga olasiz» deyilgan edi (aslida do'stga 5 tanga) — tuzatildi
 
 ## 12.3-versiya (19.11.2026) — referal tizimi
 - Referal ishlaydi: do'st havola orqali birinchi marta kirsa, taklif qilgan odamga **+10 tanga** va xabar boradi (bazada 23 kishi orqali 118 ta referal hisoblangan)

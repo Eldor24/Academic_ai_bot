@@ -354,6 +354,7 @@ bot = telebot.TeleBot(BOT_TOKEN, parse_mode=None)
 import security
 import pptx_themes
 import kurs_ishi
+import marketing
 import xizmatlar_yangi
 import xizmatlar_qoshimcha
 from security import sanitize_long_text, UnsafeFileError
@@ -1310,7 +1311,7 @@ ONBOARDING_XABARLARI = {
     },
     5: {
         "uz": (
-            "📝 <b>Esse tekshirish — atigi 5 tanga!</b>\\n\\n"
+            "📝 <b>Esse tekshirish — birinchisi BEPUL!</b>\\n\\n"
             "Agar esse yozayotgan bo'lsangiz, botda <b>esse tekshirish</b> bor.\\n\\n"
             "✅ Nima ko'rsatadi:\\n"
             "• Milliy sertifikat mezonlari bo'yicha ball (75 dan)\\n"
@@ -1320,7 +1321,7 @@ ONBOARDING_XABARLARI = {
             "👉 /start → Esse Tekshirish"
         ),
         "ru": (
-            "📝 <b>Проверка эссе — всего 5 монет!</b>\\n\\n"
+            "📝 <b>Проверка эссе — первая БЕСПЛАТНО!</b>\\n\\n"
             "Если пишете эссе, в боте есть <b>проверка эссе</b>.\\n\\n"
             "✅ Что показывает:\\n"
             "• Балл по критериям Нац. сертификата (из 75)\\n"
@@ -1330,7 +1331,7 @@ ONBOARDING_XABARLARI = {
             "👉 /start → Проверка эссе"
         ),
         "en": (
-            "📝 <b>Essay check — only 5 coins!</b>\\n\\n"
+            "📝 <b>Essay check — the first one is FREE!</b>\\n\\n"
             "If you're writing an essay, the bot has a <b>free check</b>.\\n\\n"
             "✅ What it shows:\\n"
             "• Score by National Certificate criteria (out of 75)\\n"
@@ -1390,6 +1391,14 @@ ONBOARDING_XABARLARI = {
 }
  
  
+# Matnlarda "\\n" yozilgan edi — Telegram'da so'zma-so'z "\n" bo'lib chiqardi. Haqiqiy qator ko'chishiga almashtiramiz.
+for _k, _v in ONBOARDING_XABARLARI.items():
+    for _t in list(_v):
+        _v[_t] = _v[_t].replace("\\n", "\n")
+
+ONBOARDING_ORALIQ = 2 * 86400   # tanishuv xabarlari orasidagi vaqt (1-xabar ro'yxatdan 24 soat o'tib)
+
+
 def onboarding_xabar_yuborish():
    
     def _loop():
@@ -1429,7 +1438,7 @@ def onboarding_xabar_yuborish():
                             # hozirgi vaqtni ishlatamiz (yangi foydalanuvchi)
                             continue  # Keyingi sikl tekshiradi
                         
-                        if hozir - oxirgi_vaqt < 86400:  # 24 soat
+                        if hozir - oxirgi_vaqt < (86400 if kun == 1 else ONBOARDING_ORALIQ):
                             continue
                         
                         # Til aniqlash
@@ -2632,8 +2641,7 @@ I18N = {
         ),
         "done_ppt": "✅ <b>{ism}</b>, taqdimotingiz tayyor!",
         "done_doc": (
-            "✅ <b>{ism}</b>, Kurs ishingiz tayyor!\n\n"
-            "💡 <i>Eslatma: Word'da ochganda mundarijani yangilash uchun Ctrl+A, so'ng Fn+F9 bosing.</i>"
+            "✅ <b>{ism}</b>, Kurs ishingiz tayyor!"
         ),
         "err": (
             "❌ <b>Xatolik yuz berdi.</b>\n\n"
@@ -2649,7 +2657,7 @@ I18N = {
         "input_qisqa":   "⚠️ Juda qisqa (minimum {min} belgi).\nIltimos, batafsil yozing.",
         "input_uzun":    "⚠️ Juda uzun ({uzunlik} belgi).\nMaksimal: <b>{max} belgi</b>. Qisqartiring.",
         "yangi": "✨ Yangi hujjat uchun /start bosing.",
-        "vazirlik": "O'ZBEKISTON RESPUBLIKASI OLIY TA'LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+        "vazirlik": "O'ZBEKISTON RESPUBLIKASI TA'LIM VA ILM-FAN VAZIRLIGI",
         "kurs_ishi": "KURS ISHI",
         "fan_lbl": "Fan", "mavzu_lbl": "Mavzu", "bajardi": "Bajardi",
         "qabul": "Qabul qildi: Ilmiy rahbar",
@@ -3415,8 +3423,7 @@ I18N = {
         ),
         "done_ppt": "✅ <b>{ism}</b>, презентация готова!",
         "done_doc": (
-            "✅ <b>{ism}</b>, курсовая работа готова!\n\n"
-            "💡 <i>Примечание: чтобы обновить содержание в Word, нажмите Ctrl+A, затем Fn+F9.</i>"
+            "✅ <b>{ism}</b>, курсовая работа готова!"
         ),
         "err": (
             "❌ <b>Произошла ошибка.</b>\n\n"
@@ -3432,7 +3439,7 @@ I18N = {
         "input_qisqa":   "⚠️ Слишком коротко (минимум {min} символов).\nПожалуйста, напишите подробнее.",
         "input_uzun":    "⚠️ Слишком длинно ({uzunlik} символов).\nМаксимум: <b>{max} символов</b>. Сократите.",
         "yangi": "✨ Для нового документа нажмите /start.",
-        "vazirlik": "МИНИСТЕРСТВО ВЫСШЕГО ОБРАЗОВАНИЯ, НАУКИ И ИННОВАЦИЙ РЕСПУБЛИКИ УЗБЕКИСТАН",
+        "vazirlik": "МИНИСТЕРСТВО ОБРАЗОВАНИЯ И НАУКИ РЕСПУБЛИКИ УЗБЕКИСТАН",
         "kurs_ishi": "КУРСОВАЯ РАБОТА",
         "fan_lbl": "Предмет", "mavzu_lbl": "Тема", "bajardi": "Выполнил(а)",
         "qabul": "Принял: Научный руководитель",
@@ -4104,8 +4111,7 @@ I18N = {
         ),
         "done_ppt": "✅ <b>{ism}</b>, your presentation is ready!",
         "done_doc": (
-            "✅ <b>{ism}</b>, your course work is ready!\n\n"
-            "💡 <i>Note: To update the table of contents in Word, press Ctrl+A, then Fn+F9.</i>"
+            "✅ <b>{ism}</b>, your course work is ready!"
         ),
         "err": (
             "❌ <b>An error occurred.</b>\n\n"
@@ -4121,7 +4127,7 @@ I18N = {
         "input_qisqa":   "⚠️ Too short (minimum {min} characters).\nPlease write more detail.",
         "input_uzun":    "⚠️ Too long ({uzunlik} characters).\nMaximum: <b>{max} characters</b>. Please shorten it.",
         "yangi": "✨ Press /start for a new document.",
-        "vazirlik": "MINISTRY OF HIGHER EDUCATION, SCIENCE AND INNOVATIONS OF THE REPUBLIC OF UZBEKISTAN",
+        "vazirlik": "MINISTRY OF EDUCATION AND SCIENCE OF THE REPUBLIC OF UZBEKISTAN",
         "kurs_ishi": "COURSE WORK",
         "fan_lbl": "Subject", "mavzu_lbl": "Topic", "bajardi": "Prepared by",
         "qabul": "Accepted by: Scientific Supervisor",
@@ -5094,7 +5100,7 @@ SYSTEM_PROMPT = (
     "1) Mavjud bo'lmagan kitob, maqola, muallif, DOI, URL, qonun raqami yoki sanani O'YLAB TOPMANG. "
     "Faqat ishonchingiz komil bo'lgan, keng tanilgan manbalarni yozing; ishonchingiz komil bo'lmasa — yozmang.\n"
     "2) Statistik raqamlar faqat taniqli rasmiy manbalardan (manba va yil bilan). Aniq raqamni bilmasangiz, "
-    "raqamni to'qimang: sifat tavsifi bering yoki 'taxminiy' deb belgilang.\n"
+    "raqamni to'qimang — raqamsiz, sifat tavsifi bering.\n"
     "3) Hech qachon o'tkazilmagan so'rovnoma, eksperiment, respondentlar soni yoki tadqiqot natijalarini "
     "haqiqiy natija sifatida yozmang. Foydalanuvchi o'z ma'lumotini bermagan bo'lsa, natijalarni adabiyot tahliliga "
     "tayangan holda yoki 'kutilayotgan natija' sifatida bayon qiling.\n"
@@ -7617,9 +7623,9 @@ yozma (kamroq bo'lsa ham mayli). Uydirma muallif, kitob, URL yoki DOI TAQIQLANAD
     # 1. MUQOVA SAHIFASI
     # ═════════════════════════════════════
     _vazirlik_lbl = {
-        "uz": "O'ZBEKISTON RESPUBLIKASI\nOLIY TA'LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
-        "ru": "МИНИСТЕРСТВО ВЫСШЕГО ОБРАЗОВАНИЯ, НАУКИ И ИННОВАЦИЙ\nРЕСПУБЛИКИ УЗБЕКИСТАН",
-        "en": "MINISTRY OF HIGHER EDUCATION, SCIENCE AND INNOVATIONS\nOF THE REPUBLIC OF UZBEKISTAN",
+        "uz": "O'ZBEKISTON RESPUBLIKASI\nTA'LIM VA ILM-FAN VAZIRLIGI",
+        "ru": "МИНИСТЕРСТВО ОБРАЗОВАНИЯ И НАУКИ\nРЕСПУБЛИКИ УЗБЕКИСТАН",
+        "en": "MINISTRY OF EDUCATION AND SCIENCE\nOF THE REPUBLIC OF UZBEKISTAN",
     }.get(til, "")
 
     _referat_lbl = {"uz": "REFERAT", "ru": "РЕФЕРАТ", "en": "REPORT"}.get(til, "REFERAT")
@@ -10864,7 +10870,7 @@ def pptx_yaratish(cid: int, mavzu: str, ism: str, soni: int, progress=None,
         "uz": (f'QOIDALAR:\n'
                f'- Birinchi slayd: "Reja" yoki "Mundarija" — FAQAT 3 ta band. Har bir band 8-15 so\'zlik to\'liq akademik gap.\n'
                f'- Oxirgi slayd: "xulosa" bo\'lishi SHART.\n'
-               f'- Mavzuga mos bo\'lsa 1-2 ta "ustun_diag" yoki "doira_diag" qo\'sh. Diagramma va "stat_karta" raqamlari FAQAT taniqli rasmiy manbadan bo\'lsin: har biriga "manba" maydoni SHART (masalan "O\'zstat, 2023" yoki "Jahon banki, 2022"). Aniq ma\'lumot bilmasang "manba": "Taxminiy, namunaviy ma\'lumot" deb yoz yoki diagramma o\'rniga "royxat"/"bosqichlar" ishlat. Raqam to\'qima.\n'
+               f'- Mavzuga mos bo\'lsa 1-2 ta "ustun_diag" yoki "doira_diag" qo\'sh. Diagramma va "stat_karta" raqamlari FAQAT taniqli rasmiy manbadan bo\'lsin: har biriga "manba" maydoni SHART (masalan "O\'zstat, 2023" yoki "Jahon banki, 2022"). Aniq ma\'lumot bilmasang — diagramma qo\'yma, o\'rniga "royxat"/"bosqichlar"/"taqqoslash" ishlat. Raqam to\'qima.\n'
                f'- 1 ta "jadval_slayd" yoki "taqqoslash" bo\'lsin (jadval raqamsiz ham bo\'lishi mumkin).\n'
                f'- TAQIQLANGAN: *, **, #, @, `, _, ~, Markdown formatlar.\n'
                f'- TAQIQLANGAN: "Presenter:", "Author:", "Date:", muallif/sana.\n'
@@ -10877,7 +10883,7 @@ def pptx_yaratish(cid: int, mavzu: str, ism: str, soni: int, progress=None,
         "ru": (f'ПРАВИЛА:\n'
                f'- Первый слайд: "Reja" (план/содержание) — ТОЛЬКО 3 пункта. Каждый пункт — полное академическое предложение 8-15 слов.\n'
                f'- Последний слайд: ОБЯЗАТЕЛЬНО "xulosa" (заключение).\n'
-               f'- Если подходит теме — добавь 1-2 слайда "ustun_diag" или "doira_diag". Цифры диаграмм и "stat_karta" ТОЛЬКО из известных официальных источников: поле "manba" ОБЯЗАТЕЛЬНО (например "Росстат, 2023" или "Всемирный банк, 2022"). Если точных данных нет — "manba": "Примерные, иллюстративные данные" или используй "royxat"/"bosqichlar". Не выдумывай цифры.\n'
+               f'- Если подходит теме — добавь 1-2 слайда "ustun_diag" или "doira_diag". Цифры диаграмм и "stat_karta" ТОЛЬКО из известных официальных источников: поле "manba" ОБЯЗАТЕЛЬНО (например "Росстат, 2023" или "Всемирный банк, 2022"). Если точных данных нет — не делай диаграмму, используй "royxat"/"bosqichlar"/"taqqoslash". Не выдумывай цифры.\n'
                f'- 1 слайд "jadval_slayd" или "taqqoslash" (таблица может быть без цифр).\n'
                f'- ЗАПРЕЩЕНО: *, **, #, @, `, _, ~, форматы Markdown.\n'
                f'- ЗАПРЕЩЕНО: "Presenter:", "Author:", "Date:", авторство/дата.\n'
@@ -10890,7 +10896,7 @@ def pptx_yaratish(cid: int, mavzu: str, ism: str, soni: int, progress=None,
         "en": (f'RULES:\n'
                f'- First slide: "Reja" (agenda/outline) — ONLY 3 items. Each item is a complete academic sentence of 8-15 words.\n'
                f'- Last slide: MUST be "xulosa" (conclusion).\n'
-               f'- If it fits the topic, add 1-2 "ustun_diag" or "doira_diag" slides. Chart and "stat_karta" numbers ONLY from well-known official sources: the "manba" field is REQUIRED (e.g. "World Bank, 2022"). Without exact data use "manba": "Approximate, illustrative data" or a "royxat"/"bosqichlar" slide instead. Never invent numbers.\n'
+               f'- If it fits the topic, add 1-2 "ustun_diag" or "doira_diag" slides. Chart and "stat_karta" numbers ONLY from well-known official sources: the "manba" field is REQUIRED (e.g. "World Bank, 2022"). Without exact data do not make a chart — use a "royxat"/"bosqichlar"/"taqqoslash" slide instead. Never invent numbers.\n'
                f'- 1 "jadval_slayd" or "taqqoslash" slide (the table may be qualitative).\n'
                f'- FORBIDDEN: *, **, #, @, `, _, ~, Markdown formats.\n'
                f'- FORBIDDEN: "Presenter:", "Author:", "Date:", authorship/date.\n'
@@ -17517,27 +17523,22 @@ _KURS_GURUH_TXT = {
 }
 
 
-_KURS_CAP = {
-    "uz": "\n\n📄 ~{bet} bet • {j} ta jadval • {r} ta rasm",
-    "ru": "\n\n📄 ~{bet} стр. • таблиц: {j} • рисунков: {r}",
-    "en": "\n\n📄 ~{bet} pages • {j} tables • {r} figures",
-}
+_KURS_CAP = {"uz": "\n\n📄 Hajmi: <b>{bet} bet</b>", "ru": "\n\n📄 Объём: <b>{bet} стр.</b>",
+             "en": "\n\n📄 Length: <b>{bet} pages</b>"}
 
 
 def _kurs_caption_info(cid: int, gd) -> str:
     try:
-        if not isinstance(gd, dict) or gd.get("v") != 2:
+        if not isinstance(gd, dict) or gd.get("v") != 2 or not gd.get("bet"):
             return ""
         til = holat.get(cid, {}).get("til", "uz")
-        matn = " ".join(r.get("matn", "") for k, v in gd.items() if re.fullmatch(r"bob\d+_data", k)
-                        for r in v.get("rejalar", []))
-        return _KURS_CAP.get(til, _KURS_CAP["uz"]).format(
-            bet=gd.get("bet", "?"), j=matn.count("[JADVAL:"), r=matn.count("[GRAFIK:"))
+        return _KURS_CAP.get(til, _KURS_CAP["uz"]).format(bet=gd["bet"])
     except Exception:
         return ""
 
 
 def _kurs_hajm_menu(cid: int):
+    holat.setdefault(cid, {}).pop("qadam", None)      # oldingi xizmatning qadami qolib ketmasin
     til = holat.get(cid, {}).get("til", "uz")
     t = _KURS_HAJM_BTN.get(til, _KURS_HAJM_BTN["uz"])
     kb = InlineKeyboardMarkup(row_width=1)
@@ -18080,7 +18081,7 @@ _QTALAB_TXT = {
            "• hudud yoki tashkilot (masalan: Samarqand viloyati, 21-maktab)\n\n"
            "Matn yozing yoki Word/PDF/rasm yuboring. Talab bo'lmasa — «⏭ O'tkazib yuborish».\n\n"
            "ℹ️ AI siz bermagan raqam va manbalarni o'ylab topmaydi: ma'lumot berilmasa, "
-           "raqamlar faqat taniqli manbalardan yoki «taxminiy» belgisi bilan yoziladi."),
+           "raqamlar faqat taniqli rasmiy manbalardan, manbasi bilan yoziladi."),
     "ru": ("📝 <b>Дополнительные требования</b> (необязательно)\n\n"
            "Чтобы работа получилась именно такой, как вы ждёте, можно отправить:\n"
            "• требования преподавателя — пункты плана, объём, на что сделать акцент\n"
@@ -18089,7 +18090,7 @@ _QTALAB_TXT = {
            "• регион или организацию (например: Самаркандская область, школа №21)\n\n"
            "Напишите текст или отправьте Word/PDF/фото. Если требований нет — «⏭ Пропустить».\n\n"
            "ℹ️ ИИ не выдумывает цифры и источники: без ваших данных цифры берутся только из известных "
-           "источников или помечаются как «примерные»."),
+           "официальных источников с указанием источника."),
     "en": ("📝 <b>Extra requirements</b> (optional)\n\n"
            "To get exactly what you expect, you can send:\n"
            "• your teacher's requirements — outline points, length, what to focus on\n"
@@ -18098,7 +18099,7 @@ _QTALAB_TXT = {
            "• region or organisation (e.g. Samarkand region, School No. 21)\n\n"
            "Type it or send a Word/PDF/photo. No requirements? Tap «⏭ Skip».\n\n"
            "ℹ️ The AI won't invent numbers or sources: without your data, figures come only from well-known "
-           "sources or are marked as approximate."),
+           "official sources, with the source stated."),
 }
 _QTALAB_SKIP = {"uz": "⏭ O'tkazib yuborish", "ru": "⏭ Пропустить", "en": "⏭ Skip"}
 _QTALAB_OK = {"uz": "✅ Talablar qabul qilindi — hujjat shu asosda tayyorlanadi.",
@@ -18107,22 +18108,6 @@ _QTALAB_OK = {"uz": "✅ Talablar qabul qilindi — hujjat shu asosda tayyorlana
 _QTALAB_BAD = {"uz": "⚠️ Talablarni matn, Word (.docx), PDF yoki rasm ko'rinishida yuboring yoki «O'tkazib yuborish» ni bosing.",
                "ru": "⚠️ Отправьте требования текстом, Word (.docx), PDF или фото, либо нажмите «Пропустить».",
                "en": "⚠️ Send the requirements as text, Word (.docx), PDF or a photo, or tap «Skip»."}
-
-
-# Tayyor hujjat xabariga manbalarni tekshirish eslatmasi (AI ham xato qilishi mumkin)
-_TEKSHIR_ESLATMA = {
-    "uz": "\n\n🔎 <i>Topshirishdan oldin raqamlar va adabiyotlarni tekshirib oling (Google Scholar, lex.uz, stat.uz). "
-          "«Taxminiy» deb belgilangan ma'lumotlarni o'zingiznikiga almashtiring.</i>",
-    "ru": "\n\n🔎 <i>Перед сдачей проверьте цифры и источники (Google Scholar, официальные сайты). "
-          "Данные с пометкой «примерные» замените своими.</i>",
-    "en": "\n\n🔎 <i>Before submitting, double-check the numbers and references (Google Scholar, official sites). "
-          "Replace anything marked “approximate” with your own data.</i>",
-}
-for _tl, _note in _TEKSHIR_ESLATMA.items():
-    for _k in ("done_doc", "done_ppt", "done_maqola", "done_tezis", "referat_tayor"):
-        _d = I18N.get(_tl, {})
-        if _k in _d and "🔎" not in _d[_k]:
-            _d[_k] = _d[_k].rstrip("\n") + _note
 
 
 def _qtalab_kalit(cid, tur) -> str:
@@ -20617,6 +20602,41 @@ xizmatlar_yangi.register(bot, _NS(
 ))
 xizmatlar_qoshimcha.register(bot)
 
+
+# ── Marketing: haftasiga 2 marta xizmatlar haqida post (marketing.py) ──
+def _mk_til(uid: int) -> str:
+    t = holat.get(uid, {}).get("til") or users_db.get("user_til", {}).get(str(uid)) or "uz"
+    return t if t in ("uz", "ru", "en") else "uz"
+
+
+def _mk_open_service(call, key: str):
+    """Post ostidagi «Sinab ko'rish» — xizmatni xuddi menyu tugmasi bosilgandek ochadi."""
+    import copy as _copy
+    cid = call.message.chat.id
+    til = _mk_til(cid)
+    if not holat.get(cid, {}).get("til"):
+        update_holat(cid, "til", til)
+    if key == "kabinet":
+        _show_kabinet(cid)
+        return
+    label = xizmatlar_yangi.BTN.get(til, {}).get(key) or I18N.get(til, I18N["uz"]).get(f"btn_{key}")
+    if not label:
+        bot.send_message(cid, tx(cid, "yangi"), reply_markup=main_kb(cid), parse_mode="HTML")
+        return
+    m = _copy.copy(call.message)
+    m.text = label
+    m.from_user = call.from_user
+    m.content_type = "text"
+    h_tur(m)
+
+
+marketing.setup(
+    bot=bot, get_db=lambda: users_db, db_lock=USERS_DB_LOCK, mark_dirty=_mark_dirty, narx=DOC_NARX,
+    til_of=_mk_til, open_service=_mk_open_service, admin_id=ADMIN_ID, tz=pytz.timezone("Asia/Tashkent"),
+    ref_bonus=REFERRAL_BONUS, xush_bonus=XUSH_BONUS,
+)
+marketing.register(bot)
+
 # ═══════════════════════════════════════════════
 # NOMA'LUM XABARLAR
 # ═══════════════════════════════════════════════
@@ -20803,6 +20823,7 @@ def setup_bot_commands():
     BotCommand("obuna",   "Oylik obuna haqida ma'lumot"),
     BotCommand("promo",   "Promokod kiritish"),    
     BotCommand("lang",    "Tilni o'zgartirish"),
+    BotCommand("xabarlar", "Foydali xabarlarni yoqish / o'chirish"),
 ]
     try:
         bot.set_my_commands(commands)
@@ -20824,6 +20845,7 @@ def setup_bot_commands():
             BotCommand("getdb",        "Bazani yuklab olish"),
             BotCommand("loaddb",       "Bazani botga yuklash (users.json)"),
             BotCommand("aistat",       "AI token sarfi va limitlar"),
+            BotCommand("marketing",    "Avtomatik postlar: statistika / test / yubor"),
         ]
         bot.set_my_commands(admin_cmds, scope=BotCommandScopeChat(ADMIN_ID))
         log.info(f"✅ Admin menyusi o'rnatildi (ADMIN_ID={ADMIN_ID}).")
@@ -20862,6 +20884,7 @@ if __name__ == "__main__":
     holat_tozalash_thread_ishga_tushir()
     obuna_tekshir_va_eslatma()      # Obuna muddatlarini kuzatadi
     onboarding_xabar_yuborish()     # Onboarding xabarlar
+    marketing.start()               # Haftada 2 marta xizmatlar haqida foydali post
  
     log.info("✅ Obuna va onboarding threadlar ishga tushdi.")
     log.info("✅ Yangi xizmatlar: /addob /obstat /broadcast")
