@@ -178,6 +178,11 @@ def paginate(blocks: list, start_page: int = 1, trace: list | None = None) -> tu
         b = blocks[i]
         if b.get("pbb") and (pg.y > 0 or pg.fn > 0):
             new_page()
+        if b["k"] == "titul":                        # titul varag'i — butun 1-bet
+            pages[i] = num
+            pg.y = PAGE_H
+            i += 1
+            continue
         if b["k"] == "tbl":
             pages[i] = num
             hdr = _row_h(b, b["cols"])

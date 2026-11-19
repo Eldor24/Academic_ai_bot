@@ -1,5 +1,15 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 13.3-versiya (19.11.2026) — kurs ishi titul varag'i OTM namunasi bo'yicha
+- 📄 Titul OTM namunasi bo'yicha qayta tuzildi: vazirlik, universitet, chapda fakultet va o'ngda kafedra bilan
+  «Ro'yxatga olindi №___» va sana qatorlari, «“…” KAFEDRASI», «“…” FANIDAN», KURS ISHI, MAVZU, Bajardi /
+  fakultet / guruh talabasi / Tekshirdi, taqriz va himoya jadvali (sana, imzo, baho, komissiya a'zolari), pastda shahar – yil
+- Talabaga bog'liq bo'lmagan qismlar (ro'yxatga olish raqami va sanasi, taqriz, himoya, baho, komissiya) bo'sh qoldiriladi
+- Bot qo'shimcha so'raydi: **kafedra** (o'tkazib yuborsa bo'ladi) va **shahar** — OTM nomidan aniqlangan shahar birinchi
+  turadi, 16 ta viloyat markazi tugmada yoki qo'lda yoziladi («Andijon-2026» yozilsa ham to'g'ri olinadi)
+- Rus va ingliz tillarida ham shu tuzilma (КАФЕДРА «…», ПО ДИСЦИПЛИНЕ «…», Выполнил(а), Проверил(а), Члены комиссии ...)
+- Uzun OTM yoki mavzu nomlarida titul bitta betga sig'ishi uchun oraliqlar avtomatik qisqaradi
+
 ## 13.2-versiya (19.11.2026) — kurs ishi: aniq mundarija va kafolatlangan hajm
 - 📑 **Mundarija sahifa raqamlari endi to'g'ri chiqadi — Ctrl+A / F9 bosish shart emas.** Yangi `sahifalash.py`
   hujjatni Word'dagidek qatorlarga bo'lib, sahifalarga joylab hisoblaydi (Times New Roman bilan bir xil o'lchamli

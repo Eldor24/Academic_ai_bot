@@ -9802,6 +9802,8 @@ def docx_yaratish(cid: int, otm: str, fakultet: str,
         ism=sanitize_user_input(ism, max_len=150),
         guruh=sanitize_user_input(h.get("kurs_guruh", ""), max_len=60),
         rahbar=sanitize_user_input(h.get("kurs_rahbar", ""), max_len=120),
+        kafedra=sanitize_user_input(h.get("kurs_kafedra", ""), max_len=150),
+        shahar=sanitize_user_input(h.get("kurs_shahar", ""), max_len=40),
         hajm=h.get("kurs_hajm", "standart"),
         til=til if til in ("uz", "ru", "en") else "uz",
     )
@@ -17594,7 +17596,7 @@ def cb_kurs_guruh_skip(call):
         return
     update_holat(cid, "kurs_guruh", "")
     update_holat(cid, "kurs_rahbar", "")
-    _yaratish(call.message, is_docx=True)
+    _kurs_kafedra_sora(cid)
 
 
 @bot.message_handler(func=_q("kurs_guruh"))
@@ -17613,6 +17615,103 @@ def h_kurs_guruh(msg):
     rahbar = " ".join(qatorlar[1:])[:120]
     update_holat(cid, "kurs_guruh", guruh)
     update_holat(cid, "kurs_rahbar", rahbar)
+    _kurs_kafedra_sora(cid)
+
+
+_KURS_KAF_TXT = {
+    "uz": "🏛 Titul uchun <b>kafedra</b> nomini yozing:\n<i>Masalan: O'zbek tilshunosligi kafedrasi</i>",
+    "ru": "🏛 Укажите для титульного листа <b>кафедру</b>:\n<i>Например: кафедра узбекского языкознания</i>",
+    "en": "🏛 Enter the <b>department</b> for the title page:\n<i>e.g. Department of Uzbek Linguistics</i>",
+}
+_KURS_SHAHAR_TXT = {
+    "uz": "📍 Titul pastidagi <b>shahar</b>ni tanlang (masalan «Toshkent – 2026») yoki o'zingiz yozing:",
+    "ru": "📍 Выберите <b>город</b> для нижней строки титула (например «Ташкент – 2026») или напишите свой:",
+    "en": "📍 Choose the <b>city</b> for the bottom of the title page (e.g. «Tashkent – 2026») or type your own:",
+}
+
+
+def _kurs_kafedra_sora(cid: int):
+    til = holat.get(cid, {}).get("til", "uz")
+    kb = InlineKeyboardMarkup()
+    kb.add(InlineKeyboardButton(_QTALAB_SKIP.get(til, _QTALAB_SKIP["uz"]), callback_data="kikaf_skip"))
+    update_holat(cid, "qadam", "kurs_kafedra")
+    bot.send_message(cid, _KURS_KAF_TXT.get(til, _KURS_KAF_TXT["uz"]), reply_markup=kb, parse_mode="HTML")
+
+
+@bot.callback_query_handler(func=lambda c: c.data == "kikaf_skip")
+def cb_kurs_kafedra_skip(call):
+    cid = call.message.chat.id
+    try:
+        bot.answer_callback_query(call.id)
+        bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=None)
+    except Exception:
+        pass
+    if holat.get(cid, {}).get("qadam") != "kurs_kafedra":
+        return
+    update_holat(cid, "kurs_kafedra", "")
+    _kurs_shahar_sora(cid)
+
+
+@bot.message_handler(func=_q("kurs_kafedra"))
+def h_kurs_kafedra(msg):
+    cid = msg.chat.id
+    if _is_back(msg):
+        return
+    ok, err_msg = validate_input(cid, msg.text, max_len=150, min_len=3)
+    if not ok:
+        bot.send_message(cid, err_msg, parse_mode="HTML")
+        return
+    update_holat(cid, "kurs_kafedra", msg.text.strip())
+    _kurs_shahar_sora(cid)
+
+
+def _kurs_shahar_sora(cid: int):
+    h = holat.get(cid, {})
+    til = h.get("til", "uz")
+    til = til if til in ("uz", "ru", "en") else "uz"
+    taklif = kurs_ishi.shahar_aniqla(h.get("otm", ""), til)
+    nomlar = [x[til] for x in kurs_ishi.SHAHARLAR]
+    tartib = [taklif] + [n for n in nomlar if n != taklif]
+    kb = InlineKeyboardMarkup(row_width=3)
+    kb.add(*[InlineKeyboardButton(("📍 " if i == 0 else "") + n,
+                                  callback_data=f"kish_{nomlar.index(n) if n in nomlar else 0}")
+             for i, n in enumerate(tartib)])
+    update_holat(cid, "qadam", "kurs_shahar")
+    bot.send_message(cid, _KURS_SHAHAR_TXT.get(til, _KURS_SHAHAR_TXT["uz"]), reply_markup=kb, parse_mode="HTML")
+
+
+@bot.callback_query_handler(func=lambda c: c.data.startswith("kish_"))
+def cb_kurs_shahar(call):
+    cid = call.message.chat.id
+    try:
+        bot.answer_callback_query(call.id)
+        bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=None)
+    except Exception:
+        pass
+    if holat.get(cid, {}).get("qadam") != "kurs_shahar":
+        return
+    til = holat.get(cid, {}).get("til", "uz")
+    til = til if til in ("uz", "ru", "en") else "uz"
+    try:
+        nom = kurs_ishi.SHAHARLAR[int(call.data.split("_")[1])][til]
+    except Exception:
+        nom = kurs_ishi.SHAHARLAR[0][til]
+    update_holat(cid, "kurs_shahar", nom)
+    bot.send_message(cid, f"📍 <b>{nom} – {datetime.datetime.now().year}</b>", parse_mode="HTML")
+    _yaratish(call.message, is_docx=True)
+
+
+@bot.message_handler(func=_q("kurs_shahar"))
+def h_kurs_shahar(msg):
+    cid = msg.chat.id
+    if _is_back(msg):
+        return
+    ok, err_msg = validate_input(cid, msg.text, max_len=40, min_len=2)
+    if not ok:
+        bot.send_message(cid, err_msg, parse_mode="HTML")
+        return
+    nom = re.sub(r"[\s–\-]*\d{4}\s*$", "", msg.text.strip()).strip(" -–,.")   # «Andijon-2026» → «Andijon»
+    update_holat(cid, "kurs_shahar", nom[:1].upper() + nom[1:] if nom else "")
     _yaratish(msg, is_docx=True)
 
 # ═══════════════════════════════════════════════
@@ -18335,6 +18434,8 @@ def _yaratish(msg, is_docx: bool):
                     "kurs_hajm": h.get("kurs_hajm", "standart"),
                     "kurs_guruh": h.get("kurs_guruh", ""),
                     "kurs_rahbar": h.get("kurs_rahbar", ""),
+                    "kurs_kafedra": h.get("kurs_kafedra", ""),
+                    "kurs_shahar": h.get("kurs_shahar", ""),
                     "last_doc": {
                         "tur":   "docx",
                         "mavzu": mavzu,

@@ -739,7 +739,8 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
 
     data = {
         "v": 2, "hajm": p["hajm"], "til": p["til"], "bob_soni": h["boblar"],
-        "titul": {k: p.get(k, "") for k in ("otm", "fakultet", "fan", "mavzu", "ism", "guruh", "rahbar")},
+        "titul": {k: p.get(k, "") for k in ("otm", "fakultet", "kafedra", "fan", "mavzu", "ism", "guruh", "rahbar",
+                                            "shahar")},
         "plan": {"kirish": kirish, "adabiyotlar": adab},
         "xulosa_data": {"xulosa": xulosa},
     }
@@ -1311,6 +1312,147 @@ def _chart_blocks(g: dict, num: int, til: str) -> list:
     ]
 
 
+# ═══════════════════════════════════════════════
+# TITUL VARAG'I — OTM namunasi bo'yicha (ro'yxatga olish, taqriz va komissiya qismlari bo'sh qoladi)
+# ═══════════════════════════════════════════════
+SHAHARLAR = [
+    {"uz": "Toshkent", "ru": "Ташкент", "en": "Tashkent"}, {"uz": "Samarqand", "ru": "Самарканд", "en": "Samarkand"},
+    {"uz": "Buxoro", "ru": "Бухара", "en": "Bukhara"}, {"uz": "Andijon", "ru": "Андижан", "en": "Andijan"},
+    {"uz": "Namangan", "ru": "Наманган", "en": "Namangan"}, {"uz": "Farg'ona", "ru": "Фергана", "en": "Fergana"},
+    {"uz": "Qarshi", "ru": "Карши", "en": "Karshi"}, {"uz": "Termiz", "ru": "Термез", "en": "Termez"},
+    {"uz": "Nukus", "ru": "Нукус", "en": "Nukus"}, {"uz": "Urganch", "ru": "Ургенч", "en": "Urgench"},
+    {"uz": "Jizzax", "ru": "Джизак", "en": "Jizzakh"}, {"uz": "Guliston", "ru": "Гулистан", "en": "Gulistan"},
+    {"uz": "Navoiy", "ru": "Навои", "en": "Navoi"}, {"uz": "Qo'qon", "ru": "Коканд", "en": "Kokand"},
+    {"uz": "Chirchiq", "ru": "Чирчик", "en": "Chirchik"}, {"uz": "Xiva", "ru": "Хива", "en": "Khiva"},
+]
+
+TITUL = {
+    "uz": dict(fak="fakulteti", kaf="kafedrasi", royxat="Ro'yxatga olindi №__________",
+               sana="“_____” ____________ 20___ y.", kaf_line="“{x}” KAFEDRASI", fan_line="“{x}” FANIDAN",
+               kurs="KURS ISHI", mavzu="MAVZU:", bajardi="Bajardi:", fak2="fakulteti", talaba="guruh talabasi",
+               tekshirdi="Tekshirdi:", t_top="Kurs ishi taqrizga\ntopshirilgan sana\n“____” ________ 20___ y.",
+               t_qayt="Kurs ishi taqrizdan\nqaytarilgan sana\n“____” ________ 20___ y.",
+               t_himoya="Kurs ishi himoya\nqilingan sana\n“____” ________ 20___ y.\n\nBaho “____” ________",
+               imzo="(imzo)", komissiya="Komissiya a'zolari:"),
+    "ru": dict(fak="факультет", kaf="кафедра", royxat="Зарегистрировано №__________",
+               sana="«_____» ____________ 20___ г.", kaf_line="КАФЕДРА «{x}»", fan_line="ПО ДИСЦИПЛИНЕ «{x}»",
+               kurs="КУРСОВАЯ РАБОТА", mavzu="ТЕМА:", bajardi="Выполнил(а):", fak2="факультет",
+               talaba="студент(ка) группы", tekshirdi="Проверил(а):",
+               t_top="Сдана на рецензию\n«____» ________ 20___ г.", t_qayt="Возвращена с рецензии\n«____» ________ 20___ г.",
+               t_himoya="Дата защиты\n«____» ________ 20___ г.\n\nОценка «____» ________", imzo="(подпись)",
+               komissiya="Члены комиссии:"),
+    "en": dict(fak="faculty", kaf="department", royxat="Registered №__________",
+               sana="“_____” ____________ 20___", kaf_line="DEPARTMENT OF {x}", fan_line="SUBJECT: {x}",
+               kurs="COURSE WORK", mavzu="TOPIC:", bajardi="Prepared by:", fak2="faculty", talaba="group student",
+               tekshirdi="Checked by:", t_top="Submitted for review\n“____” ________ 20___",
+               t_qayt="Returned from review\n“____” ________ 20___",
+               t_himoya="Defended on\n“____” ________ 20___\n\nGrade “____” ________", imzo="(signature)",
+               komissiya="Committee members:"),
+}
+_BLANK = "____________________"
+
+
+def _nom_tozala(x: str, sozlar: tuple) -> str:
+    """«Iqtisodiyot fakulteti» → «Iqtisodiyot» (titulda «... fakulteti» so'zi alohida turadi)."""
+    x = _clean(x or "")
+    for s in sozlar:
+        x = re.sub(rf"\s*\b{s}\b\.?$", "", x, flags=re.I)
+    return x.strip(" ,.«»\"“”")
+
+
+def _tp(cell_or_doc, text="", size=14, bold=True, align="c", sb=0, sa=0, ls=1.0, left=None, italic=False, new=True):
+    p = cell_or_doc.add_paragraph() if new else cell_or_doc.paragraphs[0]
+    f = p.paragraph_format
+    f.first_line_indent = Cm(0)
+    f.space_before, f.space_after = Pt(sb), Pt(sa)
+    f.line_spacing = ls
+    f.keep_together = True
+    if left is not None:
+        f.left_indent = Cm(left)
+    p.alignment = _AL[align]
+    if text:
+        _set_font(p.add_run(text), size, bold=bold, italic=italic)
+    return p
+
+
+def _no_borders(tbl):
+    tblPr = tbl._tbl.tblPr
+    b = OxmlElement("w:tblBorders")
+    for e in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        x = OxmlElement(f"w:{e}")
+        x.set(qn("w:val"), "nil")
+        b.append(x)
+    tblPr.append(b)
+
+
+def _render_titul(doc, t: dict, til: str):
+    lb, T = L(til), TITUL.get(til, TITUL["uz"])
+    fak = _nom_tozala(t.get("fakultet"), ("fakulteti", "fakultet", "факультет", "faculty", "faculty of"))
+    kaf = _nom_tozala(t.get("kafedra"), ("kafedrasi", "kafedra", "кафедра", "department", "department of"))
+    otm = _clean(t.get("otm") or "").upper() or "______________________________ UNIVERSITETI"
+    fan = _clean(t.get("fan") or "")
+    shahar = _clean(t.get("shahar") or "") or shahar_aniqla(t.get("otm", ""), til)
+    yil = datetime.datetime.now().year
+    uzun = len(otm) > 70 or len(t.get("mavzu") or "") > 110
+
+    _tp(doc, lb["vazirlik"], 16 if not uzun else 15, new=False if doc.paragraphs else True, sa=6)
+    _tp(doc, otm, 16 if not uzun else 15, sa=10)
+
+    # Fakultet | kafedra, ro'yxatga olish (chap va o'ng ustun)
+    tb = doc.add_table(rows=1, cols=2)
+    _no_borders(tb)
+    tb.autofit = False
+    for ci, (nom, soz) in enumerate(((fak, T["fak"]), (kaf, T["kaf"]))):
+        c = tb.rows[0].cells[ci]
+        c.width = Cm(8.25)
+        al = "l" if ci == 0 else "r"
+        _tp(c, (nom if nom else _BLANK) + f" {soz}", 14, align=al, sa=6, new=False)
+        _tp(c, T["royxat"], 14, align=al, sa=2)
+        _tp(c, T["sana"], 14, align=al)
+
+    _tp(doc, T["kaf_line"].format(x=(kaf.upper() if kaf else "_" * 28)), 16, sb=30 if not uzun else 16)
+    _tp(doc, T["fan_line"].format(x=(fan.upper() if fan else "_" * 28)), 16, sb=4)
+    _tp(doc, T["kurs"], 28, sb=40 if not uzun else 18, sa=12)
+    p = _tp(doc, "", 14, ls=1.15, sa=4)
+    _set_font(p.add_run(T["mavzu"] + " "), 14, bold=True)
+    _set_font(p.add_run((t.get("mavzu") or "").strip().upper()), 14, bold=True)
+
+    # Talaba va rahbar (o'ng tomonda)
+    guruh = _clean(t.get("guruh") or "")
+    rows = [(T["bajardi"], _clean(t.get("ism") or "") or _BLANK),
+            ("", f"{fak if fak else _BLANK} {T['fak2']}"),
+            ("", f"{guruh if guruh else '__________'} {T['talaba']}"),
+            (T["tekshirdi"], _clean(t.get("rahbar") or "") or _BLANK)]
+    for i, (lbl, val) in enumerate(rows):
+        p = _tp(doc, "", 14, align="l", left=8.0, sb=(34 if not uzun else 14) if i == 0 else 3)
+        if lbl:
+            _set_font(p.add_run(lbl + " "), 14, bold=True)
+        _set_font(p.add_run(val), 14, bold=False if lbl else True)
+
+    # Taqriz va himoya jadvali (komissiya to'ldiradi — bo'sh)
+    _tp(doc, "", 6, sb=28 if not uzun else 8)
+    tb = doc.add_table(rows=2, cols=3)
+    tb.autofit = False
+    _cell_border(tb)
+    w = (Cm(5.6), Cm(4.9), Cm(6.0))
+    cells = [[T["t_top"], "", T["t_qayt"]],
+             [T["t_himoya"], "\n".join([f"__________\n{T['imzo']}"] * 3), T["komissiya"] + "\n\n" + "\n\n".join(["__________________"] * 3)]]
+    for ri in range(2):
+        for ci in range(3):
+            c = tb.rows[ri].cells[ci]
+            c.width = w[ci]
+            lines = cells[ri][ci].split("\n")
+            for li, ln in enumerate(lines):
+                _tp(c, ln, 11, bold=False, align="c" if ci == 1 else "l", new=(li > 0))
+
+    _tp(doc, f"{shahar} – {yil}", 14, sb=40 if not uzun else 12)
+
+
+def titul_sigadimi(t: dict, til: str = "uz") -> bool:
+    """Titul bir betga sig'ishini taxminiy tekshirish (juda uzun nomlar uchun)."""
+    return len(t.get("otm") or "") < 160 and len(t.get("mavzu") or "") < 260
+
+
 def _flow(data: dict, bet_matn: str = "99") -> tuple[list, list, dict]:
     """Hujjatni abstrakt bloklarga aylantiradi. Qaytaradi: bloklar, mundarija yozuvlari, hisoblagichlar."""
     til = data.get("til", "uz")
@@ -1322,29 +1464,8 @@ def _flow(data: dict, bet_matn: str = "99") -> tuple[list, list, dict]:
         adab = [{"tur": "asosiy", "matn": re.sub(r"^\d+[\.\)]\s*", "", a)} for a in adab]
     B: list = []
 
-    # ── 1. Titul ──
-    yil = datetime.datetime.now().year
-    shahar = shahar_aniqla(t.get("otm", ""), til)
-    B.append(_P(lb["vazirlik"], bold=True, ind=0, ls=1.15, sa=12, align="c"))
-    B.append(_P((t.get("otm") or "").upper(), bold=True, ind=0, ls=1.15, sa=4, align="c"))
-    if t.get("fakultet"):
-        B.append(_P(t["fakultet"], ind=0, ls=1.15, align="c"))
-    B.append(_P(segs=[("t", lb["kurs_ishi"], True, False)], size=26, ind=0, ls=1.0, sb=150, sa=18, align="c",
-                spacing=3))
-    B.append(_P(segs=[("t", f"{lb['fan']}: ", True, False), ("t", t.get("fan", ""), False, False)],
-                ind=0, ls=1.15, sa=6, align="c"))
-    B.append(_P(segs=[("t", f"{lb['mavzu']}: ", True, False), ("t", f"«{(t.get('mavzu') or '').strip()}»", True, False)],
-                ind=0, ls=1.15, align="c"))
-    sb = 120
-    for lbl, val in ((lb["bajardi"], t.get("ism")), (lb["guruh"], t.get("guruh")),
-                     (lb["rahbar"], t.get("rahbar") or "____________________")):
-        if val:
-            B.append(_P(segs=[("t", f"{lbl}: ", True, False), ("t", val, False, False)], ind=0, left=8.0, ls=1.15,
-                        sb=sb, align="l"))
-            sb = 4
-    extra = max(0, math.ceil(len(t.get("otm") or "") / 60) - 1) + max(0, math.ceil(len(t.get("mavzu") or "") / 60) - 2) \
-        + max(0, math.ceil(len(t.get("fakultet") or "") / 70) - 1) + max(0, math.ceil(len(t.get("rahbar") or "") / 28) - 1)
-    B.append(_P(f"{shahar} – {yil}", bold=True, ind=0, ls=1.0, sb=max(20, 150 - 22 * extra), align="c"))
+    # ── 1. Titul (alohida chiziladi, 1-bet) ──
+    B.append({"k": "titul", "t": t, "til": til})
 
     # ── 2. Mundarija ──
     B.append(_P(lb["mundarija"], bold=True, ind=0, sa=12, align="c", pbb=True))
@@ -1474,6 +1595,9 @@ def _render(B: list, meta: dict, page_of: list, out_path: str, title: str = "", 
     toc_pages = [page_of[h] for h in meta["heads"]]
     ti = 0
     for b in B:
+        if b["k"] == "titul":
+            _render_titul(doc, b["t"], b["til"])
+            continue
         if b["k"] == "tbl":
             _render_table(doc, b)
             continue
