@@ -2461,10 +2461,23 @@ def give_welcome_bonus(uid: int) -> bool:
 
 
 def process_referral(new_uid: int, ref_uid: int) -> bool:
-    """Referral bonus. Thread-xavfsiz."""
+    """Referral bonus. Thread-xavfsiz.
+    Bonus faqat: taklif qilgan odam botda ro'yxatdan o'tgan, bloklanmagan, o'zini o'zi taklif qilmagan
+    va yangi foydalanuvchi hali hech kimning referali bo'lmagan bo'lsa beriladi."""
+    if new_uid == ref_uid or ref_uid <= 0:
+        return False
+    try:
+        if is_banned(ref_uid):
+            return False
+    except Exception:
+        pass
     ref_key = str(ref_uid)
     changed = False
     with USERS_DB_LOCK:
+        if ref_uid not in users_db.get("all_users", []):
+            return False
+        if any(new_uid in v for v in users_db["referrals"].values() if isinstance(v, list)):
+            return False
         if ref_key not in users_db["referrals"]:
             users_db["referrals"][ref_key] = []
         if new_uid not in users_db["referrals"][ref_key] and new_uid != ref_uid:
@@ -12222,6 +12235,20 @@ def gipoteza_daraja_kb(cid: int):
 def kabinet_kb(cid: int):
     """Kabinet ichida til o'zgartirish tugmasi"""
     m = InlineKeyboardMarkup(row_width=1)
+    # Referal havolani bir bosishda do'stlarga yuborish
+    try:
+        from urllib.parse import quote
+        til = holat.get(cid, {}).get("til", "uz")
+        link = f"https://t.me/{get_bot_username()}?start=ref_{cid}"
+        matn = {
+            "uz": "🎓 Taqdimot, kurs ishi, referat, test va boshqa hujjatlarni AI bilan tayyorlaydigan bot. Shu havola orqali kiring:",
+            "ru": "🎓 Бот, который с помощью ИИ готовит презентации, курсовые, рефераты, тесты и другие работы. Заходи по ссылке:",
+            "en": "🎓 An AI bot that prepares presentations, term papers, essays, tests and more. Join via this link:",
+        }.get(til, "")
+        btn = {"uz": "📤 Do'stlarga ulashish", "ru": "📤 Поделиться с друзьями", "en": "📤 Share with friends"}.get(til, "📤")
+        m.add(InlineKeyboardButton(btn, url=f"https://t.me/share/url?url={quote(link, safe='')}&text={quote(matn, safe='')}"))
+    except Exception:
+        pass
     m.add(
         InlineKeyboardButton(tx(cid, "btn_til_ozgartir"), callback_data="kabinet_til_ozgartir")
     )
@@ -12324,8 +12351,10 @@ def get_bot_username() -> str:
             _BOT_USERNAME_CACHE = bot.get_me().username
             log.info(f"Bot username keshlandi: @{_BOT_USERNAME_CACHE}")
         except Exception as e:
+            # Xato bo'lsa keshlamaymiz — keyingi safar qayta uriniladi.
+            # (Avval "AcademicBot" — BOSHQA botning nomi — abadiy keshlanib, referal havolalar noto'g'ri chiqardi)
             log.warning(f"bot.get_me() xatosi: {e}")
-            _BOT_USERNAME_CACHE = "AcademicBot"
+            return (os.getenv("BOT_USERNAME") or "").lstrip("@") or "TheAcademicAIBot"
     return _BOT_USERNAME_CACHE
 # ═══════════════════════════════════════════════
 # /obuna — OBUNA MA'LUMOTI HANDLER (BUG TUZATISH)
