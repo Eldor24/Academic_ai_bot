@@ -11,3 +11,4 @@ Pillow>=10.0
 pytz>=2024.1
 reportlab>=4.0        # Esse PDF hisobot va sertifikat
 edge-tts>=6.1          # Matnni ovozga (Microsoft Edge ovozlari, bepul)
+matplotlib>=3.8

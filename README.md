@@ -33,12 +33,13 @@ Narxlar tangada (🪙). Admin uchun barcha xizmatlar bepul.
 
 | Xizmat | Narx | Natija |
 |---|---|---|
-| 📊 Taqdimot | 6 | 15 ta shablondan biri bilan PowerPoint taqdimot: diagrammalar, jadvallar, bosqichlar |
-| 📄 Kurs ishi | 12 | 28–30 betlik Word hujjat: titul, mundarija, boblar, adabiyotlar |
-| 🗂 Mustaqil ish | 7 | Titul, reja, 3 bob, xulosa va **GOST / APA / MLA** formatidagi adabiyotlar ro'yxati |
-| 📑 Referat | 6 | 8–12 betlik referat |
-| 📰 Maqola | 9 | IMRAD formatidagi ilmiy maqola |
-| 📋 Tezis | 6 | Konferensiya tezisi |
+| 📊 Taqdimot | 5 | 15 ta shablondan biri bilan PowerPoint taqdimot: diagrammalar, jadvallar, bosqichlar |
+| 📄 Kurs ishi (standart) | 12 | 25–30 bet: kirish, 2 bob (6 paragraf), xulosa va takliflar, 15–20 adabiyot |
+| 📚 Kurs ishi (kengaytirilgan) | 25 | 65–70 bet: kirish, 3 bob (9 paragraf), ko'proq jadval va grafiklar, 25–35 adabiyot |
+| 🗂 Mustaqil ish | 6 | Titul, reja, 3 bob, xulosa va **GOST / APA / MLA** formatidagi adabiyotlar ro'yxati |
+| 📑 Referat | 5 | 8–12 betlik referat |
+| 📰 Maqola | 8 | IMRAD formatidagi ilmiy maqola |
+| 📋 Tezis | 5 | Konferensiya tezisi |
 
 ### O'qish va imtihon
 
@@ -67,7 +68,7 @@ Narxlar tangada (🪙). Admin uchun barcha xizmatlar bepul.
 |---|---|---|
 | 🎤 Nutq | 4 | Ma'ruza/chiqish uchun nutq matni |
 | 🗣 Spiker nutqi | 4 | Taqdimot faylidan spiker matni |
-| 💼 CV | 9 | Rezyume (Word) |
+| 💼 CV | 6 | Rezyume (Word) |
 | 🔬 Gipoteza | 5 | Ilmiy muammo va gipoteza shakllantirish |
 | 🧑‍🏫 Sinf sardori | 4 | Yig'ilish bayonnomasi, tadbir ssenariysi, tarbiyaviy soat rejasi, e'lon/taklifnoma, faoliyat hisoboti |
 
@@ -113,6 +114,7 @@ Ilmiy tadqiqot, Kosmos neon, Jurnal, Startap pitch, Okean, Sinf doskasi.
 Academic_ai_bot/
 ├── bot.py                # Asosiy bot: menyu, xizmatlar, tanga tizimi, admin panel
 ├── pptx_themes.py        # Taqdimot shablonlari dvigateli (15 shablon)
+├── kurs_ishi.py          # Kurs ishi generatori (25–30 / 65–70 bet, mundarija, snoska, jadval, grafik)
 ├── xizmatlar_yangi.py    # Konspekt, Imtihonga tayyorlov, Masala yechish, Mustaqil ish
 ├── xizmatlar_qoshimcha.py# Test markazi, Ovozli matn, Sinf sardori
 ├── ai_budget.py          # AI token sarfini nazorat qilish va limitlar
@@ -184,9 +186,13 @@ python bot.py
 
 ## 🪙 Tanga tizimi
 
+- Paketlar: **10 tanga — 9 900**, **25 — 19 900**, **60 — 39 900**, **150 — 89 900 so'm** (`TANGA_NARXLARI`).
+  Xizmat narxlari `DOC_NARX` da; to'ldirish oynasidagi narxlar ro'yxati shu ikkisidan avtomatik tuziladi.
+- Birinchi to'lovga **+20%** bonus tanga (`/topupconfirm` o'zi qo'shadi, `BIRINCHI_TOLOV_BONUS`).
 - Yangi foydalanuvchiga **5 tanga** bonus beriladi.
-- Do'stini taklif qilgan foydalanuvchiga **10 tanga** beriladi. Faqat yangi foydalanuvchilar hisobga olinadi.
-- Haftalik bonus, promokodlar va obunalar (Lite, Standart) bor.
+- Do'stini taklif qilgan foydalanuvchiga **10 tanga** beriladi (kabinetda «📤 Do'stlarga ulashish» tugmasi). Faqat yangi foydalanuvchilar hisobga olinadi.
+- Har dushanba balansi 5 tangadan kam bo'lganlar 5 tangagacha to'ldiriladi (`HAFTALIK_BONUS`).
+- Promokodlar va obunalar: Lite 19 900 so'm → 35 tanga, Standart 34 900 so'm → 75 tanga.
 - Hisob karta orqali to'ldiriladi, to'lovni admin `/topupconfirm` bilan tasdiqlaydi.
 - AI xato bersa, sarflangan tangalar avtomatik qaytariladi.
 - "💳 Tanga to'ldirish" va "👤 Kabinet" da tangangiz qaysi xizmatdan nechta olishga yetishi ko'rsatiladi.

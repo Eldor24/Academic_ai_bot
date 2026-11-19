@@ -1,5 +1,43 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 13-versiya (19.11.2026) — yangi kurs ishi va arzon narxlar
+### 📄 Kurs ishi to'liq qayta yozildi (`kurs_ishi.py`)
+| | 📘 Standart | 📚 Kengaytirilgan |
+|---|---|---|
+| Hajm | 25–30 bet | 65–70 bet |
+| Tuzilma | Kirish, 2 bob × 3 paragraf | Kirish, 3 bob × 3 paragraf (nazariy, tahliliy, takomillashtirish) |
+| Adabiyotlar | 15–20 | 25–35 |
+| Narx | 12 🪙 | 25 🪙 (~20–25 ming so'm) |
+
+- Bo'limga kirganda avval **hajm tanlanadi**, narx tugmada ko'rinadi; tanga yetmasa darhol aytiladi
+- Titulga **guruh va ilmiy rahbar** qo'shildi (ixtiyoriy); shahar OTM nomidan aniqlanadi (Samarqand, Buxoro...)
+- OTM talablari: A4, Times New Roman 14, 1,5 interval, hoshiyalar 3/1,5/2/2 sm, abzas 1,25 sm, titulda raqam yo'q
+- **Mundarija** — Word'ning haqiqiy mundarija maydoni (Heading 1/2), sahifa raqamlari hisoblab qo'yiladi (LibreOffice bilan tekshirilgan farq ±1 bet) va Word ochilganda yangilanadi
+- **Kirish**: dolzarblik, o'rganilganlik darajasi, maqsad, vazifalar ro'yxati, obyekt, predmet, metodlar, amaliy ahamiyat, tuzilish (bob, paragraf, jadval, rasm soni va bet hajmi avtomatik)
+- **Snoskalar** — haqiqiy Word snoskalari, har biri adabiyotlar ro'yxatidagi manbaga ishora qiladi (ro'yxatda yo'q manbaga havola o'chiriladi)
+- **Jadvallar** — «1-jadval», nomi, manbasi, sarlavha qatori har sahifada takrorlanadi; manbasiz raqamli jadval olib tashlanadi
+- **Grafiklar** — faqat manbasi ko'rsatilgan raqamlar bilan (chiziq, ustun, doira), «1-rasm» va manba bilan
+- **Xulosa va takliflar** (raqamlangan takliflar), **adabiyotlar** GOST tartibida: normativ hujjatlar → asosiy → xorijiy → internet
+- Har paragraf alohida yoziladi (3 ta parallel oqim) — hajm kafolatlanadi: qisqa chiqsa avtomatik davom ettiriladi
+- Eski kurs ishi tahrirlash tizimi yangi formatda ham ishlaydi (III bob paragraflari ham)
+- Xarajat: 70 betlik ish DeepSeek'da ~0,05–0,1 $ (~1 000 so'm) — narxdan ko'p marta arzon
+
+### 💰 Narxlar talabalar uchun arzonlashtirildi
+| Paket | Avval | Endi |
+|---|---|---|
+| Kirish | 5 tanga — 9 900 | **10 tanga — 9 900** |
+| Ommabop | 15 tanga — 24 900 | **25 tanga — 19 900** |
+| O'rta | 35 tanga — 52 000 | **60 tanga — 39 900** |
+| Katta | 70 tanga — 95 000 | **150 tanga — 89 900** |
+
+- 1 tanga 1 980 so'mdan **990–599 so'm**ga tushdi (taqdimot ~4 000 so'm, kurs ishi ~9 600 so'm)
+- Xizmatlar: taqdimot 6→5, referat 6→5, tezis 6→5, maqola 9→8, mustaqil ish 7→6, CV 9→6
+- 🎁 Birinchi to'lovga +20% bonus tanga (avtomatik)
+- 📅 Har dushanba balans 3 emas, **5** tangagacha to'ldiriladi — haftasiga 1 taqdimot tekin
+- Obunalar: Lite 19 900 → 35 tanga (avval 25), Standart 34 900 → 75 tanga (avval 50)
+- To'ldirish oynasi narxlarni sozlamalardan avtomatik chiqaradi (endi bir joyda o'zgartiriladi), so'mdagi narxi ham ko'rsatiladi
+- Eslatma xabarlaridagi noto'g'ri va'dalar tuzatildi: «Esse tekshirish — BEPUL» (aslida 5 tanga) va «ikkalangiz ham 10 tanga olasiz» (aslida do'stga 5 tanga)
+
 ## 12.3-versiya (19.11.2026) — referal tizimi
 - Referal ishlaydi: do'st havola orqali birinchi marta kirsa, taklif qilgan odamga **+10 tanga** va xabar boradi (bazada 23 kishi orqali 118 ta referal hisoblangan)
 - 🐞 Telegram vaqtincha javob bermasa, bot nomi o'rniga **boshqa botning nomi** («AcademicBot») doimiy saqlanib, barcha referal havolalar shu botga olib borardi — tuzatildi

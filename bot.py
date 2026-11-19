@@ -122,13 +122,13 @@ CARD_OWNER  = os.getenv("CARD_OWNER",  "@endlessscience")
 
 # ── TANGA NARXLARI (so'm) ──
 TANGA_NARXLARI = {
-    # paket_hajmi: narx_som
-    # Kichik paket qo'shildi (impulse buy uchun)
-    5:   9_900,    # YANGI: "9,900 so'm" — arzon kirish
-    15:  24_900,   # YANGI: eng ko'p sotiladigan bo'ladi
-    35:  52_000,   # 50 o'rniga 35 — tezroq to'lanadi
-    70:  95_000,   # 100 o'rniga 70 — psixologik chegara pastroq
+    # paket_hajmi: narx_som — 2026-noyabr: talabalar uchun ~2 baravar arzonlashtirildi
+    10:  9_900,    # kirish paketi (990 so'm/tanga)
+    25:  19_900,   # ⭐ eng ommabop (796 so'm/tanga, −20%)
+    60:  39_900,   # 665 so'm/tanga, −33%
+    150: 89_900,   # 🔥 eng foydali — guruh/sardorlar uchun (599 so'm/tanga, −40%)
 }
+BIRINCHI_TOLOV_BONUS = 20   # % — birinchi to'lovga qo'shimcha tanga (/topupconfirm avtomatik qo'shadi)
 # === ESSE FONT SETUP ===
 import os as _os
 
@@ -211,18 +211,19 @@ _esse_reg_fonts()
 # ── HUJJAT NARXLARI (tangada) ──
 DOC_NARX = {
     # ── ASOSIY HUJJATLAR (qiymat yuqori — narx biroz ko'tarildi) ──
-    "docx":        12,   # 10 → 12  | Kurs ishi 28-30 bet, freelancer 80k+ so'm
-    "pptx":         6,   # 5  → 6   | Taqdimot 10-15 slayd
-    "maqola":       9,   # 7  → 9   | IMRAD format, ilmiy qiymat
-    "tezis":        6,   # 5  → 6   | Konferensiya tezisi
+    "docx":        12,   # Kurs ishi — standart, 25-30 bet
+    "docx_katta":  25,   # Kurs ishi — kengaytirilgan, 65-70 bet (3 bob, ~1,5 baravar ko'p jadval/grafik)
+    "pptx":         5,   # 5  → 6   | Taqdimot 10-15 slayd
+    "maqola":       8,   # 7  → 9   | IMRAD format, ilmiy qiymat
+    "tezis":        5,   # 5  → 6   | Konferensiya tezisi
     # ── QOʻSHIMCHA XIZMATLAR ──
     "qayta":        3,   # o'zgarmadi — raqobat ko'p
     "tarjima":      3,   # o'zgarmadi — raqobat ko'p
     "grammatika":   2,   # o'zgarmadi — kichik xizmat
-    "referat":      6,   # 5  → 6   | 8-12 bet
+    "referat":      5,   # 5  → 6   | 8-12 bet
     "test":         4,   # 3  → 4   | Test generatori
     "nutq":         4,   # 3  → 4   | Teleprompter nutq
-    "cv":           9,   # 5  → 9   | Ish topishga yordam = yuqori qiymat
+    "cv":           6,   # 5  → 9   | Ish topishga yordam = yuqori qiymat
     "antiplagiat":  5,   # 4  → 5   | Kerakli, muqobil yo'q
     "original":     6,   # 5  → 6   | Originalizatsiya
     "gipoteza":     5,   # 4  → 5   | Ilmiy muammo
@@ -232,7 +233,7 @@ DOC_NARX = {
     "konspekt":     4,   # Konspekt (matn/fayl/rasmdan)
     "imtihon":      5,   # Imtihonga tayyorlov to'plami + Telegram test
     "masala":       3,   # Masala yechish (rasmdan)
-    "mustaqil":     7,   # Mustaqil ish + APA/GOST/MLA adabiyotlar
+    "mustaqil":     6,   # Mustaqil ish + APA/GOST/MLA adabiyotlar
     # ── FOYDALANUVCHI TAKLIFLARI (xizmatlar_qoshimcha.py) ──
     "ftest":        4,   # Test markazi: materialdan test (PDF, Word, rasm) + namuna asosida
     "quiz":         2,   # Test markazi: tayyor testni Telegram quizga aylantirish
@@ -240,6 +241,7 @@ DOC_NARX = {
     "sardor":       4,   # Sinf sardori: bayonnoma, ssenariy, tarbiyaviy soat...
 }
 XUSH_BONUS     = 5
+HAFTALIK_BONUS = 5    # har dushanba balansi shundan kam bo'lganlarga shu miqdorgacha to'ldiriladi (1 taqdimot)
 REFERRAL_BONUS = 10
 MAX_RETRIES    = 3
 
@@ -351,6 +353,7 @@ bot = telebot.TeleBot(BOT_TOKEN, parse_mode=None)
 # ═══════════════════════════════════════════════
 import security
 import pptx_themes
+import kurs_ishi
 import xizmatlar_yangi
 import xizmatlar_qoshimcha
 from security import sanitize_long_text, UnsafeFileError
@@ -685,7 +688,7 @@ OBUNA_PAKETLARI = {
         "nomi_ru":    "📗 Lite Подписка",
         "nomi_en":    "📗 Lite Subscription",
         "narx":       19_900,          # so'm/oy
-        "tanga":      25,              # har oyda beriladigan tanga
+        "tanga":      35,              # har oyda beriladigan tanga
         "chegirma":   10,              # % chegirma (hali ishlatilmaydi, kelajak uchun)
         "kunlar":     30,
     },
@@ -694,7 +697,7 @@ OBUNA_PAKETLARI = {
         "nomi_ru":    "📘 Стандарт Подписка",
         "nomi_en":    "📘 Standard Subscription",
         "narx":       34_900,          # so'm/oy
-        "tanga":      50,              # har oyda beriladigan tanga
+        "tanga":      75,              # har oyda beriladigan tanga
         "chegirma":   15,
         "kunlar":     30,
     },
@@ -1178,27 +1181,27 @@ ONBOARDING_XABARLARI = {
         "uz": (
             "🎓 <b>Botdan maksimal foyda olish uchun:</b>\\n\\n"
             "📌 Eng ko'p ishlatiladigan xizmatlar:\\n"
-            "1️⃣ <b>Kurs ishi</b> — 12 tanga (28-30 bet Word)\\n"
-            "2️⃣ <b>Taqdimot</b> — 6 tanga (10-15 slayd PPTX)\\n"
-            "3️⃣ <b>Maqola</b> — 9 tanga (IMRAD format)\\n\\n"
+            "1️⃣ <b>Kurs ishi</b> — 12 tanga (25-30 bet) yoki 25 tanga (65-70 bet)\\n"
+            "2️⃣ <b>Taqdimot</b> — 5 tanga (15 ta shablon)\\n"
+            "3️⃣ <b>Maqola</b> — 8 tanga (IMRAD format)\\n\\n"
             "💡 Hozir sizda tanga bor. Sinab ko'ring! 👇\\n"
             "👉 /start — asosiy menyu"
         ),
         "ru": (
             "🎓 <b>Как получить максимум от бота:</b>\\n\\n"
             "📌 Самые популярные услуги:\\n"
-            "1️⃣ <b>Курсовая работа</b> — 12 монет (28-30 стр.)\\n"
-            "2️⃣ <b>Презентация</b> — 6 монет (10-15 слайдов)\\n"
-            "3️⃣ <b>Статья</b> — 9 монет (IMRAD формат)\\n\\n"
+            "1️⃣ <b>Курсовая работа</b> — 12 монет (25-30 стр.) или 25 монет (65-70 стр.)\\n"
+            "2️⃣ <b>Презентация</b> — 5 монет (15 шаблонов)\\n"
+            "3️⃣ <b>Статья</b> — 8 монет (IMRAD формат)\\n\\n"
             "💡 У вас есть монеты. Попробуйте! 👇\\n"
             "👉 /start — главное меню"
         ),
         "en": (
             "🎓 <b>Get the most out of this bot:</b>\\n\\n"
             "📌 Most popular services:\\n"
-            "1️⃣ <b>Course work</b> — 12 coins (28-30 pages Word)\\n"
-            "2️⃣ <b>Presentation</b> — 6 coins (10-15 slides PPTX)\\n"
-            "3️⃣ <b>Article</b> — 9 coins (IMRAD format)\\n\\n"
+            "1️⃣ <b>Course work</b> — 12 coins (25-30 pages) or 25 coins (65-70 pages)\\n"
+            "2️⃣ <b>Presentation</b> — 5 coins (15 templates)\\n"
+            "3️⃣ <b>Article</b> — 8 coins (IMRAD format)\\n\\n"
             "💡 You have coins. Try it out! 👇\\n"
             "👉 /start — main menu"
         ),
@@ -1211,7 +1214,7 @@ ONBOARDING_XABARLARI = {
             "• Shaxsiy ma'lumot + foto\\n"
             "• Ta'lim va tajriba\\n"
             "• Ko'nikmalar va tillar\\n\\n"
-            "⏱️ 5 daqiqada tayyor | 9 tanga\\n"
+            "⏱️ 5 daqiqada tayyor | 6 tanga\\n"
             "👉 /start → Resume/CV"
         ),
         "ru": (
@@ -1221,7 +1224,7 @@ ONBOARDING_XABARLARI = {
             "• Личные данные + фото\\n"
             "• Образование и опыт\\n"
             "• Навыки и языки\\n\\n"
-            "⏱️ Готово за 5 минут | 9 монет\\n"
+            "⏱️ Готово за 5 минут | 6 монет\\n"
             "👉 /start → Resume/CV"
         ),
         "en": (
@@ -1231,7 +1234,7 @@ ONBOARDING_XABARLARI = {
             "• Personal info + photo\\n"
             "• Education and experience\\n"
             "• Skills and languages\\n\\n"
-            "⏱️ Ready in 5 minutes | 9 coins\\n"
+            "⏱️ Ready in 5 minutes | 6 coins\\n"
             "👉 /start → Resume/CV"
         ),
     },
@@ -1244,7 +1247,7 @@ ONBOARDING_XABARLARI = {
             "• Diagramma va jadvallar\\n"
             "• Barcha ma'lumotlar to'ldirilgan\\n\\n"
             "💡 Freelancer: 50,000-150,000 so'm\\n"
-            "🤖 Bot: 6 tanga ≈ 9,960 so'm\\n\\n"
+            "🤖 Bot: 5 tanga — atigi ~4 000 so'm\\n\\n"
             "👉 /start → Taqdimot (PPTX)"
         ),
         "ru": (
@@ -1255,7 +1258,7 @@ ONBOARDING_XABARLARI = {
             "• Диаграммы и таблицы\\n"
             "• Все данные заполнены\\n\\n"
             "💡 Фрилансер: 50,000-150,000 сум\\n"
-            "🤖 Бот: 6 монет ≈ 9,960 сум\\n\\n"
+            "🤖 Бот: 5 монет — всего ~4 000 сум\\n\\n"
             "👉 /start → Презентация (PPTX)"
         ),
         "en": (
@@ -1266,7 +1269,7 @@ ONBOARDING_XABARLARI = {
             "• Charts and tables\\n"
             "• All content filled in\\n\\n"
             "💡 Freelancer: 50,000-150,000 UZS\\n"
-            "🤖 Bot: 6 coins ≈ 9,960 UZS\\n\\n"
+            "🤖 Bot: 5 coins — only ~4,000 UZS\\n\\n"
             "👉 /start → Presentation (PPTX)"
         ),
     },
@@ -1307,8 +1310,8 @@ ONBOARDING_XABARLARI = {
     },
     5: {
         "uz": (
-            "📝 <b>Esse tekshirish — BEPUL!</b>\\n\\n"
-            "Agar esse yozayotgan bo'lsangiz, botda <b>bepul esse tekshirish</b> bor.\\n\\n"
+            "📝 <b>Esse tekshirish — atigi 5 tanga!</b>\\n\\n"
+            "Agar esse yozayotgan bo'lsangiz, botda <b>esse tekshirish</b> bor.\\n\\n"
             "✅ Nima ko'rsatadi:\\n"
             "• Milliy sertifikat mezonlari bo'yicha ball (75 dan)\\n"
             "• Kirish, tezis, xulosa tahlili\\n"
@@ -1317,8 +1320,8 @@ ONBOARDING_XABARLARI = {
             "👉 /start → Esse Tekshirish"
         ),
         "ru": (
-            "📝 <b>Проверка эссе — БЕСПЛАТНО!</b>\\n\\n"
-            "Если пишете эссе, в боте есть <b>бесплатная проверка</b>.\\n\\n"
+            "📝 <b>Проверка эссе — всего 5 монет!</b>\\n\\n"
+            "Если пишете эссе, в боте есть <b>проверка эссе</b>.\\n\\n"
             "✅ Что показывает:\\n"
             "• Балл по критериям Нац. сертификата (из 75)\\n"
             "• Анализ структуры и тезиса\\n"
@@ -1327,7 +1330,7 @@ ONBOARDING_XABARLARI = {
             "👉 /start → Проверка эссе"
         ),
         "en": (
-            "📝 <b>Essay check — FREE!</b>\\n\\n"
+            "📝 <b>Essay check — only 5 coins!</b>\\n\\n"
             "If you're writing an essay, the bot has a <b>free check</b>.\\n\\n"
             "✅ What it shows:\\n"
             "• Score by National Certificate criteria (out of 75)\\n"
@@ -1340,21 +1343,21 @@ ONBOARDING_XABARLARI = {
     6: {
         "uz": (
             "🎁 <b>Do'stingizni taklif qiling!</b>\\n\\n"
-            "Har bir do'stingiz uchun <b>ikkalangiz ham 10 tangadan</b> olasiz!\\n\\n"
-            "📊 Misol: 5 do'st = 50 tanga = 3 ta kurs ishi BEPUL\\n\\n"
+            "Har bir do'stingiz uchun sizga <b>+10 tanga</b>, do'stingizga <b>+5 tanga</b> sovg'a!\\n\\n"
+            "📊 Misol: 5 do'st = 50 tanga = 10 ta taqdimot yoki 4 ta kurs ishi BEPUL\\n\\n"
             "📨 Referral linkinngizni /kabinet dan oling\\n"
             "yoki /start → 👤 Kabinet → Referral link"
         ),
         "ru": (
             "🎁 <b>Пригласите друга!</b>\\n\\n"
-            "За каждого друга <b>вы оба получите по 10 монет</b>!\\n\\n"
-            "📊 Пример: 5 друзей = 50 монет = 3 курсовых БЕСПЛАТНО\\n\\n"
+            "За каждого друга вам <b>+10 монет</b>, другу — <b>+5 монет</b> в подарок!\\n\\n"
+            "📊 Пример: 5 друзей = 50 монет = 10 презентаций или 4 курсовые БЕСПЛАТНО\\n\\n"
             "📨 Получите реферальную ссылку через /kabinet"
         ),
         "en": (
             "🎁 <b>Invite a friend!</b>\\n\\n"
-            "For each friend, <b>both of you get 10 coins</b>!\\n\\n"
-            "📊 Example: 5 friends = 50 coins = 3 course works FREE\\n\\n"
+            "For each friend you get <b>+10 coins</b> and your friend gets <b>+5 coins</b>!\\n\\n"
+            "📊 Example: 5 friends = 50 coins = 10 presentations or 4 course works FREE\\n\\n"
             "📨 Get your referral link via /kabinet"
         ),
     },
@@ -1363,24 +1366,24 @@ ONBOARDING_XABARLARI = {
             "💳 <b>Oylik obuna haqida bilasizmi?</b>\\n\\n"
             "Har oy alohida tanga sotib olish o'rniga:\\n\\n"
             "📗 <b>Lite Obuna</b> — 19,900 so'm/oy\\n"
-            "   → 25 tanga (24,900 so'm qiymat) + ustuvorlik\\n\\n"
+            "   → har oy 35 tanga + ustuvorlik\\n\\n"
             "📘 <b>Standart Obuna</b> — 34,900 so'm/oy\\n"
-            "   → 50 tanga (52,000 so'm qiymat!) + 15% chegirma\\n\\n"
-            "💡 Standartta 17,100 so'm tejaysiz!\\n\\n"
+            "   → har oy 75 tanga (1 tanga ~465 so'm!)\\n\\n"
+            "💡 Paketlarga nisbatan 40% gacha arzon!\\n\\n"
             "Obuna uchun: 👤 @endlessscience"
         ),
         "ru": (
             "💳 <b>Знаете об ежемесячной подписке?</b>\\n\\n"
             "Вместо покупки монет каждый месяц:\\n\\n"
-            "📗 <b>Lite</b> — 19,900 сум/мес → 25 монет + приоритет\\n\\n"
-            "📘 <b>Стандарт</b> — 34,900 сум/мес → 50 монет (экономия 17,100 сум!)\\n\\n"
+            "📗 <b>Lite</b> — 19,900 сум/мес → 35 монет + приоритет\\n\\n"
+            "📘 <b>Стандарт</b> — 34,900 сум/мес → 75 монет (до 40% дешевле пакетов!)\\n\\n"
             "Для подписки: 👤 @endlessscience"
         ),
         "en": (
             "💳 <b>Did you know about monthly subscription?</b>\\n\\n"
             "Instead of buying coins each month:\\n\\n"
-            "📗 <b>Lite</b> — 19,900 UZS/mo → 25 coins + priority\\n\\n"
-            "📘 <b>Standard</b> — 34,900 UZS/mo → 50 coins (save 17,100 UZS!)\\n\\n"
+            "📗 <b>Lite</b> — 19,900 UZS/mo → 35 coins + priority\\n\\n"
+            "📘 <b>Standard</b> — 34,900 UZS/mo → 75 coins (up to 40% cheaper than packs!)\\n\\n"
             "For subscription: 👤 @endlessscience"
         ),
     },
@@ -2235,9 +2238,9 @@ def haftalik_bonus_tarqatish():
                         uid_str = str(uid)
                         joriy_tanga = users_db.setdefault("coins", {}).get(uid_str, 0)
                         
-                        # Faqat 3 tangadan kam bo'lganlarni 3 gacha to'ldiramiz
-                        if joriy_tanga < 3:
-                            users_db["coins"][uid_str] = 3
+                        # Tangasi HAFTALIK_BONUS dan kam bo'lganlarni shu miqdorgacha to'ldiramiz
+                        if joriy_tanga < HAFTALIK_BONUS:
+                            users_db["coins"][uid_str] = HAFTALIK_BONUS
                             yangilangan_uidlar.append(uid)
                     
                     save_users(users_db) # O'zgarishlarni diskka yozamiz
@@ -2250,9 +2253,9 @@ def haftalik_bonus_tarqatish():
                             til = holat.get(uid, {}).get("til", "uz")
                         
                         xabar = {
-                            "uz": "🎉 <b>Yangi hafta boshlandi!</b>\n\n🎁 Sizning haftalik bepul limitingiz yangilandi. Hozirgi balansingiz: <b>3 tanga 🪙</b>\n\n<i>Akademik hujjatlaringizni yaratishni davom eting!</i>",
-                            "ru": "🎉 <b>Началась новая неделя!</b>\n\n🎁 Ваш еженедельный бесплатный лимит обновлен. Текущий баланс: <b>3 монеты 🪙</b>\n\n<i>Продолжайте создавать свои академические документы!</i>",
-                            "en": "🎉 <b>A new week has started!</b>\n\n🎁 Your weekly free limit has been refreshed. Current balance: <b>3 coins 🪙</b>\n\n<i>Continue creating your academic documents!</i>"
+                            "uz": f"🎉 <b>Yangi hafta boshlandi!</b>\n\n🎁 Sizning haftalik bepul limitingiz yangilandi. Hozirgi balansingiz: <b>{HAFTALIK_BONUS} tanga 🪙</b> — bitta taqdimotga yetadi!\n\n<i>Akademik hujjatlaringizni yaratishni davom eting!</i>",
+                            "ru": f"🎉 <b>Началась новая неделя!</b>\n\n🎁 Ваш еженедельный бесплатный лимит обновлен. Текущий баланс: <b>{HAFTALIK_BONUS} монет 🪙</b> — хватит на презентацию!\n\n<i>Продолжайте создавать свои академические документы!</i>",
+                            "en": f"🎉 <b>A new week has started!</b>\n\n🎁 Your weekly free limit has been refreshed. Current balance: <b>{HAFTALIK_BONUS} coins 🪙</b> — enough for a presentation!\n\n<i>Continue creating your academic documents!</i>"
                         }.get(til, "🎉 <b>Yangi hafta boshlandi!</b> Hisobingiz 3 tangaga to'ldirildi.")
                         
                         bot.send_message(uid, xabar, parse_mode="HTML")
@@ -2838,46 +2841,6 @@ I18N = {
             "💳 Tanga to'ldirish uchun:\n"
             "• <b>«💳 Tanga to'ldirish»</b> tugmasini bosing\n"   # ← aniqroq
             "• yoki /topup buyrug'ini yuboring"                    # ← yangi
-        ),
-        "topup_msg": (
-            "💳 <b>Tanga hisobini to'ldirish</b>\n\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n"
-            "💰 <b>Narxlar:</b>\n"
-            "• 5 tanga = 9,900 so'm\n"
-            "• 15 tanga = 24,900 so'm\n"
-            "• 35 tanga = 52,000 so'm\n"
-            "• 70 tanga = 95,000 so'm\n\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n"
-            "📦 <b>Hujjat narxlari:</b>\n"
-            "• 📄 Kurs ishi (Word) = 12 tanga\n"
-            "• 📊 Taqdimot (PPTX) = 6 tanga\n"
-            "• 📝 Maqola (IMRAD) = 9 tanga\n"
-            "• 📋 Tezis = 6 tanga\n"
-            "• 🔄 Qayta yozish = 3 tanga\n"
-            "• 🌍 Ilmiy Tarjimon = 3 tanga\n"
-            "• ✍️ Akademik Tahrir = 2 tanga\n"
-            "• 📑 Referat (Word) = 6 tanga\n"
-            "• 📝 Test Savollari = 4 tanga\n"
-            "• 🎤 Nutq Tayyorla = 4 tanga\n"
-            "• 💼 Resume / CV = 9 tanga\n"
-            "• ✨ Matnni Originallashtirish = 6 tanga\n"
-            "• 🔬 Ilmiy Muammo = 5 tanga\n"
-            "• 📽 Taqdimot Nutqi = 4 tanga\n"
-            "• 📝 Esse Tekshirish = 5 tanga\n"
-            "• 📚 Konspekt = 4 tanga 🆕\n"
-            "• 🎯 Imtihonga tayyorlov = 5 tanga 🆕\n"
-            "• 🧮 Masala yechish = 3 tanga 🆕\n"
-            "• 🗂 Mustaqil ish (Word) = 7 tanga 🆕\n"
-            "• 🧠 Test markazi: materialdan test = 4 tanga 🆕\n"
-            "• 🎯 Tayyor testni quizga aylantirish = 2 tanga 🆕\n"
-            "• 🎧 Ovozli matn (MP3) = 2 tanga 🆕\n"
-            "• 🧑‍🏫 Sinf sardori hujjatlari = 4 tanga 🆕\n\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n"
-            "💳 <b>To'lov karta:</b>\n"
-            "<code>{card}</code>\n"
-            "👤 <b>Egasi:</b> {owner}\n\n"
-            "📸 <b>To'lovdan so'ng:</b>\n"
-            "Miqdorni va chek skrinshotini @endlessscience ga yuboring."
         ),
         "kabinet_msg": (
             "👤 <b>Shaxsiy Kabinet</b>\n\n"
@@ -3492,46 +3455,6 @@ I18N = {
             "💳 Для пополнения баланса:\n"
             "• нажмите кнопку <b>«💳 Пополнить монеты»</b>\n"
             "• или отправьте команду /topup"    
-        ),
-        "topup_msg": (
-            "💳 <b>Пополнение баланса монет</b>\n\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n"
-            "💰 <b>Тарифы:</b>\n"
-            "• 5 монет = 9,900 сум\n"
-            "• 15 монет = 24,900 сум\n"
-            "• 35 монет = 52,000 сум\n"
-            "• 70 монет = 95,000 сум\n\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n"
-            "📦 <b>Стоимость документов:</b>\n"
-            "• 📄 Курсовая работа (Word) = 12 монет\n"
-            "• 📊 Презентация (PPTX) = 6 монет\n"
-            "• 📝 Статья (IMRAD) = 9 монет\n"
-            "• 📋 Тезис = 6 монет\n"
-            "• 🔄 Перефразировать = 3 монеты\n"
-            "• 🌍 Научный Переводчик = 3 монеты\n"
-            "• ✍️ Грамматика = 2 монеты\n"
-            "• 📑 Реферат (Word) = 6 монет\n"
-            "• 📝 Тест Вопросы = 4 монеты\n"
-            "• 🎤 Создать Речь = 4 монеты\n"
-            "• 💼 Резюме / CV = 9 монет\n"
-            "• ✨ Оригинализация текста = 6 монет\n"
-            "• 🔬 Науч. Проблема = 5 монет\n"
-            "• 📽 Речь для презентации = 4 монеты\n"
-            "• 📝 Проверка эссе = 5 монет\n"
-            "• 📚 Конспект = 4 монеты 🆕\n"
-            "• 🎯 Подготовка к экзамену = 5 монет 🆕\n"
-            "• 🧮 Решение задач = 3 монеты 🆕\n"
-            "• 🗂 Самостоятельная работа (Word) = 7 монет 🆕\n"
-            "• 🧠 Тест-центр: тест по материалу = 4 монеты 🆕\n"
-            "• 🎯 Готовый тест → квиз = 2 монеты 🆕\n"
-            "• 🎧 Текст в аудио (MP3) = 2 монеты 🆕\n"
-            "• 🧑‍🏫 Документы старосты = 4 монеты 🆕\n\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n"
-            "💳 <b>Карта для оплаты:</b>\n"
-            "<code>{card}</code>\n"
-            "👤 <b>Владелец:</b> {owner}\n\n"
-            "📸 <b>После оплаты:</b>\n"
-            "Отправьте сумму и скриншот чека @endlessscience."
         ),
         "kabinet_msg": (
             "👤 <b>Личный Кабинет</b>\n\n"
@@ -4217,46 +4140,6 @@ I18N = {
             "💳 To top up your balance:\n"
             "• press the <b>«💳 Buy Coins»</b> button\n"
             "• or send the /topup command"
-        ),
-        "topup_msg": (
-            "💳 <b>Coin Balance Top-Up</b>\n\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n"
-            "💰 <b>Pricing:</b>\n"
-            "• 5 coins = 9,900 UZS\n"
-            "• 15 coins = 24,900 UZS\n"
-            "• 35 coins = 52,000 UZS\n"
-            "• 70 coins = 95,000 UZS\n\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n"
-            "📦 <b>Document prices:</b>\n"
-            "• 📄 Course Work (Word) = 12 coins\n"
-            "• 📊 Presentation (PPTX) = 6 coins\n"
-            "• 📝 Article (IMRAD) = 9 coins\n"
-            "• 📋 Thesis = 6 coins\n"
-            "• 🔄 Paraphrase = 3 coins\n"
-            "• 🌍 Academic Translator = 3 coins\n"
-            "• ✍️ Grammar Check = 2 coins\n"
-            "• 📑 Essay / Report = 6 coins\n"
-            "• 📝 Quiz Generator = 4 coins\n"
-            "• 🎤 Create My Speech = 4 coins\n"
-            "• 💼 Resume / CV = 9 coins\n"
-            "• ✨ Originalize Text = 6 coins\n"
-            "• 🔬 Research Problem = 5 coins\n"
-            "• 📽 Presentation Speech = 4 coins\n"
-            "• 📝 Essay Check = 5 coins\n"
-            "• 📚 Summary notes = 4 coins 🆕\n"
-            "• 🎯 Exam prep = 5 coins 🆕\n"
-            "• 🧮 Problem solver = 3 coins 🆕\n"
-            "• 🗂 Independent work (Word) = 7 coins 🆕\n"
-            "• 🧠 Quiz center: quiz from material = 4 coins 🆕\n"
-            "• 🎯 Ready test → quiz = 2 coins 🆕\n"
-            "• 🎧 Text to audio (MP3) = 2 coins 🆕\n"
-            "• 🧑‍🏫 Class leader documents = 4 coins 🆕\n\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n"
-            "💳 <b>Payment card:</b>\n"
-            "<code>{card}</code>\n"
-            "👤 <b>Owner:</b> {owner}\n\n"
-            "📸 <b>After payment:</b>\n"
-            "Send the amount and receipt screenshot to @endlessscience."
         ),
         "kabinet_msg": (
             "👤 <b>Personal Profile</b>\n\n"
@@ -5368,6 +5251,8 @@ def tahrir_qism_aniqla(cid: int, so_rov: str, doc_data: dict) -> dict | None:
             available.append(f"bob1_reja_{i} — {r.get('sarlavha','')}")
         for i, r in enumerate(b2):
             available.append(f"bob2_reja_{i} — {r.get('sarlavha','')}")
+        for i, r in enumerate(bob_list.get("bob3_data", {}).get("rejalar", [])):
+            available.append(f"bob3_reja_{i} — {r.get('sarlavha','')}")
         available.append("xulosa — Xulosa va takliflar")
     elif doc_tur == "maqola":
         available = [
@@ -5550,14 +5435,15 @@ JSON:
                 new_data["data"]["bob1_data"]["rejalar"][idx] = result
 
     # ── DOCX: BOB2 REJA_N ──
-    elif qism_kodi.startswith("bob2_reja_") and doc_tur == "docx":
+    elif re.match(r"bob[23]_reja_\d+$", qism_kodi) and doc_tur == "docx":
         idx = int(qism_kodi.split("_")[-1])
-        rejalar = inner.get("bob2_data", {}).get("rejalar", [])
+        _bk = qism_kodi.split("_")[0] + "_data"
+        rejalar = inner.get(_bk, {}).get("rejalar", [])
         if idx < len(rejalar):
             old_reja = rejalar[idx]
             jadval_fmt = "[JADVAL:Sarlavha\\nUstun1|Ustun2|Ustun3\\nQ1|Q2|Q3\\nQ4|Q5|Q6]"
             prompt = f"""Sen professor. {lang_cmd}
-'{mavzu}' kurs ishi II Bobi uchun '{old_reja.get("sarlavha","")}' rejasinint MATNINI qayta yoz.
+'{mavzu}' kurs ishi {'III' if _bk.startswith('bob3') else 'II'} Bobi uchun '{old_reja.get("sarlavha","")}' rejasinint MATNINI qayta yoz.
 Foydalanuvchi talabi: "{so_rov}"
 
 HAJM: 8-9 abzas, har biri 120-130 so'z. [ABZAS] bilan ajrat.
@@ -5571,7 +5457,9 @@ JSON:
 {{"sarlavha":"{old_reja.get('sarlavha','')}","matn":"1-abzas...[7] [ABZAS] [JADVAL:Jadval sarlavhasi\\nUstun1|Ustun2|Ustun3\\nQ|Q|Q\\nQ|Q|Q\\nQ|Q|Q] [ABZAS] 2-abzas... [ABZAS] 3-abzas...[8] [ABZAS] 4-abzas... [ABZAS] 5-abzas... [ABZAS] 6-abzas... [ABZAS] 7-abzas...","snoskalar":{{"7":"[Haqiqatda mavjud manba: Muallif. Nomi. Shahar: Nashriyot, yil]","8":"[Haqiqatda mavjud manba]"}}}}"""
             result = call_ai_json(prompt, "Bob2 reja tahrir", max_tokens=4000)
             if result:
-                new_data["data"]["bob2_data"]["rejalar"][idx] = result
+                if not str(result.get("sarlavha", "")).strip():
+                    result["sarlavha"] = old_reja.get("sarlavha", "")
+                new_data["data"][_bk]["rejalar"][idx] = result
 
     # ── DOCX: XULOSA ──
     elif qism_kodi == "xulosa" and doc_tur == "docx":
@@ -5715,6 +5603,12 @@ def _docx_dan_data(cid: int, params: dict, inner: dict,
     til = holat.get(cid, {}).get("til", "uz")
     if progress:
         progress.update(tx(cid, "prog_format"))
+
+    if inner.get("v") == 2:                      # yangi kurs ishi formati (kurs_ishi.py)
+        fname = kurs_ishi._out_name(params.get("mavzu") or inner.get("titul", {}).get("mavzu", ""))
+        info = kurs_ishi.build_docx(inner, fname)
+        inner["bet"] = info.get("bet", inner.get("bet"))
+        return fname
 
     plan = inner.get("plan", {})
     bob1_data = inner.get("bob1_data", {})
@@ -9887,892 +9781,32 @@ def slayd_nutq_yaratish(cid: int, mavzu_nom: str, json_data: list, til: str) -> 
 # ═══ YANGI KOD ═══════════════════════════════════════════════════════
 def docx_yaratish(cid: int, otm: str, fakultet: str,
                    fan: str, mavzu: str, ism: str,
-                   progress: "ProgressUpdater | None" = None) -> str:
-    # ✅ SANITIZATSIYA
-    mavzu    = sanitize_user_input(mavzu,    max_len=300)
-    ism      = sanitize_user_input(ism,      max_len=150)
-    otm      = sanitize_user_input(otm,      max_len=200)
-    fakultet = sanitize_user_input(fakultet, max_len=200)
-    fan      = sanitize_user_input(fan,      max_len=200)
-
-    til = holat[cid].get("til", "uz")
-    lang_cmd = {
-        "uz": (
-            "O'ZBEK tilida yoz. Barcha sarlavha va matnlar FAQAT o'zbek tilida. "
-            "Tizim kodlari [ABZAS] va [JADVAL:] ni HECH QACHON o'zgartirma! "
-            "Terminlar: 'bob', 'reja', 'kirish', 'xulosa', 'jadval', 'vazifa', 'maqsad'."
-        ),
-        "ru": (
-            "Пиши ТОЛЬКО на РУССКОМ языке. Системные теги [ABZAS] и [JADVAL:] НЕ ИЗМЕНЯЙ! "
-            "Обязательные термины: 'bob'→'Глава', 'reja'→'Раздел', 'kirish'→'Введение', "
-            "'xulosa'→'Заключение', 'jadval'→'Таблица', 'vazifa'→'Задача', "
-            "'maqsad'→'Цель', 'dolzarb'→'Актуальность', 'metod'→'Методология', "
-            "'tuzilish'→'Структура', 'predmet'→'Предмет', 'obyekt'→'Объект'."
-        ),
-        "en": (
-            "Write ONLY in ENGLISH. System tags [ABZAS] and [JADVAL:] must NOT be translated! "
-            "Mandatory terms: 'bob'→'Chapter', 'reja'→'Section', 'kirish'→'Introduction', "
-            "'xulosa'→'Conclusion', 'jadval'→'Table', 'vazifa'→'Task', "
-            "'maqsad'→'Objective', 'dolzarb'→'Relevance', 'metod'→'Methodology', "
-            "'tuzilish'→'Structure', 'predmet'→'Subject', 'obyekt'→'Object'."
-        ),
-    }[til]
-    snoska_note = {
-    "uz": (
-        "SNOSKALAR QOIDASI: Har bir rejada FAQAT 2 ta raqamli havola bo'lsin. "
-        "Havola formati: [1], [2], [3] — faqat raqam, kvadrat qavs ichida. "
-        "Kirish va Xulosa qismlariga HECH QACHON snoska qo'yma! "
-        "Snoskalar FAQAT I Bob va II Bob matnlarida bo'lsin."
-    ),
-    "ru": (
-        "ПРАВИЛО СНОСОК: В каждом разделе ТОЛЬКО 2 числовые ссылки. "
-        "Формат ссылки: [1], [2], [3] — только цифра в квадратных скобках. "
-        "В Введении и Заключении сноски КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНЫ! "
-        "Сноски ТОЛЬКО в тексте Главы I и Главы II."
-    ),
-    "en": (
-        "FOOTNOTE RULES: ONLY 2 numbered references per section. "
-        "Reference format: [1], [2], [3] — only a number in square brackets. "
-        "NEVER add footnotes to Introduction or Conclusion! "
-        "Footnotes are allowed ONLY in Chapter I and Chapter II."
-    ),
-}[til]
-
-# ─── TIL BO'YICHA KIRISH FIELD TAVSIFLARI ───────────────────────────
-    til_hints = {
-        "uz": {
-            "dolzarb": (
-                "200-230 so'z. Jahon va O'zbekiston kontekstida mavzuning dolzarbligi, "
-                "zamonaviy tadqiqotlar, iqtisodiy va ijtimoiy ahamiyati batafsil yoritilsin."
-            ),
-            "maqsad": (
-                "180-200 so'z. Tadqiqotning asosiy maqsadi aniq va to'liq bayon etilsin. "
-                "Maqsadga erishish yo'llari va kutilayotgan natijalar ko'rsatilsin."
-            ),
-            "obyekt": (
-                "150-180 so'z. Tadqiqot obyekti — o'rganilayotgan hodisa, jarayon yoki ob'yekt "
-                "batafsil tavsiflansin. Obyektning chegaralari va xususiyatlari ko'rsatilsin."
-            ),
-            "predmet": (
-                "150-180 so'z. Tadqiqot predmeti — obyektning o'rganilayotgan muayyan tomoni "
-                "yoki jihati aniq belgilansin va asoslansin."
-            ),
-            "vazifa": (
-                "1-vazifa: ...; 2-vazifa: ...; 3-vazifa: ...; 4-vazifa: ...; 5-vazifa: ... "
-                "(jami 150-180 so'z, har vazifa to'liq bir gap bo'lsin)"
-            ),
-            "metod": (
-                "180-200 so'z. Ishlatilgan ilmiy metodlar (tahlil, sintez, qiyosiy, statistik), "
-                "tadqiqot usullari va asosiy foydalanilgan adabiyotlar ro'yxati."
-            ),
-            "tuzilish": (
-                "150-170 so'z. Kurs ishi tuzilishi: kirish, I bob va uning rejalari, "
-                "II bob va uning rejalari, xulosa va takliflar, adabiyotlar ro'yxati."
-            ),
-            "bob1_nomi_misol": "I BOB. [Nazariy asos — aniq bob nomi]",
-            "bob2_nomi_misol": "II BOB. [Amaliy tahlil — aniq bob nomi]",
-        },
-        "ru": {
-            "dolzarb": (
-                "200-230 слов. Актуальность темы в мировом и национальном контексте: "
-                "современные исследования, экономическая и социальная значимость, "
-                "текущее состояние проблемы и необходимость её решения."
-            ),
-            "maqsad": (
-                "180-200 слов. Чётко сформулировать цель исследования. "
-                "Указать пути достижения цели и ожидаемые результаты."
-            ),
-            "obyekt": (
-                "150-180 слов. Описать объект исследования — явление, процесс или предмет. "
-                "Указать границы и характеристики объекта."
-            ),
-            "predmet": (
-                "150-180 слов. Определить предмет исследования — конкретный аспект объекта, "
-                "который изучается. Обосновать выбор."
-            ),
-            "vazifa": (
-                "Задача 1: ...; Задача 2: ...; Задача 3: ...; Задача 4: ...; Задача 5: ... "
-                "(всего 150-180 слов, каждая задача — полное предложение)"
-            ),
-            "metod": (
-                "180-200 слов. Использованные научные методы (анализ, синтез, сравнительный, "
-                "статистический и др.), подходы исследования и список основных источников."
-            ),
-            "tuzilish": (
-                "150-170 слов. Структура курсовой работы: введение, Глава I и её разделы, "
-                "Глава II и её разделы, заключение и рекомендации, список литературы."
-            ),
-            "bob1_nomi_misol": "ГЛАВА I. [Теоретические основы — конкретное название]",
-            "bob2_nomi_misol": "ГЛАВА II. [Практический анализ — конкретное название]",
-        },
-        "en": {
-            "dolzarb": (
-                "200-230 words. Relevance of the topic in global and national context: "
-                "current research trends, economic and social significance, "
-                "current state of the problem and necessity for its solution."
-            ),
-            "maqsad": (
-                "180-200 words. Clearly state the research objective. "
-                "Indicate the ways to achieve it and expected outcomes."
-            ),
-            "obyekt": (
-                "150-180 words. Describe the object of research — the phenomenon, process or entity. "
-                "Specify the scope and characteristics of the object."
-            ),
-            "predmet": (
-                "150-180 words. Define the subject of research — the specific aspect of the object "
-                "being studied. Justify the choice."
-            ),
-            "vazifa": (
-                "Task 1: ...; Task 2: ...; Task 3: ...; Task 4: ...; Task 5: ... "
-                "(total 150-180 words, each task as a complete sentence)"
-            ),
-            "metod": (
-                "180-200 words. Scientific methods used (analysis, synthesis, comparative, "
-                "statistical etc.), research approaches and list of key sources."
-            ),
-            "tuzilish": (
-                "150-170 words. Structure of the course work: introduction, Chapter I and its sections, "
-                "Chapter II and its sections, conclusion and recommendations, list of references."
-            ),
-            "bob1_nomi_misol": "CHAPTER I. [Theoretical Foundations — specific title]",
-            "bob2_nomi_misol": "CHAPTER II. [Practical Analysis — specific title]",
-        },
-    }[til]
-
-    # ─── TIL BO'YICHA BOB STRUKTURASI KO'RSATMALARI ──────────────────────
-    struct_hints = {
-        "uz": {
-            "hajm_bob1":  "HAJM: Har reja uchun 10-11 abzas, har abzas 110-120 so'z (jami ~3500 so'z). Har abzas TO'LIQ bo'lsin!",
-            "hajm_bob2":  "HAJM: Har reja uchun 10-11 abzas, har abzas 110-120 so'z (jami ~3500 so'z). Har abzas TO'LIQ bo'lsin!",
-            "jadval1":    "JADVAL: I bobda jadval SHART EMAS (bu nazariy qism).",
-            "jadval2":    "JADVALLAR: Har rejada 1 ta jadval. Raqamli jadval faqat taniqli rasmiy manba asosida (jadval nomida 'Manba: ..., yil'); ishonchli raqam bilmasang — raqamsiz qiyosiy/tasnif jadvali tuz. RAQAM TO'QIMA.",
-            "abzas":      "ABZASLAR: Faqat [ABZAS] belgisi bilan ajrat. JSON ichida Enter YO'Q!",
-            "uslub1":     "AKADEMIK USLUB: Chuqur tahlil, olimlar qarashlari, tarixiy rivojlanish, nazariy asoslar.",
-            "uslub2":     "AKADEMIK USLUB: Manbasi ko'rsatilgan statistik ma'lumotlar, jadvallar tahlili, tendensiyalar, amaliy tavsiyalar. O'tkazilmagan so'rovnoma yoki tajriba natijasini yozma.",
-            "izchil1":    'IZCHILLIK: Rejalar bir-birini mantiqan davom ettirsin. "Ushbu tezisda" dema — bu KURS ISHI!',
-            "izchil2":    "IZCHILLIK: I bobdagi nazariy asoslarni amaliy misollar bilan davom ettir.",
-            "taqiq":      'TAQIQLANGAN: Markdown, JSON ichida Enter, "...". FAQAT sof JSON.',
-            "xulosa_sarlavha": "XULOSA VA TAKLIFLAR yoz",
-            "xulosa_hajm": "HAJM: 700-800 so'z. 7-8 ta abzas [ABZAS] bilan.",
-            "xulosa_mazmun": (
-                "- 1-2-abzas: I bob nazariy xulosalari (har biri 100 so'z)\n"
-                "- 3-4-abzas: II bob amaliy natijalari (har biri 100 so'z)\n"
-                "- 5-abzas: Asosiy ilmiy yangiliklar (100 so'z)\n"
-                "- 6-7-abzas: 4-5 ta aniq amaliy tavsiyalar (jami 150 so'z)\n"
-                "- 8-abzas: Kelajak tadqiqot yo'nalishlari (100 so'z)"
-            ),
-            "xulosa_uslub": 'USLUB: Ilmiy, aniq. "Xulosa qilib shuni aytish mumkinki..." emas, balki aniq xulosalar.',
-            "snoska_misol_1": "[Haqiqatda mavjud manba: Familiya I.O. Asar nomi. Shahar: Nashriyot, yil. B.__]",
-            "snoska_misol_2": "[Haqiqatda mavjud manba: Familiya I.O. Asar nomi. Shahar: Nashriyot, yil. B.__]",
-            "snoska_misol_3": "[Haqiqatda mavjud manba: Familiya I.O. Asar nomi. Shahar: Nashriyot, yil. B.__]",
-            "snoska_misol_4": "[Haqiqatda mavjud manba: Familiya I.O. Asar nomi. Shahar: Nashriyot, yil. B.__]",
-        },
-        "ru": {
-            "hajm_bob1":  "ОБЪЁМ: 10-11 абзацев на каждый раздел, каждый абзац 110-120 слов (~3500 слов всего). Каждый абзац должен быть ПОЛНЫМ!",
-            "hajm_bob2":  "ОБЪЁМ: 10-11 абзацев на каждый раздел, каждый абзац 110-120 слов (~3500 слов всего). Каждый абзац ПОЛНЫЙ!",
-            "jadval1":    "ТАБЛИЦЫ: В Главе I таблицы НЕ ОБЯЗАТЕЛЬНЫ (теоретическая часть).",
-            "jadval2":    "ТАБЛИЦЫ: В каждом разделе 1 таблица. Числовая — только по известному официальному источнику (в названии 'Источник: ..., год'); если надёжных цифр нет — сравнительная/классификационная таблица без цифр. НЕ ВЫДУМЫВАЙ ЧИСЛА.",
-            "abzas":      "АБЗАЦЫ: Разделяй ТОЛЬКО знаком [ABZAS]. Реальные переносы строк в JSON ЗАПРЕЩЕНЫ!",
-            "uslub1":     "АКАДЕМИЧЕСКИЙ СТИЛЬ: Глубокий анализ, взгляды учёных, историческое развитие, теоретические основы.",
-            "uslub2":     "АКАДЕМИЧЕСКИЙ СТИЛЬ: Статистика с указанием источника, анализ таблиц, тенденции, практические рекомендации. Не описывай непроведённые опросы или эксперименты.",
-            "izchil1":    'ПОСЛЕДОВАТЕЛЬНОСТЬ: Разделы должны логически продолжать друг друга. Не пиши "в данной диссертации" — это КУРСОВАЯ РАБОТА!',
-            "izchil2":    "ПОСЛЕДОВАТЕЛЬНОСТЬ: Продолжи теоретические основы Главы I практическими примерами.",
-            "taqiq":      "ЗАПРЕЩЕНО: Markdown, реальные переносы строк в JSON, '...'. ТОЛЬКО чистый JSON.",
-            "xulosa_sarlavha": "напиши ЗАКЛЮЧЕНИЕ И РЕКОМЕНДАЦИИ",
-            "xulosa_hajm": "ОБЪЁМ: 700-800 слов. 7-8 абзацев с разделителем [ABZAS].",
-            "xulosa_mazmun": (
-                "- Абзацы 1-2: Теоретические выводы Главы I (по 100 слов)\n"
-                "- Абзацы 3-4: Практические результаты Главы II (по 100 слов)\n"
-                "- Абзац 5: Основные научные результаты (100 слов)\n"
-                "- Абзацы 6-7: 4-5 конкретных практических рекомендации (150 слов)\n"
-                "- Абзац 8: Направления будущих исследований (100 слов)"
-            ),
-            "xulosa_uslub": "СТИЛЬ: Научный, конкретный. Никаких шаблонных фраз — только чёткие выводы.",
-            "snoska_misol_1": "[Реально существующий источник: Фамилия И.О. Название. Город: Издательство, год. С.__]",
-            "snoska_misol_2": "[Реально существующий источник: Фамилия И.О. Название. Город: Издательство, год. С.__]",
-            "snoska_misol_3": "[Реально существующий источник: Фамилия И.О. Название. Город: Издательство, год. С.__]",
-            "snoska_misol_4": "[Реально существующий источник: Фамилия И.О. Название. Город: Издательство, год. С.__]",
-        },
-        "en": {
-            "hajm_bob1":  "LENGTH: 10-11 paragraphs per section, each 110-120 words (~3500 words total). Each paragraph must be COMPLETE!",
-            "hajm_bob2":  "LENGTH: 10-11 paragraphs per section, each 110-120 words (~3500 words total). Each paragraph COMPLETE!",
-            "jadval1":    "TABLES: No tables required in Chapter I (theoretical section).",
-            "jadval2":    "TABLES: 1 table per section. Numeric tables only from a well-known official source (title: 'Source: ..., year'); without reliable numbers use a qualitative comparison/classification table. NEVER INVENT NUMBERS.",
-            "abzas":      "PARAGRAPHS: Separate ONLY with [ABZAS] marker. Real line breaks in JSON are FORBIDDEN!",
-            "uslub1":     "ACADEMIC STYLE: Deep analysis, scholars' perspectives, historical development, theoretical foundations.",
-            "uslub2":     "ACADEMIC STYLE: Sourced statistics, table analysis, trends, practical recommendations. Never describe surveys or experiments that were not conducted.",
-            "izchil1":    'CONSISTENCY: Sections must logically continue each other. Never write "in this thesis" — this is a COURSE WORK!',
-            "izchil2":    "CONSISTENCY: Continue the theoretical foundations of Chapter I with practical examples.",
-            "taqiq":      "FORBIDDEN: Markdown, real line breaks in JSON, '...'. PURE JSON ONLY.",
-            "xulosa_sarlavha": "write the CONCLUSION AND RECOMMENDATIONS",
-            "xulosa_hajm": "LENGTH: 700-800 words. 7-8 paragraphs with [ABZAS] separator.",
-            "xulosa_mazmun": (
-                "- Paragraphs 1-2: Theoretical conclusions of Chapter I (100 words each)\n"
-                "- Paragraphs 3-4: Practical results of Chapter II (100 words each)\n"
-                "- Paragraph 5: Main scientific findings (100 words)\n"
-                "- Paragraphs 6-7: 4-5 specific practical recommendations (150 words)\n"
-                "- Paragraph 8: Future research directions (100 words)"
-            ),
-            "xulosa_uslub": "STYLE: Scientific, specific. No template phrases — only clear conclusions.",
-            "snoska_misol_1": "[Real existing source: Surname I. Title. City: Publisher, year. P.__]",
-            "snoska_misol_2": "[Real existing source: Surname I. Title. City: Publisher, year. P.__]",
-            "snoska_misol_3": "[Real existing source: Surname I. Title. City: Publisher, year. P.__]",
-            "snoska_misol_4": "[Real existing source: Surname I. Title. City: Publisher, year. P.__]",
-        },
-    }[til]
-
-    jadval_fmt = (
-        "[JADVAL:Jadval nomi\\nUstun1|Ustun2|Ustun3\\n"
-        "Qiymat1|Qiymat2|Qiymat3\\nQiymat4|Qiymat5|Qiymat6\\n"
-        "Qiymat7|Qiymat8|Qiymat9]"
+                   progress: "ProgressUpdater | None" = None):
+    """
+    Kurs ishi (Word) — kurs_ishi.py moduli orqali.
+    Hajm (standart ~25-30 bet / kengaytirilgan ~65-70 bet), guruh va ilmiy rahbar holatdan olinadi.
+    """
+    h = holat.get(cid, {})
+    til = h.get("til", "uz")
+    p = dict(
+        otm=sanitize_user_input(otm, max_len=200),
+        fakultet=sanitize_user_input(fakultet, max_len=200),
+        fan=sanitize_user_input(fan, max_len=200),
+        mavzu=sanitize_user_input(mavzu, max_len=300),
+        ism=sanitize_user_input(ism, max_len=150),
+        guruh=sanitize_user_input(h.get("kurs_guruh", ""), max_len=60),
+        rahbar=sanitize_user_input(h.get("kurs_rahbar", ""), max_len=120),
+        hajm=h.get("kurs_hajm", "standart"),
+        til=til if til in ("uz", "ru", "en") else "uz",
     )
+    return kurs_ishi.generate(cid, p, progress)
 
-    # ══════════════════════════════════════════
-    # TIL BO'YICHA KO'RSATMALAR (YANGI QO'SHILDI)
-    # ══════════════════════════════════════════
-    
-    def _prog(text: str):
-        if progress:
-            progress.update(text)
 
-    
-    # ══════════════════════════════════════════
-    # 1-QADAM: REJA + KIRISH + ADABIYOTLAR
-    # ══════════════════════════════════════════
-    _prog(tx(cid, "prog_reja"))
-
-    # Til bo'yicha prompt sarlavhasi va taqiq ko'rsatmalari
-    _plan_txt = {
-        "uz": {
-            "intro": f"Sen tajribali akademik professor-doktor. {lang_cmd}",
-            "desc":  f"'{mavzu}' mavzusida akademik kurs ishi uchun REJA, KIRISH va ADABIYOTLAR yaratasan.",
-            "fn_hdr": "SNOSKA TAQIQI (JUDA MUHIM):",
-            "fn_r1":  "- Kirish qismidagi barcha maydonlarda [1], [2], [N] kabi havolalar MUTLAQO TAQIQLANGAN",
-            "fn_r2":  "- Adabiyotlar ro'yxatida ham [N] yoki [raqam] havolalar YOZILMASIN",
-            "fn_r3":  "- Faqat sof matn — hech qanday kvadrat qavs ichida raqam yo'q",
-            "ban":    "TAQIQLANGAN: JSON ichida Enter, Markdown (* ** # ` ~), [N], [1], [2] havolalar.",
-            "adab": [
-                "1. Muallif I.F. Kitob nomi. Toshkent: Nashriyot, 2022. 250 b.",
-                "2. Muallif I.F. Maqola nomi. Ilmiy jurnal. 2021. №3. B.45-67.",
-                "3. Normativ hujjat nomi. Qabul qilingan sana va raqam.",
-                "4. Muallif I.F. Kitob yoki maqola nomi. Nashriyot, yil.",
-                "5. Author A.B. Article Title. Journal Name, Year, Vol.X, P.XX.",
-                "6. Muallif I.F. Kitob yoki maqola nomi. Nashriyot, yil.",
-                "7. Muallif I.F. Kitob yoki maqola nomi. Nashriyot, yil.",
-                "8. Muallif I.F. Kitob yoki maqola nomi. Nashriyot, yil.",
-                "9. Muallif I.F. Kitob yoki maqola nomi. Nashriyot, yil.",
-                "10. Muallif I.F. Kitob yoki maqola nomi. Nashriyot, yil.",
-                "11. Muallif I.F. Kitob yoki maqola nomi. Nashriyot, yil.",
-                "12. Muallif I.F. Kitob yoki maqola nomi. Nashriyot, yil.",
-                "13. Muallif I.F. Kitob yoki maqola nomi. Nashriyot, yil.",
-                "14. Muallif I.F. Kitob yoki maqola nomi. Nashriyot, yil.",
-                "15. Muallif I.F. Kitob yoki maqola nomi. Nashriyot, yil.",
-            ],
-        },
-        "ru": {
-            "intro": f"Ты опытный академический профессор-доктор. {lang_cmd}",
-            "desc":  f"Создай ПЛАН, ВВЕДЕНИЕ и СПИСОК ЛИТЕРАТУРЫ для курсовой работы на тему '{mavzu}'.",
-            "fn_hdr": "ЗАПРЕТ СНОСОК (ОЧЕНЬ ВАЖНО):",
-            "fn_r1":  "- Ссылки [1], [2], [N] в полях введения КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНЫ",
-            "fn_r2":  "- В списке литературы ссылки [N] или [номер] НЕДОПУСТИМЫ",
-            "fn_r3":  "- Только чистый текст — никаких цифр в квадратных скобках",
-            "ban":    "ЗАПРЕЩЕНО: Переносы строк в JSON, Markdown (* ** # ` ~), ссылки [N], [1], [2].",
-            "adab": [
-                "1. Иванов А.В. Название книги. Москва: Наука, 2022. 300 с.",
-                "2. Петров В.И. Название статьи. Журнал. 2021. №3. С.45-67.",
-                "3. Нормативный документ. Дата и номер принятия.",
-                "4. Автор И.О. Название книги или статьи. Издательство, год.",
-                "5. Author A.B. Article Title. Journal Name, Year, Vol.X, P.XX.",
-                "6. Автор И.О. Название книги или статьи. Издательство, год.",
-                "7. Автор И.О. Название книги или статьи. Издательство, год.",
-                "8. Автор И.О. Название книги или статьи. Издательство, год.",
-                "9. Автор И.О. Название книги или статьи. Издательство, год.",
-                "10. Автор И.О. Название книги или статьи. Издательство, год.",
-                "11. Автор И.О. Название книги или статьи. Издательство, год.",
-                "12. Автор И.О. Название книги или статьи. Издательство, год.",
-                "13. Автор И.О. Название книги или статьи. Издательство, год.",
-                "14. Автор И.О. Название книги или статьи. Издательство, год.",
-                "15. Автор И.О. Название книги или статьи. Издательство, год.",
-            ],
-        },
-        "en": {
-            "intro": f"You are an experienced academic professor-doctor. {lang_cmd}",
-            "desc":  f"Create a PLAN, INTRODUCTION and BIBLIOGRAPHY for a course work on '{mavzu}'.",
-            "fn_hdr": "FOOTNOTE BAN (VERY IMPORTANT):",
-            "fn_r1":  "- References [1], [2], [N] are ABSOLUTELY FORBIDDEN in introduction fields",
-            "fn_r2":  "- References [N] or [number] must NOT appear in the bibliography",
-            "fn_r3":  "- Only plain text — no numbers in square brackets",
-            "ban":    "FORBIDDEN: Line breaks in JSON, Markdown (* ** # ` ~), references [N], [1], [2].",
-            "adab": [
-                "1. Smith J. Book Title. New York: Publisher, 2022. 300 p.",
-                "2. Johnson M. Article Title. Academic Journal. 2021. Vol.3. P.45-67.",
-                "3. Regulatory document name. Date and number of adoption.",
-                "4. Author A.B. Book or Article Title. Publisher, Year.",
-                "5. Brown K. Article Title. Journal Name, Year, Vol.X, P.XX.",
-                "6. Author A.B. Book or Article Title. Publisher, Year.",
-                "7. Author A.B. Book or Article Title. Publisher, Year.",
-                "8. Author A.B. Book or Article Title. Publisher, Year.",
-                "9. Author A.B. Book or Article Title. Publisher, Year.",
-                "10. Author A.B. Book or Article Title. Publisher, Year.",
-                "11. Author A.B. Book or Article Title. Publisher, Year.",
-                "12. Author A.B. Book or Article Title. Publisher, Year.",
-                "13. Author A.B. Book or Article Title. Publisher, Year.",
-                "14. Author A.B. Book or Article Title. Publisher, Year.",
-                "15. Author A.B. Book or Article Title. Publisher, Year.",
-            ],
-        },
-    }.get(til, {
-        "intro": f"Sen professor. {lang_cmd}", "desc": f"'{mavzu}' uchun reja, kirish, adabiyotlar yarat.",
-        "fn_hdr": "SNOSKA TAQIQI:", "fn_r1": "- [N] havolalar taqiqlangan",
-        "fn_r2": "- Adabiyotlarda ham yo'q", "fn_r3": "- Faqat sof matn",
-        "ban": "TAQIQLANGAN: JSON Enter, Markdown.",
-        "adab": ["1. Muallif. Sarlavha. Nashriyot, yil."],
-    })
-
-    import json as _json
-    _pt = _plan_txt
-    prompt_plan = f"""{_pt['intro']}
-{_pt['desc']}
-
-{_pt['fn_hdr']}
-{_pt['fn_r1']}
-{_pt['fn_r2']}
-{_pt['fn_r3']}
-
-{_pt['ban']}
-ADABIYOTLAR: namunadagi qatorlar faqat FORMAT. Ro'yxatga FAQAT haqiqatda mavjud, taniqli manbalarni yoz
-(darsliklar, qonunlar, rasmiy hujjatlar, mashhur olimlar asarlari). Ishonching komil bo'lmasa — yozma;
-ro'yxat 10-15 tadan kam bo'lsa ham mayli. Uydirma muallif, nashriyot, URL yoki DOI TAQIQLANADI.
-
-JSON:
-{{
-  "bob1_nomi": "{til_hints['bob1_nomi_misol']}",
-  "bob1_rejalar": ["1.1. [Sarlavha]", "1.2. [Sarlavha]", "1.3. [Sarlavha]"],
-  "bob2_nomi": "{til_hints['bob2_nomi_misol']}",
-  "bob2_rejalar": ["2.1. [Sarlavha]", "2.2. [Sarlavha]", "2.3. [Sarlavha]"],
-  "kirish": {{
-    "dolzarbligi": "{til_hints['dolzarb']}",
-    "maqsadi": "{til_hints['maqsad']}",
-    "obyekti": "{til_hints['obyekt']}",
-    "predmeti": "{til_hints['predmet']}",
-    "vazifalari": "{til_hints['vazifa']}",
-    "metodologik_asosi": "{til_hints['metod']}",
-    "tuzilishi": "{til_hints['tuzilish']}"
-  }},
-  "adabiyotlar": {_json.dumps(_pt['adab'], ensure_ascii=False)}
-}}"""
-
-    plan = call_ai_json(prompt_plan, "Reja", max_tokens=5000)
-
-    bob1_nomi   = plan.get("bob1_nomi", "I BOB. NAZARIY ASOS")
-    bob1_rejalar = plan.get("bob1_rejalar", ["1.1. Birinchi reja", "1.2. Ikkinchi reja", "1.3. Uchinchi reja"])
-    bob2_nomi   = plan.get("bob2_nomi", "II BOB. AMALIY TAHLIL")
-    bob2_rejalar = plan.get("bob2_rejalar", ["2.1. Birinchi reja", "2.2. Ikkinchi reja", "2.3. Uchinchi reja"])
-
-    log.info(f"✅ 1-qadam (Reja) tugadi: {bob1_nomi} | {bob2_nomi}")
-
-    # docx_yaratish() ichida til_hints dan keyin qo'shiladi:
-
-    # ══════════════════════════════════════════
-    # 2-QADAM: I BOB
-    # ══════════════════════════════════════════
-    _prog(tx(cid, "prog_bob1"))
-
-    r1, r2, r3 = (bob1_rejalar + ["1.1.", "1.2.", "1.3."])[:3]
-    _bob1_sarlavha = {
-        "uz": (f"Sen tajribali akademik professor-doktor. {lang_cmd}\n"
-               f"'{mavzu}' mavzusida kurs ishining nazariy qismini yoz.\n"
-               f"Bob nomi: {bob1_nomi}"),
-        "ru": (f"Ты опытный академический профессор-доктор. {lang_cmd}\n"
-               f"Напиши теоретическую часть курсовой работы на тему '{mavzu}'.\n"
-               f"Название главы: {bob1_nomi}"),
-        "en": (f"You are an experienced academic professor-doctor. {lang_cmd}\n"
-               f"Write the theoretical section of the course work on '{mavzu}'.\n"
-               f"Chapter name: {bob1_nomi}"),
-    }.get(til, f"Sen professor. {lang_cmd}\nBob: {bob1_nomi}")
-
-    _bob1_orig_note = {
-        "uz": ("ASL YOZUV VA XORIJIY MISOLLAR (JIDDIY SHART): Agar mavzu biron bir til, "
-               "yozuv turi (arab, xitoy, yapon, hind, rus va h.k.), xorijiy adabiyot yoki "
-               "maxsus terminlarga oid bo'lsa, tushuntirishni so'ralgan tilda bering, LEKIN "
-               "albatta o'sha tilning O'Z HARFLARI, IYEROGLIFLARI, BELGILARI yoki ASL SO'ZLARINI "
-               "matn ichida ko'rgazmali misol sifatida ishlating.\n"
-               "Sifat: Aniq faktlar, sanalar va matn ichida haqiqiy original tillardagi namunalarni kiriting."),
-        "ru": ("ОРИГИНАЛЬНЫЕ ШРИФТЫ И ПРИМЕРЫ (ОБЯЗАТЕЛЬНО): Если тема связана с языком, системой "
-               "письма (арабской, китайской, японской, индийской и т.д.), иностранной литературой "
-               "или специальной терминологией — объясняй на нужном языке, НО обязательно включай "
-               "ОРИГИНАЛЬНЫЕ БУКВЫ, ИЕРОГЛИФЫ, СИМВОЛЫ или СЛОВА как наглядные примеры.\n"
-               "Качество: Включай точные факты, даты и реальные примеры на оригинальных языках."),
-        "en": ("ORIGINAL SCRIPTS AND FOREIGN EXAMPLES (MANDATORY): If the topic is related to a "
-               "language, writing system (Arabic, Chinese, Japanese, Hindi, Russian, etc.), foreign "
-               "literature or special terminology — explain in the requested language, BUT always "
-               "include ORIGINAL LETTERS, HIEROGLYPHS, SYMBOLS or NATIVE WORDS as illustrative examples.\n"
-               "Quality: Include accurate facts, dates and real examples in original languages."),
-    }.get(til, "")
-
-
-    prompt_bob1 = f"""{_bob1_sarlavha}
-{snoska_note}
-
-{struct_hints['hajm_bob1']}
-{struct_hints['jadval1']}
-{struct_hints['abzas']}
-{struct_hints['uslub1']}
-{struct_hints['izchil1']}
-{_bob1_orig_note}
-{struct_hints['taqiq']}
-
-JSON:
-{{
-  "rejalar": [
-    {{
-      "sarlavha": "{r1}",
-      "matn": "1-abzas... [ABZAS] 2-abzas... [ABZAS] 3-abzas...[1] [ABZAS] 4-abzas... [ABZAS] 5-abzas... [ABZAS] 6-abzas...[2] [ABZAS] 7-abzas... [ABZAS] 8-abzas... [ABZAS] 9-abzas...",
-      "snoskalar": {{
-        "1": "{struct_hints['snoska_misol_1']}",
-        "2": "{struct_hints['snoska_misol_2']}"
-      }}
-    }},
-    {{
-      "sarlavha": "{r2}",
-      "matn": "1-abzas... [ABZAS] 2-abzas... [ABZAS] 3-abzas...[3] [ABZAS] 4-abzas... [ABZAS] 5-abzas... [ABZAS] 6-abzas...[4] [ABZAS] 7-abzas... [ABZAS] 8-abzas... [ABZAS] 9-abzas...",
-      "snoskalar": {{
-        "3": "{struct_hints['snoska_misol_3']}",
-        "4": "{struct_hints['snoska_misol_4']}"
-      }}
-    }},
-    {{
-      "sarlavha": "{r3}",
-      "matn": "1-abzas... [ABZAS] 2-abzas... [ABZAS] 3-abzas...[5] [ABZAS] 4-abzas... [ABZAS] 5-abzas... [ABZAS] 6-abzas...[6] [ABZAS] 7-abzas... [ABZAS] 8-abzas... [ABZAS] 9-abzas...",
-      "snoskalar": {{
-        "5": "{struct_hints['snoska_misol_1']}",
-        "6": "{struct_hints['snoska_misol_2']}"
-      }}
-    }}
-  ]
-}}"""
-
-    bob1_data = call_ai_json(prompt_bob1, "I Bob", max_tokens=7000)
-    log.info(f"✅ 2-qadam (I Bob) tugadi: {len(bob1_data.get('rejalar', []))} reja")
-
-    # ══════════════════════════════════════════
-    # 3-QADAM: II BOB
-    # ══════════════════════════════════════════
-    _prog(tx(cid, "prog_bob2"))
-
-    # I bobdagi asosiy g'oyalar — II bobga kontekst sifatida
-    bob1_context = " | ".join(
-        r.get("sarlavha", "") for r in bob1_data.get("rejalar", [])
-    )
-
-    r4, r5, r6 = (bob2_rejalar + ["2.1.", "2.2.", "2.3."])[:3]
-    _bob2_sarlavha = {
-        "uz": (f"Sen tajribali akademik professor-doktor. {lang_cmd}\n"
-               f"'{mavzu}' mavzusida kurs ishining amaliy qismini yoz.\n"
-               f"Bob nomi: {bob2_nomi}\n"
-               f"I bobda yoritilgan mavzular: {bob1_context}"),
-        "ru": (f"Ты опытный академический профессор-доктор. {lang_cmd}\n"
-               f"Напиши практическую часть курсовой работы на тему '{mavzu}'.\n"
-               f"Название главы: {bob2_nomi}\n"
-               f"Темы, раскрытые в Главе I: {bob1_context}"),
-        "en": (f"You are an experienced academic professor-doctor. {lang_cmd}\n"
-               f"Write the practical section of the course work on '{mavzu}'.\n"
-               f"Chapter name: {bob2_nomi}\n"
-               f"Topics covered in Chapter I: {bob1_context}"),
-    }.get(til, f"Sen professor. {lang_cmd}\nBob: {bob2_nomi}")
-
-    _jadval_info = {
-        "uz": f"Jadval formati: {jadval_fmt}\nUstunlar: 3-4 ta. Qatorlar: 4-5 ta. Jadval [ABZAS] dan keyin kelsin.",
-        "ru": f"Формат таблицы: {jadval_fmt}\nСтолбцов: 3-4. Строк: 4-5. Таблица должна следовать после [ABZAS].",
-        "en": f"Table format: {jadval_fmt}\nColumns: 3-4. Rows: 4-5. Table must come after [ABZAS].",
-    }.get(til, f"Jadval: {jadval_fmt}")
-
-    prompt_bob2 = f"""{_bob2_sarlavha}
-{snoska_note}
-
-{struct_hints['hajm_bob2']}
-{struct_hints['jadval2']}
-{_jadval_info}
-{struct_hints['abzas']}
-{struct_hints['uslub2']}
-{struct_hints['izchil2']}
-{struct_hints['taqiq']}
-
-JSON:
-{{
-  "rejalar": [
-    {{
-      "sarlavha": "{r4}",
-      "matn": "1-abzas...[7] [ABZAS] [JADVAL:1-jadval: [Jadval nomi]\\nUstun1|Ustun2|Ustun3\\nQiymat|Qiymat|Qiymat\\nQiymat|Qiymat|Qiymat\\nQiymat|Qiymat|Qiymat\\nQiymat|Qiymat|Qiymat] [ABZAS] 2-abzas... [ABZAS] 3-abzas... [ABZAS] 4-abzas...[8] [ABZAS] 5-abzas... [ABZAS] 6-abzas... [ABZAS] 7-abzas... [ABZAS] 8-abzas...",
-      "snoskalar": {{
-        "7": "{struct_hints['snoska_misol_1']}",
-        "8": "{struct_hints['snoska_misol_2']}"
-      }}
-    }},
-    {{
-      "sarlavha": "{r5}",
-      "matn": "1-abzas...[9] [ABZAS] [JADVAL:2-jadval: [Jadval nomi]\\nUstun1|Ustun2|Ustun3\\nQiymat|Qiymat|Qiymat\\nQiymat|Qiymat|Qiymat\\nQiymat|Qiymat|Qiymat\\nQiymat|Qiymat|Qiymat] [ABZAS] 2-abzas... [ABZAS] 3-abzas... [ABZAS] 4-abzas...[10] [ABZAS] 5-abzas... [ABZAS] 6-abzas... [ABZAS] 7-abzas... [ABZAS] 8-abzas...",
-      "snoskalar": {{
-        "9": "{struct_hints['snoska_misol_3']}",
-        "10": "{struct_hints['snoska_misol_4']}"
-      }}
-    }},
-    {{
-      "sarlavha": "{r6}",
-      "matn": "1-abzas...[11] [ABZAS] [JADVAL:3-jadval: [Jadval nomi]\\nUstun1|Ustun2|Ustun3\\nQiymat|Qiymat|Qiymat\\nQiymat|Qiymat|Qiymat\\nQiymat|Qiymat|Qiymat] [ABZAS] 2-abzas... [ABZAS] 3-abzas... [ABZAS] 4-abzas...[12] [ABZAS] 5-abzas... [ABZAS] 6-abzas... [ABZAS] 7-abzas... [ABZAS] 8-abzas...",
-      "snoskalar": {{
-        "11": "{struct_hints['snoska_misol_1']}",
-        "12": "{struct_hints['snoska_misol_3']}"
-      }}
-    }}
-  ]
-}}"""
-
-    bob2_data = call_ai_json(prompt_bob2, "II Bob", max_tokens=7000)
-    log.info(f"✅ 3-qadam (II Bob) tugadi: {len(bob2_data.get('rejalar', []))} reja")
-
-    # ══════════════════════════════════════════
-    # 4-QADAM: XULOSA
-    # ══════════════════════════════════════════
-    _prog(tx(cid, "prog_xulosa"))
-
-    bob2_context = " | ".join(
-        r.get("sarlavha", "") for r in bob2_data.get("rejalar", [])
-    )
-
-    _xulosa_sarlavha_intro = {
-        "uz": (f"Sen tajribali akademik professor-doktor. {lang_cmd}\n"
-               f"'{mavzu}' kurs ishiga {struct_hints['xulosa_sarlavha']}."),
-        "ru": (f"Ты опытный академический профессор-доктор. {lang_cmd}\n"
-               f"Напиши {struct_hints['xulosa_sarlavha']} для курсовой работы '{mavzu}'."),
-        "en": (f"You are an experienced academic professor-doctor. {lang_cmd}\n"
-               f"Write {struct_hints['xulosa_sarlavha']} for the course work '{mavzu}'."),
-    }.get(til, f"Sen professor. {lang_cmd}\n'{mavzu}' xulosa yoz.")
-
-    _bob1_lbl = {"uz": "I Bob", "ru": "Глава I", "en": "Chapter I"}.get(til, "I Bob")
-    _bob2_lbl = {"uz": "II Bob", "ru": "Глава II", "en": "Chapter II"}.get(til, "II Bob")
-
-    _mazmun_lbl = {"uz": "MAZMUN:", "ru": "СОДЕРЖАНИЕ:", "en": "CONTENT:"}.get(til, "MAZMUN:")
-
-    _fn_ban = {
-        "uz": "SNOSKA TAQIQI: Xulosa qismida [1], [2], [N] kabi hech qanday raqamli havola MUTLAQO TAQIQLANGAN.",
-        "ru": "ЗАПРЕТ СНОСОК: В разделе Заключение ссылки [1], [2], [N] КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНЫ.",
-        "en": "FOOTNOTE BAN: In the Conclusion section, references [1], [2], [N] are ABSOLUTELY FORBIDDEN.",
-    }.get(til, "")
-
-    _xulosa_json_tmpl = {
-        "uz": ('"1-abzas (100 so\'z) — I bob nazariy xulosasi. [ABZAS] '
-               '2-abzas (100 so\'z) — I bob davomi. [ABZAS] '
-               '3-abzas (100 so\'z) — II bob amaliy natijalari. [ABZAS] '
-               '4-abzas (100 so\'z) — II bob jadvallar tahlili. [ABZAS] '
-               '5-abzas (100 so\'z) — ilmiy yangiliklar. [ABZAS] '
-               '6-abzas (100 so\'z) — amaliy tavsiyalar 1-3. [ABZAS] '
-               '7-abzas (100 so\'z) — tavsiyalar 4-5 va kelajak istiqbollari."'),
-        "ru": ('"1-й абзац (100 слов) — теоретические выводы Главы I. [ABZAS] '
-               '2-й абзац (100 слов) — продолжение Главы I. [ABZAS] '
-               '3-й абзац (100 слов) — практические результаты Главы II. [ABZAS] '
-               '4-й абзац (100 слов) — анализ таблиц Главы II. [ABZAS] '
-               '5-й абзац (100 слов) — научная новизна. [ABZAS] '
-               '6-й абзац (100 слов) — практические рекомендации 1-3. [ABZAS] '
-               '7-й абзац (100 слов) — рекомендации 4-5 и перспективы."'),
-        "en": ('"1st paragraph (100 words) — theoretical conclusions of Chapter I. [ABZAS] '
-               '2nd paragraph (100 words) — continuation of Chapter I. [ABZAS] '
-               '3rd paragraph (100 words) — practical results of Chapter II. [ABZAS] '
-               '4th paragraph (100 words) — table analysis from Chapter II. [ABZAS] '
-               '5th paragraph (100 words) — scientific novelty. [ABZAS] '
-               '6th paragraph (100 words) — practical recommendations 1-3. [ABZAS] '
-               '7th paragraph (100 words) — recommendations 4-5 and future outlook."'),
-    }.get(til, '"1-abzas... [ABZAS] 2-abzas..."')
-
-    prompt_xulosa = f"""{_xulosa_sarlavha_intro}
-
-{_bob1_lbl}: {bob1_context}
-{_bob2_lbl}: {bob2_context}
-
-{struct_hints['xulosa_hajm']}
-{_mazmun_lbl}
-{struct_hints['xulosa_mazmun']}
-{struct_hints['xulosa_uslub']}
-{struct_hints['taqiq']}
-
-{_fn_ban}
-
-JSON:
-{{"xulosa": {_xulosa_json_tmpl}}}"""
-    xulosa_data = call_ai_json(prompt_xulosa, "Xulosa", max_tokens=2500)
-    log.info("✅ 4-qadam (Xulosa) tugadi")
-
-    # ══════════════════════════════════════════
-    # HUJJAT YIG'ILMASI — barcha qismlarni birlashtirish
-    # ══════════════════════════════════════════
-    _prog(tx(cid, "prog_format"))
-
-    # Snoskalarni tozalash
-    def _clean_snoskalar(rejalar_list: list) -> None:
-        # Faqat aniq placeholder belgilar — muallif ismi bo'lmagan
-        EMPTY_PATTERNS = [
-            r"^\.\.\.$",                    # faqat nuqtalar
-            r"^…$",                         # ellipsis belgisi
-            r"^\[manba\]$",                 # faqat [manba] — hech narsa yo'q
-            r"^\[source\]$",               # faqat [source]
-            r"^\[источник\]$",             # faqat [источник]
-        ]                                   # ← ] 8 bo'shliqda ✅
-        for reja in rejalar_list:           # ← 8 bo'shliq ✅ funksiya ICHIDA
-            cleaned = {}
-            for k, v in reja.get("snoskalar", {}).items():
-                v_str = str(v).strip()
-                if not v_str or len(v_str) < 10:
-                    continue
-                v_lower = v_str.lower()
-                is_empty = any(re.search(pat, v_lower) for pat in EMPTY_PATTERNS)
-                if is_empty:
-                    log.warning(f"Bo'sh snoska o'chirildi: [{k}] = {v_str[:50]}")
-                    continue
-                for prefix in ["[real manba:", "[real xorijiy", "[реальный источник:",
-                               "[source:", "[manba:"]:
-                    if v_lower.startswith(prefix):
-                        v_str = v_str[len(prefix):].strip().rstrip("]").strip()
-                        if len(v_str) < 10:
-                            v_str = ""
-                        break
-                if v_str and len(v_str) >= 10:
-                    cleaned[k] = v_str
-                    log.info(f"Snoska saqlandi: [{k}] = {v_str[:60]}")
-            reja["snoskalar"] = cleaned   # ← 12 bo'shliq, for ichida ✅
-
-    
-  
-    # Faqat aniq placeholder belgilar — muallif ismi bo'lmagan
-        
-
-    _clean_snoskalar(bob1_data.get("rejalar", []))
-    _clean_snoskalar(bob2_data.get("rejalar", []))
-
-    # ── YANGI: Adabiyotlardan auto-snoska to'ldirish ──
-    # Agar bob matni ichida [1] bor, lekin snoskalar dict da yo'q bo'lsa,
-    # adabiyotlar ro'yxatidan avtomatik to'ldiriladi.
-    adabiyotlar_raw = plan.get("adabiyotlar", [])
-    if isinstance(adabiyotlar_raw, dict):
-        adabiyotlar_raw = list(adabiyotlar_raw.values())
-    # "1. " kabi raqam prefixlarini olib tashlash
-    adabiyotlar_clean = []
-    for a in adabiyotlar_raw:
-        a_str = re.sub(r'^\d+\.\s*', '', str(a).strip())
-        if len(a_str) >= 15:
-            adabiyotlar_clean.append(a_str)
-
-    adab_idx = 0
-    for bob_data_item in [bob1_data, bob2_data]:
-        for reja in bob_data_item.get("rejalar", []):
-            matn = reja.get("matn", "")
-            snoskalar = reja.get("snoskalar", {})
-            raqamlar = re.findall(r'\[(\d+)\]', matn)
-            for raq in raqamlar:
-                if raq not in snoskalar and adab_idx < len(adabiyotlar_clean):
-                    snoskalar[raq] = adabiyotlar_clean[adab_idx]
-                    adab_idx += 1
-            reja["snoskalar"] = snoskalar
-
-    # TOC uchun data strukturasi
-    data_for_toc = {
-        "kirish": plan.get("kirish", {}),
-        "boblar": [
-            {"bob_nomi": bob1_nomi, "rejalar": bob1_data.get("rejalar", [])},
-            {"bob_nomi": bob2_nomi, "rejalar": bob2_data.get("rejalar", [])},
-        ],
-        "xulosa": xulosa_data.get("xulosa", ""),
-    }
-    toc = calc_toc(data_for_toc)
-
-    # ── WORD HUJJATINI YARATISH ──
-    doc_obj = Document()
-    _fn_root(doc_obj)
-
-    try:
-        toc1 = doc_obj.styles['TOC 1']
-        toc1.font.name = "Times New Roman"
-        toc1.font.size = DocxPt(14)
-        toc1.font.bold = True
-        toc2 = doc_obj.styles['TOC 2']
-        toc2.font.name = "Times New Roman"
-        toc2.font.size = DocxPt(14)
-        toc2.font.bold = False
-    except Exception:
-        pass
-
-    ns_ = doc_obj.styles["Normal"]
-    ns_.font.name = "Times New Roman"
-    ns_.font.size = DocxPt(14)
-    ns_.paragraph_format.line_spacing = 1.5
-    ns_.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-
-    sec0 = doc_obj.sections[0]
-    sec0.page_width = Cm(21.0); sec0.page_height = Cm(29.7)
-    sec0.left_margin = Cm(3.0); sec0.right_margin = Cm(1.5)
-    sec0.top_margin = Cm(2.0); sec0.bottom_margin = Cm(2.0)
-
-    def cp(text, sz=14, bold=True, sb=0, sa=6, align=WD_ALIGN_PARAGRAPH.CENTER):
-        p = doc_obj.add_paragraph()
-        p.alignment = align
-        p.paragraph_format.space_before = DocxPt(sb)
-        p.paragraph_format.space_after = DocxPt(sa)
-        r = p.add_run(text)
-        r.bold = bold; r.font.size = DocxPt(sz); r.font.name = "Times New Roman"
-        return p
-
-    cp(tx(cid, "vazirlik"), sz=14, sb=0, sa=8)
-    cp(otm.upper(), sz=14, sb=4, sa=2)
-    cp(fakultet.upper(), sz=14, sb=0, sa=0)
-    cp(tx(cid, "kurs_ishi"), sz=20, sb=55, sa=8)
-
-    pf = doc_obj.add_paragraph()
-    pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    pf.paragraph_format.space_before = DocxPt(0)
-    pf.paragraph_format.space_after = DocxPt(4)
-    rfr = pf.add_run(f"{tx(cid,'fan_lbl')}: {fan}")
-    rfr.font.name = "Times New Roman"; rfr.font.size = DocxPt(14)
-
-    pm = doc_obj.add_paragraph()
-    pm.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    pm.paragraph_format.space_before = DocxPt(0); pm.paragraph_format.space_after = DocxPt(0)
-    rm = pm.add_run(f"{tx(cid,'mavzu_lbl')}: {mavzu.upper()}")
-    rm.bold = True; rm.font.name = "Times New Roman"; rm.font.size = DocxPt(14)
-
-    pi = doc_obj.add_paragraph()
-    pi.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    pi.paragraph_format.space_before = DocxPt(45); pi.paragraph_format.space_after = DocxPt(4)
-    ri = pi.add_run(f"{tx(cid,'bajardi')}: {ism}")
-    ri.font.name = "Times New Roman"; ri.font.size = DocxPt(14)
-
-    pc = doc_obj.add_paragraph()
-    pc.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    pc.paragraph_format.space_before = DocxPt(0); pc.paragraph_format.space_after = DocxPt(0)
-    rc = pc.add_run(tx(cid, "qabul"))
-    rc.font.name = "Times New Roman"; rc.font.size = DocxPt(14)
-
-    ps = doc_obj.add_paragraph()
-    ps.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    ps.paragraph_format.space_before = DocxPt(210); ps.paragraph_format.space_after = DocxPt(0)
-    rs = ps.add_run(f"{tx(cid,'shahar')} – {tx(cid,'yil')}")
-    rs.font.name = "Times New Roman"; rs.font.size = DocxPt(14)
-
-    doc_obj.add_page_break()
-    write_toc(doc_obj, cid, data_for_toc, toc)
-
-    sec1 = doc_obj.add_section(WD_SECTION_START.NEW_PAGE)
-    pgn = OxmlElement("w:pgNumType"); pgn.set(ns.qn("w:start"), "3")
-    sec1._sectPr.append(pgn)
-    sec1.page_width = Cm(21.0); sec1.page_height = Cm(29.7)
-    sec1.left_margin = Cm(3.0); sec1.right_margin = Cm(1.5)
-    sec1.top_margin = Cm(2.0); sec1.bottom_margin = Cm(2.0)
-    add_footer_page_number(sec1)
-
-    def heading(text: str, level: int, sa: int = 8):
-        style_name = "Heading 1" if level == 0 else "Heading 2"
-        p = doc_obj.add_paragraph(style=style_name)
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.space_before = DocxPt(0); p.paragraph_format.space_after = DocxPt(sa)
-        p.paragraph_format.keep_with_next = True; p.paragraph_format.page_break_before = False
-        r = p.add_run(text)
-        r.bold = True; r.font.size = DocxPt(14); r.font.name = "Times New Roman"
-        r.font.color.rgb = DocxRGB(0, 0, 0)
-        return p
-
-    kirish_data = plan.get("kirish", {})
-    heading(tx(cid, "kirish"), 0)
-    kirish_fields = [
-        ("dolzarbligi", tx(cid, "dolzarb")), ("maqsadi", tx(cid, "maqsad")),
-        ("obyekti", tx(cid, "obyekt")), ("predmeti", tx(cid, "predmet")),
-        ("vazifalari", tx(cid, "vazifa")), ("metodologik_asosi", tx(cid, "metod")),
-        ("tuzilishi", tx(cid, "tuzilish")),
-    ]
-    for key, lbl in kirish_fields:
-        val_raw = str(kirish_data.get(key, "")).strip()
-        if not val_raw or val_raw == "...":
-            continue
-        chunks = val_raw.split("[ABZAS]")
-        label_added = False
-        for chunk in chunks:
-            chunk = clean_ai_text(chunk.strip())
-            if not chunk: continue
-            p = doc_obj.add_paragraph()
-            p.paragraph_format.first_line_indent = Cm(1.25)
-            p.paragraph_format.space_before = DocxPt(0)
-            p.paragraph_format.space_after = DocxPt(4)
-            p.paragraph_format.line_spacing = 1.5
-            p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            if not label_added:
-                r_lbl = p.add_run(lbl + " ")
-                r_lbl.bold = True; r_lbl.font.name = "Times New Roman"; r_lbl.font.size = DocxPt(14)
-                label_added = True
-            r_val = p.add_run(chunk)
-            r_val.font.name = "Times New Roman"; r_val.font.size = DocxPt(14)
-
-    doc_obj.add_page_break()
-
-    fn_id_ref = [1]
-    # I Bob va II Bobni ketma-ket yozamiz
-    for bob_info in [
-        (bob1_nomi, bob1_data.get("rejalar", [])),
-        (bob2_nomi, bob2_data.get("rejalar", [])),
-    ]:
-        bob_nom, rejalar = bob_info
-        heading(bob_nom, 0)
-        for reja in rejalar:
-            heading(reja.get("sarlavha", ""), 1, sa=6)
-            paras = write_paragraphs_with_footnotes(
-                doc_obj, reja.get("matn", ""), reja.get("snoskalar", {}), fn_id_ref
-            )
-            if not paras:
-                dummy = doc_obj.add_paragraph()
-                dummy.paragraph_format.first_line_indent = Cm(1.25)
-                dummy.paragraph_format.line_spacing = 1.5
-                dummy_r = dummy.add_run(reja.get("sarlavha", ""))
-                dummy_r.font.name = "Times New Roman"; dummy_r.font.size = DocxPt(14)
-        doc_obj.add_page_break()
-
-    heading(tx(cid, "xulosa"), 0)
-    for chunk in xulosa_data.get("xulosa", "").split("[ABZAS]"):
-        chunk = clean_ai_text(chunk.strip())
-        if len(chunk) > 15:
-            p = doc_obj.add_paragraph()
-            p.paragraph_format.first_line_indent = Cm(1.25)
-            p.paragraph_format.space_before = DocxPt(0); p.paragraph_format.space_after = DocxPt(6)
-            p.paragraph_format.line_spacing = 1.5
-            r = p.add_run(chunk)
-            r.font.name = "Times New Roman"; r.font.size = DocxPt(14)
-    doc_obj.add_page_break()
-
-    heading(tx(cid, "adabiyotlar"), 0)
-    adabiyotlar_list = plan.get("adabiyotlar", [])
-    if isinstance(adabiyotlar_list, dict):
-        adabiyotlar_list = list(adabiyotlar_list.values())
-    adab_counter = 1   # ← raqam hisoblagich
-    for adab in adabiyotlar_list:
-        adab = clean_ai_text(str(adab).strip())
-    # Eski raqam prefiksini tozalaymiz (AI "1. " qo'shgan bo'lsa)
-        adab = re.sub(r'^\d+[\.\)]\s*', '', adab)
-        if adab and len(adab) > 10 and adab not in ("...", "...."):
-            p = doc_obj.add_paragraph()
-            p.paragraph_format.first_line_indent = Cm(-0.5); p.paragraph_format.left_indent = Cm(0.5)
-            p.paragraph_format.space_before = DocxPt(0); p.paragraph_format.space_after = DocxPt(4)
-            p.paragraph_format.line_spacing = 1.5
-            r = p.add_run(f"{adab_counter}. {adab}")  # ← tartib raqam qo'shildi
-            r.font.name = "Times New Roman"; r.font.size = DocxPt(14)
-            adab_counter += 1   # ← hisoblagich oshadi
-
-    fname = make_fname(mavzu, "_Kurs_ishi.docx")
-    doc_obj.save(fname)
-    log.info(f"✅ DOCX saqlandi: {fname}")
-    # Barcha yaratilgan datani birlashtirib qaytaramiz
-    all_data = {
-        "plan": plan,
-        "bob1_data": bob1_data, "bob1_nomi": bob1_nomi,
-        "bob2_data": bob2_data, "bob2_nomi": bob2_nomi,
-        "xulosa_data": xulosa_data,
-    }
-    return fname, all_data
+kurs_ishi.setup(
+    call_ai_json=lambda *a, **k: call_ai_json(*a, **k),
+    clean_text=lambda t: clean_ai_text(t),
+    ai_ctx=lambda cid: ai_ctx(cid),
+)
 
 
 # ═══════════════════════════════════════════════
@@ -14027,7 +13061,12 @@ def h_admin_topupconfirm(msg):
 
     izoh = qismlar[3] if len(qismlar) > 3 else "To'lov qabul qilindi"
 
-    add_coins(target_uid, tanga_miq)
+    # Birinchi to'lovga bonus (marketing): faqat avval hech qachon to'lov qilmaganlarga
+    with USERS_DB_LOCK:
+        birinchi = users_db.get("xaridlar_jami", {}).get(str(target_uid), 0) == 0
+    bonus_t = math.ceil(tanga_miq * BIRINCHI_TOLOV_BONUS / 100) if (birinchi and BIRINCHI_TOLOV_BONUS) else 0
+
+    add_coins(target_uid, tanga_miq + bonus_t)
     yangi_balans = get_coins(target_uid)
     # Xarid tarixini yangilash (promokod min_xarid sharti uchun)
     with USERS_DB_LOCK:
@@ -14035,13 +13074,15 @@ def h_admin_topupconfirm(msg):
         uid_str_t = str(target_uid)
         xj[uid_str_t] = xj.get(uid_str_t, 0) + tanga_miq
     _mark_dirty()
+    if bonus_t:
+        izoh = f"{izoh} • 🎁 Birinchi to'lov bonusi: +{bonus_t} 🪙"
 
     # Adminga tasdiqlash
     bot.send_message(
         msg.chat.id,
         f"✅ <b>To'lov tasdiqlandi!</b>\n\n"
         f"👤 UID: <code>{target_uid}</code>\n"
-        f"➕ Qo'shildi: <b>{tanga_miq} 🪙</b>\n"
+        f"➕ Qo'shildi: <b>{tanga_miq} 🪙</b>" + (f" + bonus <b>{bonus_t} 🪙</b>" if bonus_t else "") + "\n"
         f"💰 Yangi balans: <b>{yangi_balans} 🪙</b>\n"
         f"📝 Izoh: {_html_escape(izoh)}",
         parse_mode="HTML"
@@ -14052,21 +13093,21 @@ def h_admin_topupconfirm(msg):
     topup_tasdiq = {
         "uz": (
             f"✅ <b>To'lovingiz tasdiqlandi!</b>\n\n"
-            f"➕ Hisobingizga <b>{tanga_miq} tanga</b> qo'shildi.\n"
+            f"➕ Hisobingizga <b>{tanga_miq + bonus_t} tanga</b> qo'shildi.\n"
             f"💰 Joriy balans: <b>{yangi_balans} 🪙</b>\n\n"
             f"📝 <i>{_html_escape(izoh)}</i>\n\n"
             f"Xarid uchun rahmat! 🎓"
         ),
         "ru": (
             f"✅ <b>Ваш платёж подтверждён!</b>\n\n"
-            f"➕ На счёт добавлено <b>{tanga_miq} монет</b>.\n"
+            f"➕ На счёт добавлено <b>{tanga_miq + bonus_t} монет</b>.\n"
             f"💰 Текущий баланс: <b>{yangi_balans} 🪙</b>\n\n"
             f"📝 <i>{_html_escape(izoh)}</i>\n\n"
             f"Спасибо за покупку! 🎓"
         ),
         "en": (
             f"✅ <b>Your payment has been confirmed!</b>\n\n"
-            f"➕ <b>{tanga_miq} coins</b> added to your account.\n"
+            f"➕ <b>{tanga_miq + bonus_t} coins</b> added to your account.\n"
             f"💰 Current balance: <b>{yangi_balans} 🪙</b>\n\n"
             f"📝 <i>{_html_escape(izoh)}</i>\n\n"
             f"Thank you for your purchase! 🎓"
@@ -14692,37 +13733,34 @@ def h_kabinet_til_tanlash(call):
 # BOT — TOPUP (TO'LOV VA PROMOKOD)
 # ═══════════════════════════════════════════════
 
+def _som(n) -> str:
+    return f"{int(n):,}".replace(",", " ")
+
+
+_LITE, _STD = OBUNA_PAKETLARI["lite"], OBUNA_PAKETLARI["standart"]
 OBUNA_MATN = {
     "uz": (
-        "\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "💎 <b>OYLIK OBUNA (tejamkor)</b>\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "📗 <b>Lite</b> — 19,900 so'm/oy\n"
-        "   → 25 tanga (24,900 so'm qiymat) + ustuvorlik\n\n"
-        "📘 <b>Standart</b> — 34,900 so'm/oy\n"
-        "   → 50 tanga (52,000 so'm qiymat!)\n"
-        "   → 17,100 so'm tejaladi!\n\n"
+        "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n💎 <b>OYLIK OBUNA</b> — eng arzon yo'l\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📗 <b>Lite</b> — {_som(_LITE['narx'])} so'm/oy → <b>{_LITE['tanga']} tanga</b> + navbatsiz ishlash\n"
+        f"   (1 tanga ≈ {_som(_LITE['narx'] / _LITE['tanga'])} so'm)\n\n"
+        f"📘 <b>Standart</b> — {_som(_STD['narx'])} so'm/oy → <b>{_STD['tanga']} tanga</b>\n"
+        f"   (1 tanga ≈ {_som(_STD['narx'] / _STD['tanga'])} so'm — paketlardan 40% gacha arzon)\n\n"
         "📩 Obuna uchun: @endlessscience"
     ),
     "ru": (
-        "\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "💎 <b>ЕЖЕМЕСЯЧНАЯ ПОДПИСКА</b>\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "📗 <b>Lite</b> — 19,900 сум/мес → 25 монет\n\n"
-        "📘 <b>Стандарт</b> — 34,900 сум/мес → 50 монет\n"
-        "   (экономия 17,100 сум!)\n\n"
+        "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n💎 <b>ЕЖЕМЕСЯЧНАЯ ПОДПИСКА</b> — самый выгодный способ\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📗 <b>Lite</b> — {_som(_LITE['narx'])} сум/мес → <b>{_LITE['tanga']} монет</b> + приоритет\n"
+        f"   (1 монета ≈ {_som(_LITE['narx'] / _LITE['tanga'])} сум)\n\n"
+        f"📘 <b>Стандарт</b> — {_som(_STD['narx'])} сум/мес → <b>{_STD['tanga']} монет</b>\n"
+        f"   (1 монета ≈ {_som(_STD['narx'] / _STD['tanga'])} сум — до 40% дешевле пакетов)\n\n"
         "📩 Для подписки: @endlessscience"
     ),
     "en": (
-        "\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "💎 <b>MONTHLY SUBSCRIPTION</b>\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "📗 <b>Lite</b> — 19,900 UZS/mo → 25 coins\n\n"
-        "📘 <b>Standard</b> — 34,900 UZS/mo → 50 coins\n"
-        "   (save 17,100 UZS!)\n\n"
+        "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n💎 <b>MONTHLY SUBSCRIPTION</b> — the cheapest way\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📗 <b>Lite</b> — {_som(_LITE['narx'])} UZS/mo → <b>{_LITE['tanga']} coins</b> + priority\n"
+        f"   (1 coin ≈ {_som(_LITE['narx'] / _LITE['tanga'])} UZS)\n\n"
+        f"📘 <b>Standard</b> — {_som(_STD['narx'])} UZS/mo → <b>{_STD['tanga']} coins</b>\n"
+        f"   (1 coin ≈ {_som(_STD['narx'] / _STD['tanga'])} UZS — up to 40% cheaper than packs)\n\n"
         "📩 For subscription: @endlessscience"
     ),
 }
@@ -14758,25 +13796,119 @@ def tanga_kalkulyator(cid: int) -> str:
     L = {
         "uz": ("🧮 <b>Sizning {c} tangangiz yetadi:</b>", ("taqdimot", "test", "konspekt", "masala yechimi", "audio"),
                "🎁 <b>Tekin tanga yig'ish:</b>\n• 👥 Do'stingizni taklif qiling — har biri uchun <b>+{ref}</b> tanga (Kabinetdagi havola)\n"
-               "• 📅 Har dushanba tangasi kam qolganlarga haftalik bonus\n• 🎟 Promokodlar — /promo"),
+               "• 📅 Har dushanba balans <b>{hb}</b> tangagacha to'ldiriladi — haftasiga 1 taqdimot tekin\n• 🎟 Promokodlar — /promo"),
         "ru": ("🧮 <b>Ваших {c} монет хватит на:</b>", ("презентаций", "тестов", "конспектов", "решений задач", "аудио"),
                "🎁 <b>Бесплатные монеты:</b>\n• 👥 Пригласите друга — <b>+{ref}</b> монет за каждого (ссылка в Кабинете)\n"
-               "• 📅 Каждый понедельник — бонус тем, у кого мало монет\n• 🎟 Промокоды — /promo"),
+               "• 📅 Каждый понедельник баланс пополняется до <b>{hb}</b> монет — 1 презентация в неделю бесплатно\n• 🎟 Промокоды — /promo"),
         "en": ("🧮 <b>Your {c} coins are enough for:</b>", ("presentations", "quizzes", "summaries", "problem solutions", "audios"),
                "🎁 <b>Free coins:</b>\n• 👥 Invite a friend — <b>+{ref}</b> coins each (link in Profile)\n"
-               "• 📅 Every Monday — bonus for users with few coins\n• 🎟 Promo codes — /promo"),
+               "• 📅 Every Monday your balance is topped up to <b>{hb}</b> coins — 1 free presentation a week\n• 🎟 Promo codes — /promo"),
     }.get(til)
     head, names, earn = L
     turlar = ("pptx", "test", "konspekt", "masala", "tts")
     qator = " • ".join(f"<b>{c // DOC_NARX[t]}</b> {n}" for t, n in zip(turlar, names))
-    return f"{head.format(c=c)}\n{qator}\n\n{earn.format(ref=REFERRAL_BONUS)}"
+    return f"{head.format(c=c)}\n{qator}\n\n{earn.format(ref=REFERRAL_BONUS, hb=HAFTALIK_BONUS)}"
+
+
+_XIZMAT_GURUHLARI = [
+    ({"uz": "📚 <b>Asosiy hujjatlar</b>", "ru": "📚 <b>Основные работы</b>", "en": "📚 <b>Main papers</b>"}, [
+        ("docx", "📄 Kurs ishi (25-30 bet)", "📄 Курсовая (25-30 стр.)", "📄 Course work (25-30 p.)"),
+        ("docx_katta", "📚 Kurs ishi (65-70 bet)", "📚 Курсовая (65-70 стр.)", "📚 Course work (65-70 p.)"),
+        ("pptx", "📊 Taqdimot", "📊 Презентация", "📊 Presentation"),
+        ("referat", "📑 Referat", "📑 Реферат", "📑 Essay paper"),
+        ("mustaqil", "🗂 Mustaqil ish", "🗂 Самостоятельная работа", "🗂 Independent work"),
+        ("maqola", "📝 Maqola (IMRAD)", "📝 Статья (IMRAD)", "📝 Article (IMRAD)"),
+        ("tezis", "📋 Tezis", "📋 Тезисы", "📋 Thesis abstract"),
+    ]),
+    ({"uz": "🎓 <b>O'qish va imtihon</b>", "ru": "🎓 <b>Учёба и экзамены</b>", "en": "🎓 <b>Study and exams</b>"}, [
+        ("konspekt", "📚 Konspekt", "📚 Конспект", "📚 Summary"),
+        ("imtihon", "🎯 Imtihonga tayyorlov", "🎯 Подготовка к экзамену", "🎯 Exam prep"),
+        ("masala", "🧮 Masala yechish", "🧮 Решение задач", "🧮 Problem solving"),
+        ("ftest", "🧠 Materialdan test", "🧠 Тест по материалу", "🧠 Test from material"),
+        ("quiz", "✅ Testni quizga aylantirish", "✅ Тест → квиз", "✅ Test → quiz"),
+        ("test", "❓ Test savollari", "❓ Тестовые вопросы", "❓ Test questions"),
+        ("tts", "🎧 Ovozli matn (MP3)", "🎧 Озвучка текста (MP3)", "🎧 Text to voice (MP3)"),
+    ]),
+    ({"uz": "✍️ <b>Matn bilan ishlash</b>", "ru": "✍️ <b>Работа с текстом</b>", "en": "✍️ <b>Text tools</b>"}, [
+        ("tarjima", "🌍 Ilmiy tarjima", "🌍 Научный перевод", "🌍 Academic translation"),
+        ("grammatika", "✍️ Akademik tahrir", "✍️ Академическая правка", "✍️ Academic editing"),
+        ("qayta", "🔄 Qayta yozish", "🔄 Рерайт", "🔄 Rewrite"),
+        ("original", "✨ Originallashtirish", "✨ Уникализация", "✨ Originality boost"),
+        ("antiplagiat", "🛡 Antiplagiat", "🛡 Антиплагиат", "🛡 Anti-plagiarism"),
+        ("esse", "📝 Esse tekshirish", "📝 Проверка эссе", "📝 Essay check"),
+    ]),
+    ({"uz": "🎤 <b>Boshqa</b>", "ru": "🎤 <b>Другое</b>", "en": "🎤 <b>Other</b>"}, [
+        ("nutq", "🎤 Nutq", "🎤 Речь", "🎤 Speech"),
+        ("spiker", "📽 Taqdimot nutqi", "📽 Текст к презентации", "📽 Presentation speech"),
+        ("cv", "💼 Resume / CV", "💼 Резюме / CV", "💼 Resume / CV"),
+        ("gipoteza", "🔬 Ilmiy muammo va gipoteza", "🔬 Научная проблема", "🔬 Research problem"),
+        ("sardor", "🧑‍🏫 Sinf sardori hujjatlari", "🧑‍🏫 Документы старосты", "🧑‍🏫 Class leader docs"),
+    ]),
+]
+
+_TOPUP_T = {
+    "uz": dict(sarlavha="💳 <b>Tanga to'ldirish</b> — narxlar 2 baravar arzonlashdi! 🎉",
+               paket="💰 <b>Tanga paketlari:</b>", tanga="tanga", som="so'm", har="1 tanga ≈ {x} so'm",
+               ommabop="⭐ ommabop", foydali="🔥 eng foydali", bonus="🎁 <b>Birinchi to'lovga +{b}% bonus tanga!</b>",
+               xizmat="📦 <b>Xizmat narxlari</b> <i>(so'mda — 25 talik paket bo'yicha)</i>:",
+               karta="💳 <b>Karta:</b> <code>{card}</code>\n👤 <b>Egasi:</b> {owner}",
+               keyin="📸 To'lovdan so'ng paket nomi va chek skrinshotini @endlessscience ga yuboring — tangalar tez qo'shiladi."),
+    "ru": dict(sarlavha="💳 <b>Пополнение монет</b> — цены снижены в 2 раза! 🎉",
+               paket="💰 <b>Пакеты монет:</b>", tanga="монет", som="сум", har="1 монета ≈ {x} сум",
+               ommabop="⭐ популярный", foydali="🔥 самый выгодный", bonus="🎁 <b>+{b}% бонусных монет к первой оплате!</b>",
+               xizmat="📦 <b>Цены услуг</b> <i>(в сумах — по пакету 25 монет)</i>:",
+               karta="💳 <b>Карта:</b> <code>{card}</code>\n👤 <b>Владелец:</b> {owner}",
+               keyin="📸 После оплаты отправьте название пакета и скриншот чека @endlessscience — монеты зачислят быстро."),
+    "en": dict(sarlavha="💳 <b>Top up coins</b> — prices cut in half! 🎉",
+               paket="💰 <b>Coin packs:</b>", tanga="coins", som="UZS", har="1 coin ≈ {x} UZS",
+               ommabop="⭐ popular", foydali="🔥 best value", bonus="🎁 <b>+{b}% bonus coins on your first payment!</b>",
+               xizmat="📦 <b>Service prices</b> <i>(UZS — based on the 25-coin pack)</i>:",
+               karta="💳 <b>Card:</b> <code>{card}</code>\n👤 <b>Owner:</b> {owner}",
+               keyin="📸 After paying, send the pack name and a receipt screenshot to @endlessscience — coins are added quickly."),
+}
+
+
+def topup_matni(cid: int) -> str:
+    """To'ldirish oynasi — narxlar TANGA_NARXLARI va DOC_NARX dan avtomatik olinadi (bitta joyda o'zgartiriladi)."""
+    til = holat.get(cid, {}).get("til", "uz")
+    T = _TOPUP_T.get(til, _TOPUP_T["uz"])
+    li = {"uz": 1, "ru": 2, "en": 3}.get(til, 1)
+    paketlar = sorted(TANGA_NARXLARI.items())
+    base = paketlar[0][1] / paketlar[0][0]
+    rows = []
+    for idx, (n, narx) in enumerate(paketlar):
+        per = narx / n
+        chegirma = round((1 - per / base) * 100)
+        teg = ""
+        if n == 25:
+            teg = " " + T["ommabop"]
+        elif idx == len(paketlar) - 1:
+            teg = " " + T["foydali"]
+        ch = f" <i>(−{chegirma}%)</i>" if chegirma >= 5 else ""
+        rows.append(f"• <b>{n} {T['tanga']}</b> — {_som(narx)} {T['som']}{ch}{teg}")
+    ref_narx = TANGA_NARXLARI.get(25, paketlar[0][1]) / (25 if 25 in TANGA_NARXLARI else paketlar[0][0])
+    xiz = []
+    for sarl, items in _XIZMAT_GURUHLARI:
+        xiz.append(sarl.get(til, sarl["uz"]))
+        for it in items:
+            k = it[0]
+            if k not in DOC_NARX:
+                continue
+            c = DOC_NARX[k]
+            xiz.append(f"• {it[li]} — <b>{c} 🪙</b> <i>(~{_som(round(c * ref_narx, -2))} {T['som']})</i>")
+        xiz.append("")
+    bonus = T["bonus"].format(b=BIRINCHI_TOLOV_BONUS) + "\n\n" if BIRINCHI_TOLOV_BONUS else ""
+    return (f"{T['sarlavha']}\n\n{T['paket']}\n" + "\n".join(rows) + "\n\n" + bonus +
+            "━━━━━━━━━━━━━━━━━━━━━━\n" + T["xizmat"] + "\n" + "\n".join(xiz).rstrip() +
+            "\n\n━━━━━━━━━━━━━━━━━━━━━━\n" + T["karta"].format(card=CARD_NUMBER, owner=CARD_OWNER) +
+            "\n\n" + T["keyin"])
 
 
 def _show_topup(cid: int):
     """To'lov oynasini ko'rsatish (yangi tugmalar bilan)"""
     bot.send_message(
         cid,
-        tx(cid, "topup_msg").format(card=CARD_NUMBER, owner=CARD_OWNER)
+        topup_matni(cid)
         + "\n\n━━━━━━━━━━━━━━━━━━━━━━\n" + tanga_kalkulyator(cid),
         reply_markup=topup_kb(cid),
         parse_mode="HTML"
@@ -15357,6 +14489,10 @@ def h_tur(msg):
         # Noma'lum tugma — menyu ko'rsatish
         bot.send_message(cid, tx(cid, "tur_tanlash"),
                          reply_markup=main_kb(cid), parse_mode="HTML")
+        return
+
+    if tur == "docx":
+        _kurs_hajm_menu(cid)          # avval hajm tanlanadi, narx shunga qarab
         return
 
     # Tanga tekshirish
@@ -18333,6 +17469,149 @@ def h_doc_ism(msg):
         ),
     )
 
+    _kurs_guruh_sora(cid)
+
+
+# ═══════════════════════════════════════════════
+# KURS ISHI — HAJM TANLASH, GURUH VA ILMIY RAHBAR
+# ═══════════════════════════════════════════════
+_KURS_HAJM_TXT = {
+    "uz": ("📄 <b>Kurs ishi</b>\n\nHajmni tanlang:\n\n"
+           "📘 <b>Standart — 25-30 bet</b> · {n1} 🪙\n"
+           "Kirish, 2 bob (6 paragraf), xulosa va takliflar, 15-20 ta adabiyot\n\n"
+           "📚 <b>Kengaytirilgan — 65-70 bet</b> · {n2} 🪙\n"
+           "Kirish, 3 bob (9 paragraf), ko'proq jadval va grafiklar, 25-35 ta adabiyot\n\n"
+           "Ikkalasida ham: OTM talablari bo'yicha titul, avtomatik mundarija, sahifa raqamlari, "
+           "Word snoskalari, «1-jadval», «1-rasm» raqamlari va manbalar.\n\n💰 Balans: <b>{c} 🪙</b>"),
+    "ru": ("📄 <b>Курсовая работа</b>\n\nВыберите объём:\n\n"
+           "📘 <b>Стандарт — 25-30 стр.</b> · {n1} 🪙\n"
+           "Введение, 2 главы (6 параграфов), заключение и рекомендации, 15-20 источников\n\n"
+           "📚 <b>Расширенная — 65-70 стр.</b> · {n2} 🪙\n"
+           "Введение, 3 главы (9 параграфов), больше таблиц и графиков, 25-35 источников\n\n"
+           "В обоих: титульный лист по требованиям вуза, автоматическое содержание, нумерация страниц, "
+           "сноски Word, «Таблица 1», «Рис. 1» и источники.\n\n💰 Баланс: <b>{c} 🪙</b>"),
+    "en": ("📄 <b>Course work</b>\n\nChoose the size:\n\n"
+           "📘 <b>Standard — 25-30 pages</b> · {n1} 🪙\n"
+           "Introduction, 2 chapters (6 sections), conclusion and recommendations, 15-20 references\n\n"
+           "📚 <b>Extended — 65-70 pages</b> · {n2} 🪙\n"
+           "Introduction, 3 chapters (9 sections), more tables and charts, 25-35 references\n\n"
+           "Both include: university-style title page, automatic table of contents, page numbers, "
+           "Word footnotes, numbered tables/figures with sources.\n\n💰 Balance: <b>{c} 🪙</b>"),
+}
+_KURS_HAJM_BTN = {
+    "uz": ("📘 Standart · 25-30 bet · {n} 🪙", "📚 Kengaytirilgan · 65-70 bet · {n} 🪙"),
+    "ru": ("📘 Стандарт · 25-30 стр. · {n} 🪙", "📚 Расширенная · 65-70 стр. · {n} 🪙"),
+    "en": ("📘 Standard · 25-30 pages · {n} 🪙", "📚 Extended · 65-70 pages · {n} 🪙"),
+}
+_KURS_TANLANDI = {"uz": "✅ Tanlandi: <b>{t}</b>", "ru": "✅ Выбрано: <b>{t}</b>", "en": "✅ Selected: <b>{t}</b>"}
+_KURS_GURUH_TXT = {
+    "uz": ("👥 Titul varag'i uchun <b>guruh</b> va <b>ilmiy rahbar</b>ni yozing:\n\n"
+           "<i>1-qatorda guruh, 2-qatorda ilmiy rahbar. Masalan:</i>\n<code>BI-21-03\ni.f.n., dots. Karimov A.B.</code>\n\n"
+           "Bilmasangiz — «O'tkazib yuborish» (rahbar qatori bo'sh chiziq bo'lib qoladi)."),
+    "ru": ("👥 Укажите для титульного листа <b>группу</b> и <b>научного руководителя</b>:\n\n"
+           "<i>1-я строка — группа, 2-я — руководитель. Например:</i>\n<code>БИ-21-03\nк.э.н., доц. Каримов А.Б.</code>\n\n"
+           "Не знаете — «Пропустить» (останется линия для заполнения)."),
+    "en": ("👥 For the title page, send your <b>group</b> and <b>scientific supervisor</b>:\n\n"
+           "<i>Line 1 — group, line 2 — supervisor. Example:</i>\n<code>BI-21-03\nPhD, Assoc. Prof. Karimov A.B.</code>\n\n"
+           "Not sure — tap «Skip» (a blank line will be left)."),
+}
+
+
+_KURS_CAP = {
+    "uz": "\n\n📄 ~{bet} bet • {j} ta jadval • {r} ta rasm",
+    "ru": "\n\n📄 ~{bet} стр. • таблиц: {j} • рисунков: {r}",
+    "en": "\n\n📄 ~{bet} pages • {j} tables • {r} figures",
+}
+
+
+def _kurs_caption_info(cid: int, gd) -> str:
+    try:
+        if not isinstance(gd, dict) or gd.get("v") != 2:
+            return ""
+        til = holat.get(cid, {}).get("til", "uz")
+        matn = " ".join(r.get("matn", "") for k, v in gd.items() if re.fullmatch(r"bob\d+_data", k)
+                        for r in v.get("rejalar", []))
+        return _KURS_CAP.get(til, _KURS_CAP["uz"]).format(
+            bet=gd.get("bet", "?"), j=matn.count("[JADVAL:"), r=matn.count("[GRAFIK:"))
+    except Exception:
+        return ""
+
+
+def _kurs_hajm_menu(cid: int):
+    til = holat.get(cid, {}).get("til", "uz")
+    t = _KURS_HAJM_BTN.get(til, _KURS_HAJM_BTN["uz"])
+    kb = InlineKeyboardMarkup(row_width=1)
+    kb.add(InlineKeyboardButton(t[0].format(n=DOC_NARX["docx"]), callback_data="kih_standart"),
+           InlineKeyboardButton(t[1].format(n=DOC_NARX["docx_katta"]), callback_data="kih_katta"))
+    bot.send_message(cid, _KURS_HAJM_TXT.get(til, _KURS_HAJM_TXT["uz"]).format(
+        n1=DOC_NARX["docx"], n2=DOC_NARX["docx_katta"], c=get_coins(cid)), reply_markup=kb, parse_mode="HTML")
+
+
+@bot.callback_query_handler(func=lambda c: c.data in ("kih_standart", "kih_katta"))
+def cb_kurs_hajm(call):
+    cid = call.message.chat.id
+    try:
+        bot.answer_callback_query(call.id)
+    except Exception:
+        pass
+    hajm = "katta" if call.data == "kih_katta" else "standart"
+    kalit = "docx_katta" if hajm == "katta" else "docx"
+    kerak, mavjud = DOC_NARX[kalit], get_coins(cid)
+    if cid != ADMIN_ID and mavjud < kerak:
+        bot.send_message(cid, tx(cid, "yetarsiz_tanga").format(mavjud=mavjud, kerak=kerak), parse_mode="HTML")
+        return
+    til = holat.get(cid, {}).get("til", "uz")
+    try:
+        btn = _KURS_HAJM_BTN.get(til, _KURS_HAJM_BTN["uz"])[1 if hajm == "katta" else 0].format(n=kerak)
+        bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=None)
+        bot.send_message(cid, _KURS_TANLANDI.get(til, _KURS_TANLANDI["uz"]).format(t=btn), parse_mode="HTML")
+    except Exception:
+        pass
+    update_holat(cid, "tur", "docx")
+    update_holat(cid, "kurs_hajm", hajm)
+    bot.send_message(cid, tx(cid, "doc_start"), reply_markup=back_kb(cid), parse_mode="HTML")
+    update_holat(cid, "qadam", "otm")
+
+
+def _kurs_guruh_sora(cid: int):
+    til = holat.get(cid, {}).get("til", "uz")
+    kb = InlineKeyboardMarkup()
+    kb.add(InlineKeyboardButton(_QTALAB_SKIP.get(til, _QTALAB_SKIP["uz"]), callback_data="kig_skip"))
+    update_holat(cid, "qadam", "kurs_guruh")
+    bot.send_message(cid, _KURS_GURUH_TXT.get(til, _KURS_GURUH_TXT["uz"]), reply_markup=kb, parse_mode="HTML")
+
+
+@bot.callback_query_handler(func=lambda c: c.data == "kig_skip")
+def cb_kurs_guruh_skip(call):
+    cid = call.message.chat.id
+    try:
+        bot.answer_callback_query(call.id)
+        bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=None)
+    except Exception:
+        pass
+    if holat.get(cid, {}).get("qadam") != "kurs_guruh":
+        return
+    update_holat(cid, "kurs_guruh", "")
+    update_holat(cid, "kurs_rahbar", "")
+    _yaratish(call.message, is_docx=True)
+
+
+@bot.message_handler(func=_q("kurs_guruh"))
+def h_kurs_guruh(msg):
+    cid = msg.chat.id
+    if _is_back(msg):
+        return
+    ok, err_msg = validate_input(cid, msg.text, max_len=220, min_len=2)
+    if not ok:
+        bot.send_message(cid, err_msg, parse_mode="HTML")
+        return
+    qatorlar = [x.strip() for x in msg.text.strip().split("\n") if x.strip()]
+    if len(qatorlar) == 1 and "," in qatorlar[0] and len(qatorlar[0].split(",", 1)[0]) <= 15:
+        qatorlar = [x.strip() for x in qatorlar[0].split(",", 1)]
+    guruh = qatorlar[0][:60] if qatorlar else ""
+    rahbar = " ".join(qatorlar[1:])[:120]
+    update_holat(cid, "kurs_guruh", guruh)
+    update_holat(cid, "kurs_rahbar", rahbar)
     _yaratish(msg, is_docx=True)
 
 # ═══════════════════════════════════════════════
@@ -18950,15 +18229,16 @@ def _yaratish(msg, is_docx: bool):
 
     mavzu = h["mavzu"]
     ism   = h.get("ism", "")
+    narx_kalit = "docx_katta" if (is_docx and h.get("kurs_hajm") == "katta") else tur
 
-    if not _deduct_and_notify(cid, tur):
+    if not _deduct_and_notify(cid, narx_kalit):
         holat.setdefault(cid, {}).pop("qadam", None)
         return
     if not _ai_jarayon_boshlash(cid):
         _bm = bot.send_message(cid, _ai_band_xabar(cid), parse_mode="HTML")
         with _BLOCK_MSG_LOCK:
             _BLOCK_MSG[cid] = _bm.message_id
-        add_coins(cid, DOC_NARX[tur])
+        add_coins(cid, DOC_NARX[narx_kalit])
         return
     wait_txt = tx(cid, "prog_reja") if is_docx else tx(cid, "prog_pptx1")
     kuting   = bot.send_message(cid, wait_txt, parse_mode="HTML")
@@ -19041,6 +18321,7 @@ def _yaratish(msg, is_docx: bool):
                         cid, f,
                         caption=(
                             tx(cid, "done_doc").format(ism=ism) +
+                            _kurs_caption_info(cid, gen_data) +
                             f"\n\n💰 Qolgan tangalar: <b>{get_coins(cid)} 🪙</b>"
                         ),
                         parse_mode="HTML",
@@ -19066,6 +18347,9 @@ def _yaratish(msg, is_docx: bool):
                     "otm":      h["otm"],
                     "fakultet": h["fakultet"],
                     "fan":      h["fan"],
+                    "kurs_hajm": h.get("kurs_hajm", "standart"),
+                    "kurs_guruh": h.get("kurs_guruh", ""),
+                    "kurs_rahbar": h.get("kurs_rahbar", ""),
                     "last_doc": {
                         "tur":   "docx",
                         "mavzu": mavzu,
@@ -19092,7 +18376,7 @@ def _yaratish(msg, is_docx: bool):
             log.error(f"[{cid}] {tur.upper()} XATOLIK: {e}", exc_info=True)
 
             if cid != ADMIN_ID:
-                add_coins(cid, DOC_NARX[tur])
+                add_coins(cid, DOC_NARX[narx_kalit])
 
             try:
                 prog.delete()
