@@ -107,7 +107,7 @@ komissiya), OTMlarning BMI uslubiy ko'rsatmalari (tuzilma, hajm, baholash mezonl
 ## 14.1-versiya (21.11.2026) — kurs ishi ma'lumotlarini kiritish va 3 til
 - 🐞 «Fakultet va Kafedra nomini yozing» deb so'ralib, kafedra keyin yana so'ralardi — endi avval faqat **fakultet**, kafedra keyinroq bir marta
 - ✍️ Har bir qadamda **namuna**: OTM («Samarqand davlat universiteti»), fakultet («Filologiya»), fan («O'zbek tili praktikumi»),
-  mavzu, familiya-ism («Abdug'afforova Gavharoy»), guruh va rahbar, kafedra («O'zbek tilshunosligi»), shahar; kiritilgan qiymat
+  mavzu, familiya-ism («Toshmatova Malika»), guruh va rahbar, kafedra («O'zbek tilshunosligi»), shahar; kiritilgan qiymat
   tasdiq bilan qaytariladi («✅ Fan: O'zbek tili praktikumi»)
 - 🔤 Yangi `matn_norm.py` — foydalanuvchi qanday yozsa ham titul to'g'ri chiqadi:
   - HAMMASI KATTA / hammasi kichik → odatiy yozuv (ism-familiya har so'z bosh harf bilan; nomlarda atoqli otlar — O'zbekiston,

@@ -2646,7 +2646,7 @@ I18N = {
         "ask_fan": ("✅ Fan: <b>{v}</b>\n\n✏️ Kurs ishi <b>mavzusini</b> yozing:\n"
                     "<i>Masalan: O'zbek tilida sinonim so'zlar va ularning xususiyatlari</i>"),
         "ask_mavzu_doc": ("✅ Mavzu: <b>{v}</b>\n\n👤 Titul uchun <b>familiya va ismingizni</b> yozing:\n"
-                          "<i>Masalan: Abdug'afforova Gavharoy</i>"),
+                          "<i>Masalan: Toshmatova Malika</i>"),
         "wait_ppt": (
             "⏳ <b>Taqdimot tayyorlanmoqda...</b>\n\n"
             "📌 Mavzu: <i>{mavzu}</i>\n"

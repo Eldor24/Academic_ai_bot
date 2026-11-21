@@ -99,7 +99,7 @@ _KICHIK_QOLADI = {"va", "bilan", "uchun", "hamda", "yoki", "nomidagi", "и", "в
 
 
 def _soz_katta(w: str) -> str:
-    """So'z bosh harfi (apostrof va defisni hisobga olib): «abdug'affarova» → «Abdug'affarova»."""
+    """So'z bosh harfi (apostrof va defisni hisobga olib): «g'ulomova» → «G'ulomova»."""
     return w[:1].upper() + w[1:] if w else w
 
 
