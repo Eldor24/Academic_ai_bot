@@ -36,6 +36,9 @@ Narxlar tangada (🪙). Admin uchun barcha xizmatlar bepul.
 | 📊 Taqdimot | 5 | 15 ta shablondan biri bilan PowerPoint taqdimot: diagrammalar, jadvallar, bosqichlar |
 | 📄 Kurs ishi (standart) | 12 | 25–30 bet: kirish, 2 bob (6 paragraf), xulosa va takliflar, 15–20 adabiyot |
 | 📚 Kurs ishi (kengaytirilgan) | 25 | 65–70 bet: kirish, 3 bob (9 paragraf), ko'proq jadval va grafiklar, 25–35 adabiyot |
+| 🎓 BMI (bitiruv malakaviy ishi) | 35 | 65–75 bet: BMI tituli, annotatsiya 3 tilda, ilmiy yangilik, 3 bob, xulosa va tavsiyalar, 45–55 adabiyot, ilovalar |
+| 🛡 Himoyaga tayyorlov | 8 | Himoya taqdimoti (9–10 slayd) + 7–9 daqiqalik nutq + 15 ta komissiya savoli va javoblari |
+| 📋 Amaliyot hisoboti | 8 | Titul, amaliyot kundaligi (har ish kuni), hisobot, tavsifnoma loyihasi |
 | 🗂 Mustaqil ish | 6 | Titul, reja, 3 bob, xulosa va **GOST / APA / MLA** formatidagi adabiyotlar ro'yxati |
 | 📑 Referat | 5 | 8–12 betlik referat |
 | 📰 Maqola | 8 | IMRAD formatidagi ilmiy maqola |
@@ -118,7 +121,8 @@ Academic_ai_bot/
 ├── matn_norm.py          # Titul ma'lumotlarini tartibga keltirish (harf, kirill/lotin, takroriy so'zlar)
 ├── tarjima_shim.py       # Qattiq yozilgan o'zbekcha xabarlarni rus/ingliz foydalanuvchilarga tarjima
 ├── sahifalash.py        # Word sahifalarini oldindan hisoblash (mundarija raqamlari, hajm nazorati)
-├── kurs_ishi.py          # Kurs ishi generatori (25–30 / 65–70 bet, mundarija, snoska, jadval, grafik)
+├── kurs_ishi.py          # Kurs ishi va BMI generatori (25–30 / 65–70 / 65–75 bet, mundarija, snoska, jadval, grafik)
+├── xizmatlar_talaba.py   # Himoyaga tayyorlov, Amaliyot hisoboti, BMI menyu tugmasi
 ├── xizmatlar_yangi.py    # Konspekt, Imtihonga tayyorlov, Masala yechish, Mustaqil ish
 ├── xizmatlar_qoshimcha.py# Test markazi, Ovozli matn, Sinf sardori
 ├── ai_budget.py          # AI token sarfini nazorat qilish va limitlar

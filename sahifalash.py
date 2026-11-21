@@ -153,10 +153,11 @@ def _block_first_height(b: dict) -> float:
 
 def _row_h(b: dict, row: list) -> float:
     ncol = max(1, len(b["cols"]))
-    cw = PAGE_W / ncol - 2 * CELL_PAD
+    ws = b.get("widths")
     size = b.get("size", 12)
     lines = 1
-    for c in row:
+    for ci, c in enumerate(row):
+        cw = (ws[ci] * PT_CM if ws and ci < len(ws) else PAGE_W / ncol) - 2 * CELL_PAD
         n, _ = wrap([("t", str(c), b.get("hdr_bold", False) and row is b["cols"], False)], size, cw, cw)
         lines = max(lines, n)
     return lines * line_h(size, 1.0) + 1.0
@@ -214,9 +215,13 @@ def paginate(blocks: list, start_page: int = 1, trace: list | None = None) -> tu
                 need += (blocks[j].get("sb", 0) + nj * lhj + blocks[j].get("sa", 0)) if blocks[j]["k"] != "tbl" \
                     else _block_first_height(blocks[j])
                 j += 1
+            relief_n = 0.0
             if j < len(blocks) and not blocks[j].get("pbb"):
                 need += _block_first_height(blocks[j])
-            if need > pg.free() and need <= PAGE_H:
+                if LO_MODE and blocks[j]["k"] != "tbl" and not blocks[j].get("img_h"):
+                    sz = blocks[j].get("size", 14)       # sahifadagi oxirgi qatorga qo'shimcha interval kerak emas
+                    relief_n = max(0.0, line_h(sz, blocks[j].get("ls", 1.5)) - sz * LINE_K)
+            if need - relief_n > pg.free() + 0.01 and need <= PAGE_H:
                 new_page()
                 sb = 0
         # snoskalar har qator bo'yicha

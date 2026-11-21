@@ -240,6 +240,9 @@ def _coins_ok(cid: int, tur: str) -> bool:
 def _new_session(cid: int, tur: str, qadam: str, **extra):
     til = _til(cid)
     data = {"til": til, "tur": tur, "qadam": qadam}
+    old = _api.holat.get(cid, {}) or {}
+    if old.get("last_doc"):                       # oxirgi hujjat (tahrirlash, himoyaga tayyorlov) saqlanib qoladi
+        data["last_doc"] = old["last_doc"]
     data.update(extra)
     _api.set_holat(cid, data)
 

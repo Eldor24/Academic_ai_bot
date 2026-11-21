@@ -1,5 +1,42 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 15-versiya (21.11.2026) — bitiruvchi va amaliyotchi talabalar uchun 3 ta yangi xizmat
+Namunalar internetdan o'rganildi: VM 13.12.2024 dagi 836-son qarori (yakuniy attestatsiya, BMI, antiplagiat,
+komissiya), OTMlarning BMI uslubiy ko'rsatmalari (tuzilma, hajm, baholash mezonlari), BMI himoyasi bo'yicha qo'llanmalar
+(nutq 7–10 daqiqa, 7–10 slayd), amaliyot hisoboti va tavsifnoma namunalari.
+
+### 🎓 BMI — bitiruv malakaviy ishi (35 🪙)
+- Kurs ishi dvigatelida yangi «bmi» rejimi: **65–75 bet**, 3 bob × 3 paragraf, har bob boshida kirish matni
+- **BMI titul varag'i**: vazirlik, OTM, fakultet, kafedra, «Qo'lyozma huquqida», muallif, mavzu,
+  «… ta'lim yo'nalishi bo'yicha bakalavr darajasini olish uchun», ilmiy rahbar, **taqrizchi**,
+  «Himoyaga ruxsat etildi — Kafedra mudiri ___», shahar – yil (rus va ingliz tilida ham)
+- **Annotatsiya 3 tilda** (o'zbek, rus, ingliz) + kalit so'zlar — titul va mundarija orasida
+- Kirishda **«Tadqiqotning ilmiy yangiligi»** bandi; «Xulosa va tavsiyalar»; 45–55 adabiyot (kamida 30 o'zbekcha)
+- **Ilovalar**: 1-ilova — tayanch tushunchalar lug'ati, 2-ilova — tavsiyalarni amalga oshirish rejasi (mundarijada ham)
+- III bob: takomillashtirish yo'llari; pedagogik yo'nalishda tajriba-sinov ishlarining dasturi (natija raqamlari o'ylab topilmaydi)
+- Qadamlar: OTM → fakultet → **ta'lim yo'nalishi (shifri bilan)** → mavzu → ism → ilmiy rahbar va taqrizchi → kafedra → shahar
+- Mundarija betlari LibreOffice bilan 3 tilda tekshirildi — hammasi aniq
+
+### 🛡 Himoyaga tayyorlov (8 🪙) — yangi `xizmatlar_talaba.py`
+- Manba: botda yaratilgan oxirgi kurs ishi/BMI (bitta tugma) yoki Word/PDF fayl, yoki matn
+- **Himoya taqdimoti** (PPTX, 9–10 slayd): dolzarblik → maqsad va vazifalar → obyekt, predmet, metodlar →
+  (ilmiy yangilik) → ish tuzilishi → nazariy xulosalar → amaliy natijalar → **ishning o'zidagi grafik va jadval** →
+  muammolar → takliflar → xulosa
+- **Himoya nutqi** (Word) — har slayd uchun, 7–9 daqiqa; **15 ta komissiya savoli va javoblar**; baholash mezonlari va maslahatlar
+
+### 📋 Amaliyot hisoboti (8 🪙)
+- Turlari: o'quv, ishlab chiqarish, pedagogik, malakaviy, bitiruv oldi
+- Word: titul → **amaliyot kundaligi** (har ish kuni: №, sana, bajarilgan ishlar, rahbar imzosi; haftalar bo'yicha;
+  pedagogik amaliyotda 6 kunlik hafta) → hisobot (kirish, tashkilot tavsifi, bajarilgan ishlar, ko'nikmalar,
+  muammolar va takliflar, xulosa) → **tavsifnoma** loyihasi (baho, imzo, M.O'. bo'sh)
+- Tashkilot haqida bilinmagan faktlar o'ylab topilmaydi — «______» qoldiriladi; talaba o'zi yozgan ishlar asos qilinadi
+
+### Boshqa
+- Bosh menyuda yangi qatorlar: 🎓 BMI · 🛡 Himoyaga tayyorlov · 📋 Amaliyot hisoboti; narxlar ro'yxatiga qo'shildi
+- Marketing postlari: BMI, himoya va amaliyot haqida 3 ta yangi post (3 tilda) — jami 24 ta
+- 🐞 Konspekt, test markazi va boshqa yangi xizmatlardan foydalanilganda oxirgi hujjat (tahrirlash uchun) o'chib ketardi — tuzatildi
+- Sahifalash: «keyingisi bilan birga» sarlavhalarda sahifa oxiridagi qator hisobi aniqlashtirildi; jadvallarda ustun kengliklari
+
 ## 14.1-versiya (21.11.2026) — kurs ishi ma'lumotlarini kiritish va 3 til
 - 🐞 «Fakultet va Kafedra nomini yozing» deb so'ralib, kafedra keyin yana so'ralardi — endi avval faqat **fakultet**, kafedra keyinroq bir marta
 - ✍️ Har bir qadamda **namuna**: OTM («Samarqand davlat universiteti»), fakultet («Filologiya»), fan («O'zbek tili praktikumi»),

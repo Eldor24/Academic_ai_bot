@@ -213,6 +213,9 @@ DOC_NARX = {
     # ── ASOSIY HUJJATLAR (qiymat yuqori — narx biroz ko'tarildi) ──
     "docx":        12,   # Kurs ishi — standart, 25-30 bet
     "docx_katta":  25,   # Kurs ishi — kengaytirilgan, 65-70 bet (3 bob, ~1,5 baravar ko'p jadval/grafik)
+    "bmi":         35,   # Bitiruv malakaviy ishi — 65-75 bet, annotatsiya 3 tilda, ilmiy yangilik, ilovalar
+    "himoya":       8,   # Himoyaga tayyorlov: taqdimot + himoya nutqi + komissiya savollari (xizmatlar_talaba.py)
+    "amaliyot":     8,   # Amaliyot hisoboti: kundalik + hisobot + tavsifnoma (xizmatlar_talaba.py)
     "pptx":         5,   # 5  → 6   | Taqdimot 10-15 slayd
     "maqola":       8,   # 7  → 9   | IMRAD format, ilmiy qiymat
     "tezis":        5,   # 5  → 6   | Konferensiya tezisi
@@ -359,6 +362,7 @@ import tarjima_shim
 import marketing
 import xizmatlar_yangi
 import xizmatlar_qoshimcha
+import xizmatlar_talaba
 from security import sanitize_long_text, UnsafeFileError
 FLOOD_GUARD = security.install(
     bot, admin_id=ADMIN_ID,
@@ -9816,6 +9820,7 @@ def docx_yaratish(cid: int, otm: str, fakultet: str,
         ism=sanitize_user_input(ism, max_len=150),
         guruh=sanitize_user_input(h.get("kurs_guruh", ""), max_len=60),
         rahbar=sanitize_user_input(h.get("kurs_rahbar", ""), max_len=120),
+        taqrizchi=sanitize_user_input(h.get("kurs_taqrizchi", ""), max_len=120),
         kafedra=sanitize_user_input(h.get("kurs_kafedra", ""), max_len=150),
         shahar=sanitize_user_input(h.get("kurs_shahar", ""), max_len=40),
         hajm=h.get("kurs_hajm", "standart"),
@@ -11076,8 +11081,10 @@ def main_kb(cid: int, show_tahrir: bool = False):
     yb = lambda k: KeyboardButton(xizmatlar_yangi.btn(til, k))
     # ── Eng ko'p ishlatiladigan hujjatlar ──
     m.add(KeyboardButton(tx(cid, "btn_pptx")), KeyboardButton(tx(cid, "btn_docx")))
-    m.add(yb("mustaqil"), KeyboardButton(tx(cid, "btn_referat")))
-    m.add(KeyboardButton(tx(cid, "btn_maqola")), KeyboardButton(tx(cid, "btn_tezis")))
+    m.add(yb("bmi"), yb("himoya"))
+    m.add(yb("amaliyot"), yb("mustaqil"))
+    m.add(KeyboardButton(tx(cid, "btn_referat")), KeyboardButton(tx(cid, "btn_maqola")))
+    m.add(KeyboardButton(tx(cid, "btn_tezis")), yb("sardor"))
     # ── O'qish va imtihon ──
     m.add(yb("konspekt"), yb("imtihon"))
     m.add(KeyboardButton(tx(cid, "btn_test")), yb("ftest"))
@@ -11088,7 +11095,6 @@ def main_kb(cid: int, show_tahrir: bool = False):
     # ── Nutq, CV, ilmiy ──
     m.add(KeyboardButton(tx(cid, "btn_nutq")), KeyboardButton(tx(cid, "btn_spiker")))
     m.add(KeyboardButton(tx(cid, "btn_cv")), KeyboardButton(tx(cid, "btn_gipoteza")))
-    m.add(yb("sardor"))
     # ── Kabinet ──
     m.add(KeyboardButton(tx(cid, "btn_kabinet")), KeyboardButton(tx(cid, "btn_topup")))
     if cid == ADMIN_ID:
@@ -13836,6 +13842,11 @@ _XIZMAT_GURUHLARI = [
     ({"uz": "📚 <b>Asosiy hujjatlar</b>", "ru": "📚 <b>Основные работы</b>", "en": "📚 <b>Main papers</b>"}, [
         ("docx", "📄 Kurs ishi (25-30 bet)", "📄 Курсовая (25-30 стр.)", "📄 Course work (25-30 p.)"),
         ("docx_katta", "📚 Kurs ishi (65-70 bet)", "📚 Курсовая (65-70 стр.)", "📚 Course work (65-70 p.)"),
+        ("bmi", "🎓 BMI — bitiruv ishi (65-75 bet)", "🎓 ВКР / дипломная (65-75 стр.)", "🎓 Graduation thesis (65-75 p.)"),
+        ("himoya", "🛡 Himoyaga tayyorlov (taqdimot + nutq + savollar)", "🛡 Подготовка к защите (слайды + речь + вопросы)",
+         "🛡 Defense prep (slides + speech + questions)"),
+        ("amaliyot", "📋 Amaliyot hisoboti (kundalik + tavsifnoma)", "📋 Отчёт по практике (дневник + характеристика)",
+         "📋 Internship report (diary + reference)"),
         ("pptx", "📊 Taqdimot", "📊 Презентация", "📊 Presentation"),
         ("referat", "📑 Referat", "📑 Реферат", "📑 Essay paper"),
         ("mustaqil", "🗂 Mustaqil ish", "🗂 Самостоятельная работа", "🗂 Independent work"),
@@ -17426,7 +17437,7 @@ def h_fak(msg):
     # ✅ TO'G'RI
     _v = _titul_norm(cid, msg.text, "fakultet", strip=False)
     update_holat(cid, "fakultet", _v)
-    bot.send_message(cid, tx(cid, "ask_fak").format(v=security.esc(_v)),
+    bot.send_message(cid, _ktx(cid, "ask_fak").format(v=security.esc(_v)),
                      reply_markup=back_kb(cid), parse_mode="HTML")
     update_holat(cid, "qadam", "fan")
 
@@ -17444,7 +17455,7 @@ def h_fan(msg):
     # ✅ TO'G'RI
     _v = _titul_norm(cid, msg.text, "fan", strip=True)
     update_holat(cid, "fan", _v)
-    bot.send_message(cid, tx(cid, "ask_fan").format(v=security.esc(_v)),
+    bot.send_message(cid, _ktx(cid, "ask_fan").format(v=security.esc(_v)),
                      reply_markup=back_kb(cid), parse_mode="HTML")
     update_holat(cid, "qadam", "mavzu_doc")
 
@@ -17567,6 +17578,115 @@ def _titul_norm(cid: int, matn: str, tur: str, strip: bool = True) -> str:
         return (matn or "").strip()
 
 
+_BMI_TX = {
+    "uz": {
+        "start": ("🎓 <b>Bitiruv malakaviy ishi (BMI)</b> · {n} 🪙\n\n"
+                  "OTMlar nizomi (VM 2024-yil 13-dekabrdagi 836-son qarori) va BMI uslubiy ko'rsatmalariga mos:\n"
+                  "• 📄 <b>65-75 bet</b>, A4, Times New Roman 14, 1,5 interval\n"
+                  "• 🏛 BMI titul varag'i: yo'nalish, ilmiy rahbar, taqrizchi, «Himoyaga ruxsat etildi»\n"
+                  "• 🌐 <b>Annotatsiya 3 tilda</b> (o'zbek, rus, ingliz) + kalit so'zlar\n"
+                  "• ✍️ Kirish: dolzarblik, maqsad, vazifalar, obyekt, predmet, metodlar, <b>ilmiy yangilik</b>, amaliy ahamiyat\n"
+                  "• 📚 3 bob (9 paragraf), har bob boshida kirish matni, jadval va grafiklar\n"
+                  "• 🧾 Xulosa va tavsiyalar, 45-55 ta adabiyot (kamida 30 ta o'zbekcha), bet ko'rsatilgan snoskalar\n"
+                  "• 📎 Ilovalar: tayanch tushunchalar lug'ati, tavsiyalarni amalga oshirish rejasi\n"
+                  "• 🧭 Avtomatik mundarija (betlari aniq)\n\n"
+                  "⚠️ <i>Himoyadan 2 hafta oldin ish antiplagiatdan o'tkaziladi — matnni o'z tadqiqotingiz va "
+                  "rahbaringiz tavsiyalari bilan boyiting. Tayyor bo'lgach «🛡 Himoyaga tayyorlov» xizmati bilan "
+                  "taqdimot va nutq tayyorlab beraman.</i>\n\n"
+                  "🏛️ <b>OTM</b> nomini to'liq yozing:\n<i>Masalan: Samarqand davlat universiteti</i>"),
+        "ask_fak": ("✅ Fakultet: <b>{v}</b>\n\n🎓 <b>Ta'lim yo'nalishi</b>ni (shifri bilan) yozing:\n"
+                    "<i>Masalan: 60111800 – Xorijiy til va adabiyoti (ingliz tili)</i>\n(shifrini bilmasangiz — faqat nomini)"),
+        "ask_fan": ("✅ Yo'nalish: <b>{v}</b>\n\n✏️ BMI <b>mavzusini</b> yozing (kafedrada tasdiqlangan holda):\n"
+                    "<i>Masalan: Boshlang'ich sinflarda o'qish savodxonligini rivojlantirishning metodik asoslari</i>"),
+        "guruh": ("👨‍🏫 Titul uchun <b>ilmiy rahbar</b> va <b>taqrizchi</b>ni yozing:\n\n"
+                  "<i>1-qatorda ilmiy rahbar, 2-qatorda taqrizchi (bilmasangiz yozmang). Masalan:</i>\n"
+                  "<code>p.f.n., dots. Karimov A.B.\nf.f.d., prof. Rahimova D.S.</code>\n\n"
+                  "Bilmasangiz — «O'tkazib yuborish» (bo'sh chiziq qoladi)."),
+        "done_doc": "✅ <b>{ism}</b>, bitiruv malakaviy ishingiz tayyor! 🎓\n\n"
+                    "🛡 Endi «Himoyaga tayyorlov» bilan taqdimot, 7-10 daqiqalik nutq va komissiya savollarini tayyorlab oling.",
+    },
+    "ru": {
+        "start": ("🎓 <b>Выпускная квалификационная работа (ВКР)</b> · {n} 🪙\n\n"
+                  "По Положению (Постановление КМ №836 от 13.12.2024) и методическим требованиям вузов:\n"
+                  "• 📄 <b>65-75 страниц</b>, A4, Times New Roman 14, интервал 1,5\n"
+                  "• 🏛 Титул ВКР: направление, научный руководитель, рецензент, «Допускается к защите»\n"
+                  "• 🌐 <b>Аннотация на 3 языках</b> (узбекский, русский, английский) + ключевые слова\n"
+                  "• ✍️ Введение: актуальность, цель, задачи, объект, предмет, методы, <b>научная новизна</b>, значимость\n"
+                  "• 📚 3 главы (9 параграфов), вводный текст к каждой главе, таблицы и графики\n"
+                  "• 🧾 Заключение и рекомендации, 45-55 источников, сноски с указанием страниц\n"
+                  "• 📎 Приложения: глоссарий, план внедрения рекомендаций\n"
+                  "• 🧭 Автоматическое содержание с точными страницами\n\n"
+                  "⚠️ <i>За 2 недели до защиты работа проверяется на антиплагиат — дополните текст своими "
+                  "исследованиями и рекомендациями руководителя. Потом в «🛡 Подготовка к защите» сделаю презентацию и речь.</i>\n\n"
+                  "🏛️ Введите полное название <b>вуза</b>:\n<i>Например: Самаркандский государственный университет</i>"),
+        "ask_fak": ("✅ Факультет: <b>{v}</b>\n\n🎓 <b>Направление образования</b> (с шифром):\n"
+                    "<i>Например: 60111800 – Иностранный язык и литература (английский)</i>"),
+        "ask_fan": ("✅ Направление: <b>{v}</b>\n\n✏️ <b>Тема</b> ВКР (утверждённая кафедрой):\n"
+                    "<i>Например: Методические основы развития читательской грамотности в начальных классах</i>"),
+        "guruh": ("👨‍🏫 Укажите для титула <b>научного руководителя</b> и <b>рецензента</b>:\n\n"
+                  "<i>1-я строка — руководитель, 2-я — рецензент (если знаете). Например:</i>\n"
+                  "<code>к.п.н., доц. Каримов А.Б.\nд.ф.н., проф. Рахимова Д.С.</code>\n\n"
+                  "Не знаете — «Пропустить»."),
+        "done_doc": "✅ <b>{ism}</b>, выпускная квалификационная работа готова! 🎓\n\n"
+                    "🛡 Теперь в «Подготовка к защите» — презентация, речь на 7-10 минут и вопросы комиссии.",
+    },
+    "en": {
+        "start": ("🎓 <b>Graduation qualification paper (BMI)</b> · {n} 🪙\n\n"
+                  "Following the Regulation (Cabinet Resolution No. 836 of 13.12.2024) and university guidelines:\n"
+                  "• 📄 <b>65-75 pages</b>, A4, Times New Roman 14, 1.5 spacing\n"
+                  "• 🏛 Thesis title page: field of study, supervisor, reviewer, “Admitted to defense”\n"
+                  "• 🌐 <b>Annotation in 3 languages</b> (Uzbek, Russian, English) + keywords\n"
+                  "• ✍️ Introduction: relevance, aim, objectives, object, subject, methods, <b>scientific novelty</b>, significance\n"
+                  "• 📚 3 chapters (9 sections), chapter introductions, tables and charts\n"
+                  "• 🧾 Conclusion and recommendations, 45-55 references, footnotes with page numbers\n"
+                  "• 📎 Appendices: glossary, implementation plan for the recommendations\n"
+                  "• 🧭 Automatic table of contents with exact pages\n\n"
+                  "⚠️ <i>Theses are checked for plagiarism 2 weeks before the defense — enrich the text with your own "
+                  "research and your supervisor's advice. Then use «🛡 Defense prep» for slides and a speech.</i>\n\n"
+                  "🏛️ Enter the full name of your <b>university</b>:\n<i>e.g. Samarkand State University</i>"),
+        "ask_fak": ("✅ Faculty: <b>{v}</b>\n\n🎓 <b>Field of study</b> (with code):\n"
+                    "<i>e.g. 60111800 – Foreign Language and Literature (English)</i>"),
+        "ask_fan": ("✅ Field of study: <b>{v}</b>\n\n✏️ <b>Topic</b> of the thesis (as approved by the department):\n"
+                    "<i>e.g. Methodological foundations of developing reading literacy in primary school</i>"),
+        "guruh": ("👨‍🏫 For the title page, send your <b>scientific supervisor</b> and <b>reviewer</b>:\n\n"
+                  "<i>Line 1 — supervisor, line 2 — reviewer (if known). Example:</i>\n"
+                  "<code>PhD, Assoc. Prof. Karimov A.B.\nDSc, Prof. Rahimova D.S.</code>\n\n"
+                  "Not sure — tap «Skip»."),
+        "done_doc": "✅ <b>{ism}</b>, your graduation paper is ready! 🎓\n\n"
+                    "🛡 Next, use «Defense prep» for slides, a 7-10 minute speech and committee questions.",
+    },
+}
+
+
+def _is_bmi(cid: int) -> bool:
+    return holat.get(cid, {}).get("kurs_hajm") == "bmi"
+
+
+def _ktx(cid: int, key: str) -> str:
+    """Kurs ishi / BMI oqimi uchun matn: BMI tanlangan bo'lsa — BMI varianti."""
+    if _is_bmi(cid):
+        til = holat.get(cid, {}).get("til", "uz")
+        v = _BMI_TX.get(til, _BMI_TX["uz"]).get(key)
+        if v:
+            return v
+    return tx(cid, key)
+
+
+def bmi_boshlash(msg):
+    """🎓 Bosh menyudagi «BMI» tugmasi — kurs ishi dvigateli BMI rejimida."""
+    cid = msg.chat.id
+    holat.setdefault(cid, {}).pop("qadam", None)
+    kerak, mavjud = DOC_NARX["bmi"], get_coins(cid)
+    if cid != ADMIN_ID and mavjud < kerak:
+        bot.send_message(cid, tx(cid, "yetarsiz_tanga").format(mavjud=mavjud, kerak=kerak), parse_mode="HTML")
+        return
+    update_holat(cid, "tur", "docx")
+    update_holat(cid, "kurs_hajm", "bmi")
+    update_holat(cid, "kurs_taqrizchi", "")
+    bot.send_message(cid, _ktx(cid, "start").format(n=kerak), reply_markup=back_kb(cid), parse_mode="HTML")
+    update_holat(cid, "qadam", "otm")
+
+
 def _kurs_hajm_menu(cid: int):
     holat.setdefault(cid, {}).pop("qadam", None)      # oldingi xizmatning qadami qolib ketmasin
     til = holat.get(cid, {}).get("til", "uz")
@@ -17609,7 +17729,8 @@ def _kurs_guruh_sora(cid: int):
     kb = InlineKeyboardMarkup()
     kb.add(InlineKeyboardButton(_QTALAB_SKIP.get(til, _QTALAB_SKIP["uz"]), callback_data="kig_skip"))
     update_holat(cid, "qadam", "kurs_guruh")
-    bot.send_message(cid, _KURS_GURUH_TXT.get(til, _KURS_GURUH_TXT["uz"]), reply_markup=kb, parse_mode="HTML")
+    bot.send_message(cid, _ktx(cid, "guruh") if _is_bmi(cid) else _KURS_GURUH_TXT.get(til, _KURS_GURUH_TXT["uz"]),
+                     reply_markup=kb, parse_mode="HTML")
 
 
 @bot.callback_query_handler(func=lambda c: c.data == "kig_skip")
@@ -17624,6 +17745,7 @@ def cb_kurs_guruh_skip(call):
         return
     update_holat(cid, "kurs_guruh", "")
     update_holat(cid, "kurs_rahbar", "")
+    update_holat(cid, "kurs_taqrizchi", "")
     _kurs_kafedra_sora(cid)
 
 
@@ -17637,6 +17759,13 @@ def h_kurs_guruh(msg):
         bot.send_message(cid, err_msg, parse_mode="HTML")
         return
     qatorlar = [x.strip() for x in msg.text.strip().split("\n") if x.strip()]
+    if _is_bmi(cid):                                   # BMI: 1-qator ilmiy rahbar, 2-qator taqrizchi
+        update_holat(cid, "kurs_guruh", "")
+        update_holat(cid, "kurs_rahbar", _titul_norm(cid, qatorlar[0], "rahbar")[:120] if qatorlar else "")
+        update_holat(cid, "kurs_taqrizchi", _titul_norm(cid, " ".join(qatorlar[1:]), "rahbar")[:120]
+                     if len(qatorlar) > 1 else "")
+        _kurs_kafedra_sora(cid)
+        return
     if len(qatorlar) == 1 and "," in qatorlar[0] and len(qatorlar[0].split(",", 1)[0]) <= 15:
         qatorlar = [x.strip() for x in qatorlar[0].split(",", 1)]
     guruh = _titul_norm(cid, qatorlar[0], "guruh")[:60] if qatorlar else ""
@@ -18341,7 +18470,7 @@ def _yaratish(msg, is_docx: bool):
 
     mavzu = h["mavzu"]
     ism   = h.get("ism", "")
-    narx_kalit = "docx_katta" if (is_docx and h.get("kurs_hajm") == "katta") else tur
+    narx_kalit = ({"katta": "docx_katta", "bmi": "bmi"}.get(h.get("kurs_hajm"), "docx")) if is_docx else tur
 
     if not _deduct_and_notify(cid, narx_kalit):
         holat.setdefault(cid, {}).pop("qadam", None)
@@ -18427,12 +18556,12 @@ def _yaratish(msg, is_docx: bool):
                 _increment_docs_count(cid)
 
                 safe_mavzu = re.sub(r'[^\w\s-]', '', mavzu)[:40].strip().replace(' ', '_')
-                vfname = f"Kurs_Ishi_{safe_mavzu}.docx"
+                vfname = (f"BMI_{safe_mavzu}.docx" if h.get("kurs_hajm") == "bmi" else f"Kurs_Ishi_{safe_mavzu}.docx")
                 with open(fname, "rb") as f:
                     sent_msg = bot.send_document(
                         cid, f,
                         caption=(
-                            tx(cid, "done_doc").format(ism=ism) +
+                            _ktx(cid, "done_doc").format(ism=ism) +
                             _kurs_caption_info(cid, gen_data) +
                             f"\n\n💰 Qolgan tangalar: <b>{get_coins(cid)} 🪙</b>"
                         ),
@@ -18442,7 +18571,7 @@ def _yaratish(msg, is_docx: bool):
 
                 _log_bot_javob(
                     cid=cid,
-                    javob_turi="📄 DOCX Kurs ishi",
+                    javob_turi="🎓 BMI (bitiruv ishi)" if h.get("kurs_hajm") == "bmi" else "📄 DOCX Kurs ishi",
                     javob_matn=f"Mavzu: {mavzu}\nMuallif: {ism}\nOTM: {h['otm']}\nFakultet: {h['fakultet']}\nFan: {h['fan']}",
                     file_id=sent_msg.document.file_id,
                     file_type="document",
@@ -18462,6 +18591,7 @@ def _yaratish(msg, is_docx: bool):
                     "kurs_hajm": h.get("kurs_hajm", "standart"),
                     "kurs_guruh": h.get("kurs_guruh", ""),
                     "kurs_rahbar": h.get("kurs_rahbar", ""),
+                    "kurs_taqrizchi": h.get("kurs_taqrizchi", ""),
                     "kurs_kafedra": h.get("kurs_kafedra", ""),
                     "kurs_shahar": h.get("kurs_shahar", ""),
                     "last_doc": {
@@ -20730,6 +20860,7 @@ xizmatlar_yangi.register(bot, _NS(
     qtalab=dict(txt=_QTALAB_TXT, skip=_QTALAB_SKIP, ok=_QTALAB_OK, bad=_QTALAB_BAD, max=QTALAB_MAX),
 ))
 xizmatlar_qoshimcha.register(bot)
+xizmatlar_talaba.register(bot, bmi_boshlash)   # 🎓 BMI, 🛡 Himoyaga tayyorlov, 📋 Amaliyot hisoboti
 
 
 # ── Marketing: haftasiga 2 marta xizmatlar haqida post (marketing.py) ──

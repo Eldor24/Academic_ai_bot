@@ -67,6 +67,54 @@ POSTS = [
            "the rest:\n✅ Title page, contents, introduction, chapters, conclusion\n✅ Footnotes and references\n"
            "✅ Tables and charts\n\n📘 25-30 pages — <b>{narx} coins</b>\n📚 65-70 pages — <b>{narx2} coins</b>\n\n"
            "💡 Add your teacher's requirements and the work will follow them."},
+    {"key": "bmi", "narx2": None,
+     "uz": "🎓 <b>Bitiruv malakaviy ishi (BMI) — OTM talablari bo'yicha</b>\n\nYo'nalish va mavzuni yozasiz — bot to'liq "
+           "BMI tuzadi:\n✅ BMI titul varag'i (ilmiy rahbar, taqrizchi, «Himoyaga ruxsat etildi»)\n"
+           "✅ Annotatsiya 3 tilda — o'zbek, rus, ingliz\n✅ Kirish: dolzarblik, maqsad, vazifalar, obyekt, predmet, "
+           "<b>ilmiy yangilik</b>\n✅ 3 bob, jadval va grafiklar, bet ko'rsatilgan snoskalar\n"
+           "✅ 45-55 ta adabiyot, xulosa va tavsiyalar, ilovalar\n✅ Betlari aniq avtomatik mundarija\n\n"
+           "📄 65-75 bet — <b>{narx} tanga</b>\n\n💡 Keyin «🛡 Himoyaga tayyorlov» bilan taqdimot va nutq ham tayyor.",
+     "ru": "🎓 <b>Выпускная квалификационная работа (ВКР) — по требованиям вузов</b>\n\nУкажите направление и тему — "
+           "бот подготовит полную ВКР:\n✅ Титул ВКР (руководитель, рецензент, «Допускается к защите»)\n"
+           "✅ Аннотация на 3 языках — узбекском, русском, английском\n✅ Введение: актуальность, цель, задачи, объект, "
+           "предмет, <b>научная новизна</b>\n✅ 3 главы, таблицы и графики, сноски со страницами\n"
+           "✅ 45-55 источников, заключение и рекомендации, приложения\n✅ Автоматическое содержание с точными страницами\n\n"
+           "📄 65-75 стр. — <b>{narx} монет</b>\n\n💡 Затем «🛡 Подготовка к защите» — презентация и речь.",
+     "en": "🎓 <b>Graduation thesis — following university requirements</b>\n\nEnter your field of study and topic — the bot "
+           "prepares the full thesis:\n✅ Thesis title page (supervisor, reviewer, “Admitted to defense”)\n"
+           "✅ Annotation in 3 languages — Uzbek, Russian, English\n✅ Introduction: relevance, aim, objectives, object, "
+           "subject, <b>scientific novelty</b>\n✅ 3 chapters, tables and charts, footnotes with page numbers\n"
+           "✅ 45-55 references, conclusion, appendices\n✅ Automatic table of contents with exact pages\n\n"
+           "📄 65-75 pages — <b>{narx} coins</b>\n\n💡 Then use «🛡 Defense prep» for slides and a speech."},
+    {"key": "himoya", "narx2": None,
+     "uz": "🛡 <b>Himoyaga 1 kun qoldimi? Hammasi tayyor bo'ladi</b>\n\nKurs ishi yoki BMI faylingizni yuboring "
+           "(yoki botda yozilgan ishingizni tanlang):\n✅ Himoya taqdimoti — 9-10 slayd, ishingizdagi jadval va grafiklar "
+           "bilan\n✅ 7-9 daqiqalik himoya nutqi — har slayd uchun\n✅ Komissiya berishi mumkin bo'lgan <b>15 ta savol va "
+           "javob</b>\n✅ Himoyada nimalar baholanishi va maslahatlar\n\n💰 <b>{narx} tanga</b>",
+     "ru": "🛡 <b>Защита завтра? Подготовим всё</b>\n\nОтправьте файл курсовой или ВКР (или выберите работу, сделанную в "
+           "боте):\n✅ Презентация для защиты — 9-10 слайдов с таблицами и графиками из работы\n"
+           "✅ Речь на 7-9 минут — к каждому слайду\n✅ <b>15 вероятных вопросов комиссии с ответами</b>\n"
+           "✅ Критерии оценки и советы\n\n💰 <b>{narx} монет</b>",
+     "en": "🛡 <b>Defense tomorrow? We'll get you ready</b>\n\nSend your course work or thesis file (or pick the work made "
+           "in the bot):\n✅ Defense slides — 9-10 slides with tables and charts from your work\n"
+           "✅ A 7-9 minute speech — for every slide\n✅ <b>15 likely committee questions with answers</b>\n"
+           "✅ Assessment criteria and tips\n\n💰 <b>{narx} coins</b>"},
+    {"key": "amaliyot", "narx2": None,
+     "uz": "📋 <b>Amaliyot tugadi — hisobot qoldi?</b>\n\nTashkilot, muddat va rahbarlarni yozasiz — bot tayyorlaydi:\n"
+           "✅ Titul varag'i\n✅ <b>Amaliyot kundaligi</b> — har ish kuni uchun sana va bajarilgan ishlar\n"
+           "✅ Hisobot: tashkilot tavsifi, bajarilgan ishlar, ko'nikmalar, muammo va takliflar, xulosa\n"
+           "✅ <b>Tavsifnoma</b> loyihasi — rahbar faqat imzolaydi\n\nO'quv, ishlab chiqarish, pedagogik, malakaviy va "
+           "bitiruv oldi amaliyotlari uchun.\n\n💰 <b>{narx} tanga</b>",
+     "ru": "📋 <b>Практика закончилась — остался отчёт?</b>\n\nУкажите организацию, сроки и руководителей — бот подготовит:\n"
+           "✅ Титульный лист\n✅ <b>Дневник практики</b> — дата и работы за каждый рабочий день\n"
+           "✅ Отчёт: характеристика организации, выполненные работы, навыки, проблемы и предложения, заключение\n"
+           "✅ Проект <b>характеристики</b> — руководителю остаётся подписать\n\nДля учебной, производственной, "
+           "педагогической, квалификационной и преддипломной практики.\n\n💰 <b>{narx} монет</b>",
+     "en": "📋 <b>Internship over — report still to do?</b>\n\nEnter the organisation, dates and supervisors — the bot "
+           "prepares:\n✅ Title page\n✅ <b>Internship diary</b> — date and tasks for each working day\n"
+           "✅ Report: organisation profile, work done, skills, problems and suggestions, conclusion\n"
+           "✅ Draft <b>reference letter</b> — the supervisor only signs it\n\nFor educational, industrial, teaching, "
+           "professional and pre-graduation internships.\n\n💰 <b>{narx} coins</b>"},
     {"key": "konspekt", "narx2": None,
      "uz": "📚 <b>Darslik qalinmi? Konspekt qilib beramiz</b>\n\nMa'ruza matni, PDF/Word fayl yoki daftar rasmini yuboring:\n"
            "✅ Qisqa mazmun va asosiy g'oyalar\n✅ Atamalar lug'ati\n✅ Takrorlash uchun savollar\n"

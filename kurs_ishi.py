@@ -59,6 +59,10 @@ HAJMLAR = {
                      takliflar=5, adab=(30, 36), uz_min=25, bet="25–30", bet_oraliq=(27, 30), workers=3),
     "katta":    dict(boblar=3, rejalar=3, sec_words=1300, kirish_words=1150, xulosa_par=7,
                      takliflar=7, adab=(36, 45), uz_min=28, bet="65–70", bet_oraliq=(66, 70), workers=3),
+    # Bitiruv malakaviy ishi (bakalavr): 3 bob × 3 paragraf, annotatsiya (3 tilda), ilmiy yangilik, ilovalar.
+    # Hajm OTM nizomlari bo'yicha odatda 50-80 bet (ilovalarsiz) — 65-75 bet tanlandi.
+    "bmi":      dict(boblar=3, rejalar=3, sec_words=1250, kirish_words=1350, xulosa_par=8,
+                     takliflar=8, adab=(45, 55), uz_min=30, bet="65–75", bet_oraliq=(66, 75), workers=3),
 }
 
 WPP = 215          # o'zbekcha so'z / bet (TNR 14, 1,5 interval, A4 — o'lchangan)
@@ -149,7 +153,7 @@ LBL = {
     },
 }
 KIRISH_TARTIB = ["dolzarbligi", "organilganlik_darajasi", "maqsadi", "vazifalari", "obyekti", "predmeti",
-                 "metodologik_asosi", "amaliy_ahamiyati", "tuzilishi"]
+                 "metodologik_asosi", "ilmiy_yangiligi", "amaliy_ahamiyati", "tuzilishi"]
 ROMAN = ["I", "II", "III", "IV", "V", "VI"]
 GURUH_TARTIB = ["normativ", "asosiy", "xorijiy", "internet"]
 
@@ -168,6 +172,57 @@ _SHAHAR_KALIT = {
 
 def L(til: str) -> dict:
     return LBL.get(til, LBL["uz"])
+
+
+# Bitiruv malakaviy ishi uchun yorliqlar (qolganlari LBL dan olinadi)
+LBL_BMI = {
+    "uz": {"kurs_ishi": "BITIRUV MALAKAVIY ISHI", "xulosa": "XULOSA VA TAVSIYALAR", "takliflar": "Tavsiyalar:",
+           "annotatsiya": "ANNOTATSIYA", "kalit": "Kalit so'zlar:", "ilovalar": "ILOVALAR", "ilova": "{n}-ilova",
+           "tuzilishi": "Bitiruv malakaviy ishining tuzilishi.", "ilmiy_yangiligi": "Tadqiqotning ilmiy yangiligi quyidagilardan iborat:",
+           "tuzilish": ("Bitiruv malakaviy ishi kirish, {b} ta bob ({p} ta paragraf), xulosa va tavsiyalar, "
+                        "foydalanilgan adabiyotlar ro'yxati va ilovalardan iborat.{extra} Ishning umumiy hajmi {bet} betni "
+                        "tashkil etadi.")},
+    "ru": {"kurs_ishi": "ВЫПУСКНАЯ КВАЛИФИКАЦИОННАЯ РАБОТА", "xulosa": "ЗАКЛЮЧЕНИЕ И РЕКОМЕНДАЦИИ",
+           "takliflar": "Рекомендации:", "annotatsiya": "АННОТАЦИЯ", "kalit": "Ключевые слова:",
+           "ilovalar": "ПРИЛОЖЕНИЯ", "ilova": "Приложение {n}", "tuzilishi": "Структура работы.",
+           "ilmiy_yangiligi": "Научная новизна исследования заключается в следующем:",
+           "tuzilish": ("Выпускная квалификационная работа состоит из введения, {b} глав ({p} параграфов), заключения "
+                        "и рекомендаций, списка использованной литературы и приложений.{extra} Общий объём работы — "
+                        "{bet} страниц.")},
+    "en": {"kurs_ishi": "GRADUATION QUALIFICATION PAPER", "xulosa": "CONCLUSION AND RECOMMENDATIONS",
+           "takliflar": "Recommendations:", "annotatsiya": "ANNOTATION", "kalit": "Keywords:",
+           "ilovalar": "APPENDICES", "ilova": "Appendix {n}", "tuzilishi": "Structure of the work.",
+           "ilmiy_yangiligi": "The scientific novelty of the research is as follows:",
+           "tuzilish": ("The graduation paper consists of an introduction, {b} chapters ({p} sections), a conclusion "
+                        "with recommendations, a list of references and appendices.{extra} The total volume of the work "
+                        "is {bet} pages.")},
+}
+ANNOT_LBL = {"uz": ("ANNOTATSIYA", "Kalit so'zlar:"), "ru": ("АННОТАЦИЯ", "Ключевые слова:"),
+             "en": ("ANNOTATION", "Keywords:")}
+
+
+def LB(til: str, hajm: str = "") -> dict:
+    """Hujjat turiga mos yorliqlar: kurs ishi yoki bitiruv malakaviy ishi."""
+    base = L(til)
+    if hajm != "bmi":
+        return base
+    o = LBL_BMI.get(til, LBL_BMI["uz"])
+    lb = dict(base)
+    lb.update({k: v for k, v in o.items() if k not in ("tuzilishi", "ilmiy_yangiligi")})
+    lb["kirish_lbl"] = dict(base["kirish_lbl"], tuzilishi=o["tuzilishi"], ilmiy_yangiligi=o["ilmiy_yangiligi"])
+    return lb
+
+
+def _bmi(p: dict) -> bool:
+    return (p or {}).get("hajm") == "bmi"
+
+
+def _ish(p: dict) -> str:
+    return "bitiruv malakaviy ishi" if _bmi(p) else "kurs ishi"
+
+
+def _soha(p: dict) -> str:
+    return f"«{p['fan']}» ta'lim yo'nalishi" if _bmi(p) else f"«{p['fan']}» fani"
 
 
 def shahar_aniqla(otm: str, til: str) -> str:
@@ -230,6 +285,17 @@ def _num(v):
 # AI SO'ROVLARI
 # ═══════════════════════════════════════════════
 def _rollar(hajm: str) -> list[str]:
+    if hajm == "bmi":
+        return [
+            "NAZARIY-METODOLOGIK ASOSLAR: asosiy tushunchalar va ta'riflar, o'zbek va xorij olimlarining ilmiy "
+            "qarashlari, rivojlanish tarixi, tasnif, omillar, baholash mezonlari va tadqiqot metodologiyasi",
+            "HOZIRGI HOLAT TAHLILI: O'zbekiston amaliyoti va normativ-huquqiy asoslar, xorij tajribasi, qiyosiy tahlil, "
+            "tendensiyalar, mavjud muammolar va ularning sabablari",
+            "TAKOMILLASHTIRISH YO'LLARI VA AMALIY TAVSIYALAR: muammolarni hal etish modeli/mexanizmi, xorij "
+            "tajribasini qo'llash, aniq tavsiyalar va ularni joriy etish bosqichlari; pedagogik yo'nalishlarda — "
+            "tajriba-sinov ishlarining maqsadi, bosqichlari, mezonlari va baholash usuli (natija raqamlari o'ylab "
+            "topilmaydi)",
+        ]
     if HAJMLAR[hajm]["boblar"] == 2:
         return [
             "NAZARIY-METODOLOGIK ASOSLAR: asosiy tushunchalar va ta'riflar, olimlarning ilmiy qarashlari, "
@@ -251,8 +317,8 @@ def _plan_prompt(p: dict) -> str:
     h = HAJMLAR[p["hajm"]]
     rollar = "\n".join(f"  {ROMAN[i]} bob — {r}" for i, r in enumerate(_rollar(p["hajm"])))
     lo, hi = h["adab"]
-    return f"""Sen «{p['fan']}» fani bo'yicha 20 yillik tajribaga ega ilmiy rahbar va professorsan. {L(p['til'])['lang']}
-«{p['mavzu']}» mavzusidagi KURS ISHI uchun REJA (mundarija) va FOYDALANILGAN ADABIYOTLAR ro'yxatini tuz.
+    return f"""Sen {_soha(p)} bo'yicha 20 yillik tajribaga ega ilmiy rahbar va professorsan. {L(p['til'])['lang']}
+«{p['mavzu']}» mavzusidagi {_ish(p).upper()} uchun REJA (mundarija) va FOYDALANILGAN ADABIYOTLAR ro'yxatini tuz.
 
 TUZILMA: aynan {h['boblar']} ta bob, har bobda aynan {h['rejalar']} ta paragraf.
 Boblarning vazifasi:
@@ -300,9 +366,9 @@ def _mahalliy_soni(adab: list, til: str) -> int:
 
 
 def _adab_qoshimcha_prompt(p: dict, plan: dict, adab: list, kerak: int) -> str:
-    return f"""Sen «{p['fan']}» fani bo'yicha tajribali ilmiy rahbarsan.
-«{p['mavzu']}» mavzusidagi kurs ishi uchun FOYDALANILGAN ADABIYOTLAR ro'yxatini to'ldir.
-Kurs ishi rejasi:
+    return f"""Sen {_soha(p)} bo'yicha tajribali ilmiy rahbarsan.
+«{p['mavzu']}» mavzusidagi {_ish(p)} uchun FOYDALANILGAN ADABIYOTLAR ro'yxatini to'ldir.
+{_ish(p).capitalize()} rejasi:
 {_outline_text(plan)}
 
 Mavjud ro'yxat (bularni TAKRORLAMA):
@@ -361,14 +427,17 @@ def _manba_taqsimoti(adab: list, tasks: list, har: int = 5) -> dict:
 
 
 def _kirish_prompt(p: dict, plan: dict) -> str:
-    katta = p["hajm"] == "katta"
+    katta = p["hajm"] in ("katta", "bmi")
+    yangilik = ('- "ilmiy_yangiligi": 3-4 ta band ro\'yxati (har biri 1-2 gap): ishda birinchi marta nima taklif '
+                'etilgani, qaysi tushuncha aniqlashtirilgani, qanday model/tavsiya ishlab chiqilgani — '
+                'ishning mazmuniga mos, mubolag\'asiz.\n') if _bmi(p) else ""
     w = {"d": 300 if katta else 190, "o": 240 if katta else 120, "m": 80 if katta else 60, "v": 6 if katta else 5,
          "ob": 70 if katta else 50, "pr": 70 if katta else 50, "me": 110 if katta else 70,
          "a": 110 if katta else 70}
-    return f"""Sen «{p['fan']}» fani bo'yicha tajribali ilmiy rahbarsan. {L(p['til'])['lang']}
-«{p['mavzu']}» mavzusidagi kurs ishining KIRISH qismini yoz.
+    return f"""Sen {_soha(p)} bo'yicha tajribali ilmiy rahbarsan. {L(p['til'])['lang']}
+«{p['mavzu']}» mavzusidagi {_ish(p)}ning KIRISH qismini yoz.
 
-Kurs ishi rejasi:
+{_ish(p).capitalize()} rejasi:
 {_outline_text(plan)}
 
 Talablar (so'z soni — taxminiy):
@@ -381,12 +450,12 @@ Talablar (so'z soni — taxminiy):
 - "obyekti": {w['ob']} so'z. "predmeti": {w['pr']} so'z (obyekt va predmet aniq farqlansin).
 - "metodologik_asosi": {w['me']} so'z — qo'llanilgan ilmiy metodlar (tahlil, sintez, qiyosiy, tizimli, statistik,
   mantiqiy umumlashtirish va h.k.) va nazariy-uslubiy asos.
-- "amaliy_ahamiyati": {w['a']} so'z — natijalardan kim, qayerda foydalanishi mumkin.
+{yangilik}- "amaliy_ahamiyati": {w['a']} so'z — natijalardan kim, qayerda foydalanishi mumkin.
 Kirishda [1] kabi havolalar va raqamli statistik ma'lumotlar YOZILMASIN.
 
 FAQAT JSON:
 {{"dolzarbligi":"...","organilganlik_darajasi":"...","maqsadi":"...","vazifalari":["...","..."],
- "obyekti":"...","predmeti":"...","metodologik_asosi":"...","amaliy_ahamiyati":"..."}}"""
+ "obyekti":"...","predmeti":"...","metodologik_asosi":"...",{'"ilmiy_yangiligi":["...","..."],' if _bmi(p) else ""}"amaliy_ahamiyati":"..."}}"""
 
 
 def _section_rules(hajm: str, bi: int, ri: int, nbob: int) -> tuple[bool, bool, bool]:
@@ -437,10 +506,10 @@ def _section_prompt(p: dict, plan: dict, adab: list, bi: int, ri: int, manbalar:
     else:
         grafik = '"grafik": null bo\'lsin.'
     bandlar = "\n".join(f"  - {x}" for x in r.get("bandlar", [])) or "  - (paragraf nomidan kelib chiqib)"
-    return f"""Sen «{p['fan']}» fani bo'yicha tajribali ilmiy rahbar va akademik muallifsan. {L(p['til'])['lang']}
-Kurs ishi mavzusi: «{p['mavzu']}».
+    return f"""Sen {_soha(p)} bo'yicha tajribali ilmiy rahbar va akademik muallifsan. {L(p['til'])['lang']}
+{_ish(p).capitalize()} mavzusi: «{p['mavzu']}».
 
-Kurs ishi rejasi:
+{_ish(p).capitalize()} rejasi:
 {_outline_text(plan)}
 
 HOZIR YOZILADIGAN QISM: {ROMAN[bi]} bob «{b['nomi']}» → {bi + 1}.{ri + 1}. «{r['sarlavha']}»
@@ -474,7 +543,7 @@ def _davom_prompt(p: dict, plan: dict, bi: int, ri: int, mavjud: list, kerak: in
     r = b["rejalar"][ri]
     oxirgi = " ".join(mavjud[-2:])[-1200:]
     return f"""{L(p['til'])['lang']}
-«{p['mavzu']}» kurs ishining {bi + 1}.{ri + 1}. «{r['sarlavha']}» paragrafi qisqa chiqdi. Uni DAVOM ETTIR:
+«{p['mavzu']}» {_ish(p)}ning {bi + 1}.{ri + 1}. «{r['sarlavha']}» paragrafi qisqa chiqdi. Uni DAVOM ETTIR:
 yana {kerak} ta yangi abzas yoz (har biri 100-130 so'z), oldingi fikrlarni takrorlamay, quyidagi masalalarni chuqurroq yorit:
 {chr(10).join('  - ' + x for x in r.get('bandlar', []))}
 Paragrafning oxirgi qismi (davomini shu fikrdan boshla):
@@ -491,7 +560,7 @@ def _xulosa_prompt(p: dict, plan: dict) -> str:
         for ri, r in enumerate(b["rejalar"]):
             bandlar.append(f"{bi + 1}.{ri + 1}. {r['sarlavha']}: " + "; ".join(r.get("bandlar", [])))
     return f"""Sen tajribali ilmiy rahbarsan. {L(p['til'])['lang']}
-«{p['mavzu']}» mavzusidagi kurs ishining XULOSA VA TAKLIFLAR qismini yoz.
+«{p['mavzu']}» mavzusidagi {_ish(p)}ning {'XULOSA VA TAVSIYALAR' if _bmi(p) else 'XULOSA VA TAKLIFLAR'} qismini yoz.
 Ishning tarkibi:
 {chr(10).join(bandlar)}
 
@@ -754,8 +823,8 @@ def _bob_kirish_prompt(p: dict, plan: dict, bi: int) -> str:
     b = plan["boblar"][bi]
     rejalar = "\n".join(f"  {bi + 1}.{ri + 1}. {r['sarlavha']}" for ri, r in enumerate(b["rejalar"]))
     oldingi = f"Oldingi bob: «{plan['boblar'][bi - 1]['nomi']}»." if bi > 0 else "Bu ishning birinchi bobi."
-    return f"""Sen «{p['fan']}» fani bo'yicha tajribali ilmiy rahbarsan. {L(p['til'])['lang']}
-«{p['mavzu']}» kurs ishining {ROMAN[bi]} bobi «{b['nomi']}» uchun BOB KIRISH QISMINI yoz — bu matn bob sarlavhasidan
+    return f"""Sen {_soha(p)} bo'yicha tajribali ilmiy rahbarsan. {L(p['til'])['lang']}
+«{p['mavzu']}» {_ish(p)}ning {ROMAN[bi]} bobi «{b['nomi']}» uchun BOB KIRISH QISMINI yoz — bu matn bob sarlavhasidan
 keyin, {bi + 1}.1-paragrafdan oldin turadi va kamida bir betni egallaydi.
 Bob paragraflari:
 {rejalar}
@@ -789,7 +858,7 @@ def _write_section(p, plan, adab, bi, ri, manbalar=None) -> dict:
     for attempt in range(2):
         try:
             data = _ask(_section_prompt(p, plan, adab, bi, ri, manbalar), f"{bi + 1}.{ri + 1}-paragraf",
-                        max_tokens=7500 if p["hajm"] == "katta" else 4500)
+                        max_tokens=7500 if p["hajm"] in ("katta", "bmi") else 4500)
             if data.get("paragraflar"):
                 break
         except Exception as e:
@@ -857,6 +926,10 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
                     pass
 
     T = PROG.get(p["til"], PROG["uz"])
+    if _bmi(p):
+        nom = {"uz": ("Kurs ishi", "Bitiruv malakaviy ishi"), "ru": ("Курсовая работа", "ВКР"),
+               "en": ("the course work", "the graduation paper")}[p["til"]]
+        T = {k: v.replace(nom[0], nom[1]) for k, v in T.items()}
     jami_qadam = h["boblar"] * h["rejalar"]
     prog(T["reja"].format(bet=h["bet"]))
 
@@ -906,7 +979,7 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
     done = [0]
     ctx = _API.get("ai_ctx")
 
-    taqsimot = _manba_taqsimoti(adab, tasks, har=6 if p["hajm"] == "katta" else 5)
+    taqsimot = _manba_taqsimoti(adab, tasks, har=6 if p["hajm"] in ("katta", "bmi") else 5)
 
     def run(bi, ri):
         if ri == -1:                                  # bob kirish qismi (sarlavhadan keyin, 1.1 dan oldin)
@@ -941,7 +1014,7 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
     tak = [_strip_refs(_clean(x)).rstrip(".") for x in (xr.get("takliflar") or []) if _words(_clean(x)) >= 4]
     xparts = list(xul)
     if tak:
-        xparts.append(L(p["til"])["takliflar"])
+        xparts.append(LB(p["til"], p["hajm"])["takliflar"])
         tak = [re.sub(r"^\d+[\.\)]\s*", "", x) for x in tak]
         xparts += [f"{i + 1}) {x}." for i, x in enumerate(tak)]
     xulosa = " [ABZAS] ".join(xparts)
@@ -953,6 +1026,10 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
         "plan": {"kirish": kirish, "adabiyotlar": adab},
         "xulosa_data": {"xulosa": xulosa},
     }
+    if _bmi(p):                                       # annotatsiya (3 tilda) va ilovalar
+        prog(T["bmi_qosh"].format(bet=h["bet"]))
+        data["titul"]["taqrizchi"] = p.get("taqrizchi", "")
+        data["annotatsiya"], data["ilovalar"] = _bmi_qoshimcha(cid, p, plan, kirish, tak)
     for bi in range(h["boblar"]):
         data[f"bob{bi + 1}_nomi"] = L(p["til"])["bob"].format(r=ROMAN[bi]) + " " + plan["boblar"][bi]["nomi"]
         data[f"bob{bi + 1}_data"] = {"kirish": bob_kirish.get(bi, ""),
@@ -968,6 +1045,86 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
     log.info(f"[{cid}] Kurs ishi tayyor: {info['bet']} bet, {info['jadval']} jadval, {info['rasm']} rasm, "
              f"{info['snoska']} snoska")
     return fname, data
+
+
+def _annot_prompt(p: dict, plan: dict, kirish: dict) -> str:
+    maq = kirish.get("maqsadi", "")
+    return f"""Sen tajribali ilmiy rahbarsan. «{p['mavzu']}» mavzusidagi bitiruv malakaviy ishi uchun ANNOTATSIYA yoz —
+uch tilda: o'zbek (lotin yozuvida), rus va ingliz. Uchala matn mazmunan bir xil, har biri 110-140 so'z.
+Tarkibi: mavzu va uning dolzarbligi, tadqiqot maqsadi, qo'llanilgan metodlar, ishning tuzilishi (kirish, 3 bob, xulosa),
+asosiy natijalar va tavsiyalar, amaliy ahamiyati. Uchinchi shaxsda, o'tgan zamonda («ishda ... tahlil qilingan»).
+Ishda yo'q raqam va faktlarni qo'shma.
+Maqsad: {maq}
+Reja:
+{_outline_text(plan)}
+Har til uchun 6-8 ta kalit so'z.
+FAQAT JSON: {{"uz":{{"matn":"...","kalit":["..."]}},"ru":{{"matn":"...","kalit":["..."]}},"en":{{"matn":"...","kalit":["..."]}}}}"""
+
+
+def _ilova_prompt(p: dict, plan: dict, tak: list) -> str:
+    takl = "\n".join(f"{i + 1}) {x}" for i, x in enumerate(tak)) or "(xulosadagi tavsiyalar)"
+    return f"""Sen tajribali ilmiy rahbarsan. {L(p['til'])['lang']}
+«{p['mavzu']}» mavzusidagi bitiruv malakaviy ishining ILOVALARI uchun 2 ta jadval tuz.
+Ish rejasi:
+{_outline_text(plan)}
+
+1-ilova — "Tayanch tushunchalar lug'ati": ishda ishlatilgan 12-15 ta asosiy atama va ularning aniq, qisqa ilmiy ta'rifi
+(har ta'rif 1-2 gap). Ustunlar: «№», «Atama», «Ta'rifi» (ish tilida).
+2-ilova — "Tavsiyalarni amalga oshirish rejasi" — quyidagi tavsiyalar asosida:
+{takl}
+Ustunlar: «№», «Tavsiya mazmuni», «Mas'ul subyekt», «Muddati», «Kutilayotgan natija» (ish tilida). Muddatni
+«qisqa muddatli (1 yilgacha)», «o'rta muddatli (1-3 yil)», «uzoq muddatli (3 yildan ortiq)» kabi yoz, aniq sana o'ylab topma.
+Katakchalar qisqa (har biri 25 so'zdan oshmasin).
+FAQAT JSON: {{"ilovalar":[{{"nomi":"...","ustunlar":["...","..."],"qatorlar":[["1","...","..."]]}},
+{{"nomi":"...","ustunlar":["..."],"qatorlar":[["..."]]}}]}}"""
+
+
+def _bmi_qoshimcha(cid, p, plan, kirish, tak) -> tuple[dict, list]:
+    ctx = _API.get("ai_ctx")
+
+    def run(fn):
+        if ctx:
+            with ctx(cid):
+                return fn()
+        return fn()
+
+    def annot():
+        try:
+            r = run(lambda: _ask(_annot_prompt(p, plan, kirish), "Annotatsiya", max_tokens=3500, temperature=0.4))
+        except Exception as e:
+            log.warning(f"[{cid}] Annotatsiya xatosi: {e}")
+            return {}
+        out = {}
+        for t in ("uz", "ru", "en"):
+            v = r.get(t) if isinstance(r, dict) else None
+            if isinstance(v, dict) and _words(_clean(v.get("matn"))) >= 40:
+                kal = [_clean(k).strip(" .;,") for k in (v.get("kalit") or []) if _clean(k)][:8]
+                out[t] = {"matn": _strip_refs(_clean(v["matn"])), "kalit": kal}
+        return out
+
+    def ilova():
+        try:
+            r = run(lambda: _ask(_ilova_prompt(p, plan, tak), "Ilovalar", max_tokens=4000, temperature=0.4))
+        except Exception as e:
+            log.warning(f"[{cid}] Ilovalar xatosi: {e}")
+            return []
+        out = []
+        for il in (r.get("ilovalar") or [])[:3]:
+            if not isinstance(il, dict):
+                continue
+            cols = [_clean(c) for c in (il.get("ustunlar") or []) if _clean(c)][:6]
+            rows = []
+            for row in il.get("qatorlar") or []:
+                if isinstance(row, list) and any(_clean(c) for c in row):
+                    rr = [_clean(c) for c in row][:len(cols)]
+                    rows.append(rr + [""] * (len(cols) - len(rr)))
+            if len(cols) >= 2 and len(rows) >= 3 and _clean(il.get("nomi")):
+                out.append({"nomi": _sentence_case(_strip_num(il["nomi"])), "ustunlar": cols, "qatorlar": rows[:20]})
+        return out
+
+    with cf.ThreadPoolExecutor(max_workers=2) as ex:
+        fa, fi = ex.submit(annot), ex.submit(ilova)
+        return fa.result(), fi.result()
 
 
 def _sahifalar(data: dict) -> int:
@@ -1056,6 +1213,7 @@ PROG = {
         "xulosa": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n🧾 Xulosa va takliflar yozilmoqda...",
         "hajm": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n📏 Hajm tekshirilmoqda va to'ldirilmoqda ({k}/{n})...",
         "format": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n📎 Mundarija, snoskalar va formatlash...",
+        "bmi_qosh": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n🌐 Annotatsiya (3 tilda) va ilovalar tayyorlanmoqda...",
     },
     "ru": {
         "reja": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n🗂 Составляются план и список литературы...",
@@ -1065,6 +1223,7 @@ PROG = {
         "xulosa": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n🧾 Пишутся заключение и рекомендации...",
         "hajm": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n📏 Проверка и доведение объёма ({k}/{n})...",
         "format": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n📎 Содержание, сноски и оформление...",
+        "bmi_qosh": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n🌐 Аннотация (на 3 языках) и приложения...",
     },
     "en": {
         "reja": "⏳ <b>Creating the course work</b> ({bet} pages)\n\n🗂 Building the outline and references...",
@@ -1074,6 +1233,7 @@ PROG = {
         "xulosa": "⏳ <b>Creating the course work</b> ({bet} pages)\n\n🧾 Writing the conclusion...",
         "hajm": "⏳ <b>Creating the course work</b> ({bet} pages)\n\n📏 Checking and completing the volume ({k}/{n})...",
         "format": "⏳ <b>Creating the course work</b> ({bet} pages)\n\n📎 Contents, footnotes and formatting...",
+        "bmi_qosh": "⏳ <b>Creating the course work</b> ({bet} pages)\n\n🌐 Annotation (3 languages) and appendices...",
     },
 }
 
@@ -1676,6 +1836,77 @@ def _render_titul(doc, t: dict, til: str):
     _tp(doc, f"{shahar} – {yil}", 14, sb=40 if not uzun else 12)
 
 
+TITUL_BMI = {
+    "uz": dict(qolyozma="Qo'lyozma huquqida", mavzu="MAVZU:",
+               daraja="“{x}” ta'lim yo'nalishi bo'yicha bakalavr darajasini olish uchun",
+               rahbar="Ilmiy rahbar:", taqriz="Taqrizchi:", ruxsat="“Himoyaga ruxsat etildi”",
+               mudir="Kafedra mudiri:", sana="“____” ____________ 20___ y."),
+    "ru": dict(qolyozma="На правах рукописи", mavzu="ТЕМА:",
+               daraja="на соискание академической степени бакалавра по направлению образования «{x}»",
+               rahbar="Научный руководитель:", taqriz="Рецензент:", ruxsat="«Допускается к защите»",
+               mudir="Заведующий кафедрой:", sana="«____» ____________ 20___ г."),
+    "en": dict(qolyozma="As a manuscript", mavzu="TOPIC:",
+               daraja="for the Bachelor's degree in the field of study “{x}”",
+               rahbar="Scientific supervisor:", taqriz="Reviewer:", ruxsat="“Admitted to defense”",
+               mudir="Head of department:", sana="“____” ____________ 20___"),
+}
+
+
+def _render_titul_bmi(doc, t: dict, til: str):
+    """Bitiruv malakaviy ishi titul varag'i (O'zbekiston OTMlari namunasi): vazirlik, OTM, fakultet, kafedra,
+    «Qo'lyozma huquqida», muallif, mavzu, yo'nalish, BMI, ilmiy rahbar, taqrizchi, «Himoyaga ruxsat etildi»."""
+    lb, T, Tb = L(til), TITUL.get(til, TITUL["uz"]), TITUL_BMI.get(til, TITUL_BMI["uz"])
+    fak = _nom_tozala(t.get("fakultet"), ("fakulteti", "fakultet", "факультети", "факультет", "faculty", "faculty of"))
+    kaf = _nom_tozala(t.get("kafedra"), ("kafedrasi", "kafedra", "кафедраси", "кафедра", "department", "department of"))
+    fak_xom, kaf_xom = _clean(t.get("fakultet") or ""), _clean(t.get("kafedra") or "")
+
+    def birikma(nom, xom, soz, kalit):
+        if not nom:
+            return f"{_BLANK} {soz}"
+        if til == "uz":
+            return f"{nom} {soz}"
+        if re.search(kalit, xom, re.I):
+            return xom[:1].upper() + xom[1:]
+        return f"{soz[:1].upper() + soz[1:]}: {nom}"
+
+    otm = _clean(t.get("otm") or "").upper() or "______________________________ UNIVERSITETI"
+    yon = _clean(t.get("fan") or "") or "_" * 30
+    shahar = _clean(t.get("shahar") or "") or shahar_aniqla(t.get("otm", ""), til)
+    yil = datetime.datetime.now().year
+    uzun = len(otm) > 70 or len(t.get("mavzu") or "") > 110
+
+    _tp(doc, lb["vazirlik"], 15, new=False if doc.paragraphs else True, sa=4)
+    _tp(doc, otm, 15, sa=8)
+    _tp(doc, birikma(fak, fak_xom, T["fak"], r"факультет|faculty").upper(), 14, sa=2)
+    _tp(doc, birikma(kaf, kaf_xom, T["kaf"], r"кафедр|department").upper(), 14, sa=0)
+    _tp(doc, Tb["qolyozma"], 12, bold=False, italic=True, align="r", sb=40 if not uzun else 12)
+    _tp(doc, _clean(t.get("ism") or "") or _BLANK, 16, sb=34 if not uzun else 10, sa=12)
+    p = _tp(doc, "", 14, ls=1.15, sa=12)
+    _set_font(p.add_run(Tb["mavzu"] + " "), 14, bold=True)
+    _set_font(p.add_run("“" + (t.get("mavzu") or "").strip().upper() + "”"), 14, bold=True)
+    if til == "uz":
+        _tp(doc, Tb["daraja"].format(x=yon), 14, bold=False, ls=1.15, sb=16 if not uzun else 6)
+        _tp(doc, LBL_BMI["uz"]["kurs_ishi"], 20, sb=20 if not uzun else 8, sa=6)
+    else:
+        _tp(doc, LBL_BMI.get(til, LBL_BMI["uz"])["kurs_ishi"], 20, sb=20 if not uzun else 8, sa=4)
+        _tp(doc, Tb["daraja"].format(x=yon), 14, bold=False, ls=1.15, sa=6)
+
+    rows = [(Tb["rahbar"], _clean(t.get("rahbar") or "") or _BLANK),
+            (Tb["taqriz"], _clean(t.get("taqrizchi") or "") or _BLANK)]
+    for i, (lbl, val) in enumerate(rows):
+        p = _tp(doc, "", 14, align="l", left=8.0, sb=(56 if not uzun else 14) if i == 0 else 8)
+        _set_font(p.add_run(lbl + " "), 14, bold=True)
+        _set_font(p.add_run(val), 14, bold=False)
+
+    _tp(doc, Tb["ruxsat"], 14, align="l", left=8.0, sb=36 if not uzun else 10)
+    p = _tp(doc, "", 14, align="l", left=8.0, sb=4)
+    _set_font(p.add_run(Tb["mudir"] + " "), 14, bold=False)
+    _set_font(p.add_run("____________"), 14, bold=False)
+    _tp(doc, Tb["sana"], 14, bold=False, align="l", left=8.0, sb=4)
+
+    _tp(doc, f"{shahar} – {yil}", 14, sb=110 if not uzun else 20)
+
+
 def titul_sigadimi(t: dict, til: str = "uz") -> bool:
     """Titul bir betga sig'ishini taxminiy tekshirish (juda uzun nomlar uchun)."""
     return len(t.get("otm") or "") < 160 and len(t.get("mavzu") or "") < 260
@@ -1684,7 +1915,8 @@ def titul_sigadimi(t: dict, til: str = "uz") -> bool:
 def _flow(data: dict, bet_matn: str = "99") -> tuple[list, list, dict]:
     """Hujjatni abstrakt bloklarga aylantiradi. Qaytaradi: bloklar, mundarija yozuvlari, hisoblagichlar."""
     til = data.get("til", "uz")
-    lb = L(til)
+    hajm = data.get("hajm", "")
+    lb = LB(til, hajm)
     t = data.get("titul", {})
     nbob = int(data.get("bob_soni") or sum(1 for k in data if re.fullmatch(r"bob\d+_data", k)))
     adab = data.get("plan", {}).get("adabiyotlar", []) or []
@@ -1693,7 +1925,22 @@ def _flow(data: dict, bet_matn: str = "99") -> tuple[list, list, dict]:
     B: list = []
 
     # ── 1. Titul (alohida chiziladi, 1-bet) ──
-    B.append({"k": "titul", "t": t, "til": til})
+    B.append({"k": "titul", "t": t, "til": til, "hajm": hajm})
+
+    # ── 1a. Annotatsiya (BMI: ish tili birinchi, keyin qolgan ikki til) ──
+    ann = data.get("annotatsiya") or {}
+    first = True
+    for at in [til] + [x for x in ("uz", "ru", "en") if x != til]:
+        a = ann.get(at)
+        if not a or not a.get("matn"):
+            continue
+        sar, kal = ANNOT_LBL[at]
+        B.append(_P(sar, bold=True, ind=0, sb=0 if first else 12, sa=6, align="c", keep=True, pbb=first))
+        B.append(_P(a["matn"], ls=1.15))
+        if a.get("kalit"):
+            B.append(_P(segs=[("t", kal + " ", True, False), ("t", ", ".join(a["kalit"]) + ".", False, True)],
+                        ls=1.15, sa=4))
+        first = False
 
     # ── 2. Mundarija ──
     B.append(_P(lb["mundarija"], bold=True, ind=0, sa=12, align="c", pbb=True))
@@ -1703,6 +1950,9 @@ def _flow(data: dict, bet_matn: str = "99") -> tuple[list, list, dict]:
         for rj in data.get(f"bob{bi + 1}_data", {}).get("rejalar", []):
             toc.append((2, _clean(rj.get("sarlavha", ""))))
     toc += [(1, lb["xulosa"]), (1, lb["adab"])]
+    ilovalar = [x for x in (data.get("ilovalar") or []) if isinstance(x, dict) and x.get("qatorlar")]
+    if ilovalar:
+        toc.append((1, lb.get("ilovalar", "ILOVALAR")))
     toc_idx = []
     for i, (lvl, txt) in enumerate(toc):
         toc_idx.append(len(B))
@@ -1735,7 +1985,7 @@ def _flow(data: dict, bet_matn: str = "99") -> tuple[list, list, dict]:
                 tuz_i = len(B)
                 B.append(_P(segs=[("t", label + " ", True, False), ("t", "{TUZILISH}", False, False)]))
                 continue
-            if key == "vazifalari":
+            if key in ("vazifalari", "ilmiy_yangiligi"):
                 if ci == 0 and label:
                     B.append(_P(label, bold=True, keep=True))
                 B.append(_P(ch))
@@ -1808,6 +2058,17 @@ def _flow(data: dict, bet_matn: str = "99") -> tuple[list, list, dict]:
             B.append(_P(f"{n}. {_nbsp(_clean(a['matn']))}", ind=0, align="j"))
             n += 1
 
+    # ── 7. Ilovalar (BMI) ──
+    if ilovalar:
+        H(lb["ilovalar"], 1)
+        for n_il, il in enumerate(ilovalar, 1):
+            B.append(_P(lb["ilova"].format(n=n_il), italic=True, ind=0, ls=1.0, sb=6 if n_il > 1 else 0, align="r",
+                        keep=True, pbb=n_il > 1))
+            B.append(_P(il["nomi"], bold=True, ind=0, ls=1.0, sa=6, align="c", keep=True))
+            B.append({"k": "tbl", "cols": [str(c) for c in il["ustunlar"]],
+                      "rows": [[str(c) for c in r] for r in il["qatorlar"]], "size": 12, "hdr_bold": True, "sa": 6,
+                      "widths": _ustun_kengliklari(il["ustunlar"], il["qatorlar"])})
+
     # tuzilish matni (sahifa soni keyin qo'yiladi)
     if tuz_i is not None:
         nrej = sum(len(data.get(f"bob{bi + 1}_data", {}).get("rejalar", [])) for bi in range(nbob))
@@ -1820,6 +2081,39 @@ def _flow(data: dict, bet_matn: str = "99") -> tuple[list, list, dict]:
     return B, toc, meta
 
 
+def _ustun_kengliklari(cols: list, rows: list, jami: float = 16.5) -> list:
+    """Ustun kengliklari (sm): «№» ustuni tor, qolganlari matn uzunligiga mos."""
+    n = len(cols)
+    raqam = [ci for ci, c in enumerate(cols) if re.fullmatch(r"№|No\.?|N|#|т/р|t/r|№ п/п", str(c).strip(), re.I)]
+    w = [0.0] * n
+    for ci in raqam:
+        w[ci] = 1.1
+    qol = [ci for ci in range(n) if ci not in raqam]
+    if not qol:
+        return [jami / n] * n
+    og = []
+    for ci in qol:
+        uz = [len(str(r[ci])) for r in rows if ci < len(r)] + [len(str(cols[ci]))]
+        og.append(max(8.0, sum(uz) / len(uz)) ** 0.8)
+    bor = jami - sum(w)
+    for ci, o in zip(qol, og):
+        w[ci] = o / sum(og) * bor
+    for _ in range(3):                                      # juda tor ustun bo'lmasin
+        kam = [ci for ci in qol if w[ci] < 2.4]
+        if not kam:
+            break
+        for ci in kam:
+            w[ci] = 2.4
+        kat = [ci for ci in qol if ci not in kam]
+        if not kat:
+            break
+        ort = sum(w) - jami
+        s_ = sum(w[ci] for ci in kat)
+        for ci in kat:
+            w[ci] -= ort * w[ci] / s_
+    return [round(x, 2) for x in w]
+
+
 def _render(B: list, meta: dict, page_of: list, out_path: str, title: str = "", author: str = ""):
     doc = Document()
     _setup_doc(doc)
@@ -1828,7 +2122,10 @@ def _render(B: list, meta: dict, page_of: list, out_path: str, title: str = "", 
     ti = 0
     for b in B:
         if b["k"] == "titul":
-            _render_titul(doc, b["t"], b["til"])
+            if b.get("hajm") == "bmi":
+                _render_titul_bmi(doc, b["t"], b["til"])
+            else:
+                _render_titul(doc, b["t"], b["til"])
             continue
         if b["k"] == "tbl":
             _render_table(doc, b)
@@ -1896,10 +2193,15 @@ def _render_table(doc, b: dict):
     tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
     tbl.autofit = False
     _cell_border(tbl)
-    cw = Cm(16.5 / ncol)
+    ws = b.get("widths")
     for row in tbl.rows:
-        for c in row.cells:
-            c.width = cw
+        for ci, c in enumerate(row.cells):
+            c.width = Cm(ws[ci]) if ws and ci < len(ws) else Cm(16.5 / ncol)
+    if ws:                                                  # Word/LibreOffice ustun kengliklarini tblGrid dan oladi
+        grid = tbl._tbl.tblGrid
+        for ci, gc in enumerate(grid.findall(qn("w:gridCol"))):
+            if ci < len(ws):
+                gc.set(qn("w:w"), str(int(ws[ci] * 567)))
     for ci, val in enumerate(b["cols"]):
         c = tbl.rows[0].cells[ci]
         pp = c.paragraphs[0]
