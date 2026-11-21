@@ -39,6 +39,7 @@ Narxlar tangada (🪙). Admin uchun barcha xizmatlar bepul.
 | 🎓 BMI (bitiruv malakaviy ishi) | 35 | 65–75 bet: BMI tituli, annotatsiya 3 tilda, ilmiy yangilik, 3 bob, xulosa va tavsiyalar, 45–55 adabiyot, ilovalar |
 | 🛡 Himoyaga tayyorlov | 8 | Himoya taqdimoti (9–10 slayd) + 7–9 daqiqalik nutq + 15 ta komissiya savoli va javoblari |
 | 📋 Amaliyot hisoboti | 8 | Titul, amaliyot kundaligi (har ish kuni), hisobot, tavsifnoma loyihasi |
+| 👨‍🔬 Ilmiy izlanuvchi bo'limi | 0–18 | OAK jurnallari ro'yxati (bepul, avtomatik yangilanadi), xalqaro bazalar, qo'llanmalar; mos jurnal, haqiqiy adabiyotlar (OpenAlex), mavzu tahlili, individual reja, bibliografiya, ilmiy maslahatchi |
 | 🗂 Mustaqil ish | 6 | Titul, reja, 3 bob, xulosa va **GOST / APA / MLA** formatidagi adabiyotlar ro'yxati |
 | 📑 Referat | 5 | 8–12 betlik referat |
 | 📰 Maqola | 8 | IMRAD formatidagi ilmiy maqola |
@@ -123,6 +124,10 @@ Academic_ai_bot/
 ├── sahifalash.py        # Word sahifalarini oldindan hisoblash (mundarija raqamlari, hajm nazorati)
 ├── kurs_ishi.py          # Kurs ishi va BMI generatori (25–30 / 65–70 / 65–75 bet, mundarija, snoska, jadval, grafik)
 ├── xizmatlar_talaba.py   # Himoyaga tayyorlov, Amaliyot hisoboti, BMI menyu tugmasi
+├── ilmiy_izlanuvchi.py   # 👨‍🔬 Ilmiy izlanuvchi bo'limi (menyu, OAK jurnallari, 7 ta xizmat)
+├── oak_jurnallar.py      # OAK ro'yxatini rasmiy manbadan yuklash, qidirish, o'zgarishlarni kuzatish
+├── openalex.py           # OpenAlex: haqiqiy maqolalar va jurnallar, GOST/APA
+├── ilmiy_qollanma.py     # Qo'llanmalar (3 tilda)
 ├── xizmatlar_yangi.py    # Konspekt, Imtihonga tayyorlov, Masala yechish, Mustaqil ish
 ├── xizmatlar_qoshimcha.py# Test markazi, Ovozli matn, Sinf sardori
 ├── ai_budget.py          # AI token sarfini nazorat qilish va limitlar

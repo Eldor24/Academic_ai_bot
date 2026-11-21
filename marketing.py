@@ -115,6 +115,29 @@ POSTS = [
            "✅ Report: organisation profile, work done, skills, problems and suggestions, conclusion\n"
            "✅ Draft <b>reference letter</b> — the supervisor only signs it\n\nFor educational, industrial, teaching, "
            "professional and pre-graduation internships.\n\n💰 <b>{narx} coins</b>"},
+    {"key": "ilmiy", "narx2": "iz_mos",
+     "uz": "👨‍🔬 <b>Doktorant va mustaqil izlanuvchilar uchun yangi bo'lim!</b>\n\n"
+           "📰 <b>OAK jurnallari ro'yxati — BEPUL</b>\nJurnal nomini yozing — u sizning fan tarmog'ingiz bo'yicha "
+           "faolmi yoki ro'yxatdan chiqarilganmi, darhol ko'rasiz. Ro'yxat oak.uz dan avtomatik yangilanadi, "
+           "o'zgarish bo'lsa 🔔 xabar beramiz.\n\n"
+           "🌍 Scopus / Web of Science: OAK qaysi bazalarni tan oladi (2026-yil iyun qarori)\n"
+           "📘 Ilmiy daraja tartibi 2027, maqola yuborish, shubhali jurnallardan saqlanish — bepul qo'llanmalar\n\n"
+           "🧭 Maqolangizga mos jurnal — <b>{narx2} tanga</b>\n📚 Mavzu bo'yicha haqiqiy adabiyotlar (DOI bilan)\n"
+           "📑 PhD/DSc individual reja · 🎯 Mavzu va ixtisoslik mosligi · 📝 GOST/APA bibliografiya",
+     "ru": "👨‍🔬 <b>Новый раздел для докторантов и соискателей!</b>\n\n"
+           "📰 <b>Перечень журналов ВАК — БЕСПЛАТНО</b>\nВведите название журнала — сразу увидите, активен ли он по "
+           "вашей отрасли или исключён. Перечень автоматически обновляется с oak.uz, об изменениях сообщим 🔔.\n\n"
+           "🌍 Scopus / Web of Science: какие базы признаёт ВАК (решение июня 2026)\n"
+           "📘 Порядок присуждения степеней 2027, подача статей, хищнические журналы — бесплатные руководства\n\n"
+           "🧭 Подбор журнала для статьи — <b>{narx2} монет</b>\n📚 Реальная литература по теме (с DOI)\n"
+           "📑 Индивидуальный план PhD/DSc · 🎯 Тема и специальность · 📝 Библиография ГОСТ/APA",
+     "en": "👨‍🔬 <b>New section for PhD/DSc candidates and researchers!</b>\n\n"
+           "📰 <b>HAC (OAK) journal list — FREE</b>\nType a journal name and see instantly whether it is active for your "
+           "field or has been removed. The list updates automatically from oak.uz, and we 🔔 notify you about changes.\n\n"
+           "🌍 Scopus / Web of Science: which databases the HAC recognises (June 2026 decision)\n"
+           "📘 Degree rules 2027, submitting papers, avoiding predatory journals — free guides\n\n"
+           "🧭 Journal finder for your paper — <b>{narx2} coins</b>\n📚 Real literature on your topic (with DOIs)\n"
+           "📑 PhD/DSc individual plan · 🎯 Topic vs specialty · 📝 GOST/APA bibliography"},
     {"key": "konspekt", "narx2": None,
      "uz": "📚 <b>Darslik qalinmi? Konspekt qilib beramiz</b>\n\nMa'ruza matni, PDF/Word fayl yoki daftar rasmini yuboring:\n"
            "✅ Qisqa mazmun va asosiy g'oyalar\n✅ Atamalar lug'ati\n✅ Takrorlash uchun savollar\n"
@@ -327,7 +350,7 @@ def klaviatura(post: dict, til: str) -> InlineKeyboardMarkup:
 def _posts_for_send() -> list:
     """Narxi topilmagan xizmat postlari (masalan o'chirilgan xizmat) chiqarib tashlanadi."""
     narx = _A["narx"]
-    return [p for p in POSTS if p["key"] == "kabinet" or p["key"] in narx]
+    return [p for p in POSTS if p["key"] in ("kabinet", "ilmiy") or p["key"] in narx]
 
 
 def onboarding_faol(db: dict, uid) -> bool:

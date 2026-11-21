@@ -1,5 +1,72 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 16.1-versiya (21.11.2026) — 2027-yildagi yangi tizim, aniqlashtiruvchi savollar, tarix
+- 🧾 «Ilmiy daraja» qo'llanmasi (3 tilda) qayta yozildi:
+  - Prezidentning 26.05.2026 dagi **PF-98-son Farmoni** qabul qilingan hujjat sifatida bayon qilinadi: nimalar bekor
+    qilinadi, kengashlar vakolati, OAK tanlab tekshiruvi, kengashlar reytingi, «Loyiha doirasida ilmiy daraja»;
+  - o'tish muddatlari — OAK Rayosatining 391/2-son qarori;
+  - OAKning 05.11.2026 dagi rasmiy savol-javoblari (Q1–Q2 majburiy emas, dissertatsiyani qayta yozish shart emas);
+  - yangi nizom talablari (PhD 8 ish, DSc 16 ish ...) — «loyiha» yozuvi olib tashlandi.
+- 📄 Admin uchun `/nizom <hujjat nomi, raqami, sanasi>` buyrug'i: tasdiqlangan nizom rekvizitlari qo'llanmada va
+  maslahatchi javoblarida ko'rsatiladi (`/nizom -` — o'chirish).
+- 📢 OAK rasmiy yangiliklari oak.uz dan avtomatik olinadi (har 6 soatda) — «📰 OAK jurnallari → 📢 OAK rasmiy
+  yangiliklari» va ilmiy maslahatchi bilim bazasida.
+- 🧑‍🏫 Ilmiy maslahatchi endi:
+  - aniq javob uchun ma'lumot yetishmasa, avval 1–3 ta **aniqlashtiruvchi savol** beradi (PhD/DSc, shakl, ixtisoslik,
+    bosqich ...). Ular uchun tanga olinmaydi, ko'pi bilan 2 marta so'raydi;
+  - javob oxirida **rasmiy manbalar** ro'yxati (Farmon, OAK qarorlari, oak.uz yangiliklari) — faqat bilim bazasidagi manbalar;
+  - «❓ Shu mavzuda davom etish» — oldingi suhbat konteksti saqlanadi; «🆕 Yangi savol».
+- 📜 **Mening tarixim**: maslahatchi savol-javoblari va barcha ilmiy xizmatlar natijalari (mos jurnallar, adabiyotlar,
+  mavzu tahlili, mavzu variantlari, bibliografiya, individual reja) foydalanuvchi bo'yicha saqlanadi. Oxirgi 30 ta yozuv
+  users bazasida (cloud_db orqali doimiy) turadi; ro'yxatdan istalganini to'liq ochish mumkin.
+- Individual reja: nashrlar rejasi 2027-yildan amal qiladigan talablar bo'yicha.
+
+## 16-versiya (21.11.2026) — 👨‍🔬 «Ilmiy izlanuvchi» bo'limi
+Tayanch doktorant, doktorant, mustaqil izlanuvchi va magistrantlar uchun alohida bo'lim. Bosh menyuda
+«👨‍🔬 Ilmiy izlanuvchi», ichida o'z menyusi va «⬅️ Orqaga» tugmasi bor.
+
+### 📰 OAK jurnallari — BEPUL, avtomatik yangilanadi (`oak_jurnallar.py`)
+- Manba — oak.uz → «Ilmiy nashrlar ro'yxati» sahifasidagi rasmiy ro'yxat ilovasi
+  (journal-statistics-oak.vercel.app). Ro'yxat ~1 700 jurnal: milliy, MDH, xorijiy; har biri fan tarmog'i bo'yicha
+  holati, qo'shilgan va chiqarilgan sana, qaror raqami bilan.
+- Bot ro'yxatni ishga tushganda va **har 6 soatda** tekshiradi, keshda saqlaydi. OAK yangilasa — botda ham yangilanadi.
+- **🔎 Nomi bo'yicha tekshirish** (lotin/kirill): jurnal qaysi fan kodlari bo'yicha ✅ faol, qaysi biri ❌ chiqarilgan
+  (sana, qaror).
+- **📂 Fan tarmog'i bo'yicha**: 23 ta soha → milliy / MDH / xorijiy ro'yxati sahifalab, **📥 to'liq ro'yxat Word**da.
+- **🆕 So'nggi o'zgarishlar**: oxirgi qo'shilgan va chiqarilgan jurnallar.
+- **🔔 Obuna**: ro'yxatda o'zgarish bo'lsa, bot qo'shilgan/chiqarilgan jurnallarni obunachilarga (har kimga o'z tilida)
+  va adminga yuboradi.
+
+### 🌍 Xalqaro bazalar — BEPUL
+OAK 10.06.2026 qarori bo'yicha A/B/C toifali bazalar (Web of Science, Scopus, JCR; AGRIS, CAS, GeoRef, PubMed, Compendex;
+4 ta ijtimoiy-gumanitar baza) va endi mustaqil mezon bo'lmagan platformalar (Springer, CrossRef, DOAJ, ResearchGate,
+SCImago va boshq.) — ma'lumot jonli ro'yxatdan olinadi.
+
+### 📘 Qo'llanmalar — BEPUL (3 tilda, `ilmiy_qollanma.py`)
+1. Ilmiy daraja: o'tish davri (13.11 / 30.11 / 31.12.2026), PF-98 Farmoni, yangi nizom **loyihasi** (PhD 8 ish,
+   DSc 16 ish, hajm, dissertatsiyasiz yo'l), amaldagi nizom talablari
+2. OAK jurnaliga maqola yuborish tartibi
+3. Scopus / WoS jurnaliga maqola: tanlash, tekshirish (MJL, Scopus Sources, discontinued, hijacked), taqriz, APC
+4. Shubhali va o'g'irlangan jurnallar: belgilar va tekshirish tartibi
+5. Doktoranturaga qabul (VM 304-son qarori): shakllar, hujjatlar, imtihonlar, muddatlar, individual reja
+6. Jurnal tanlash strategiyasi
+
+### Arzon xizmatlar (raqobatchilardan 5–10 baravar arzon)
+| Xizmat | Tanga | Nima beradi |
+|---|---|---|
+| 🧭 Mos jurnal topish | 3 | AI fan kodini aniqlaydi → **faqat OAK ro'yxatidagi faol** jurnallardan tanlaydi + OpenAlex orqali o'xshash maqolalar chop etilgan xalqaro jurnallar (h-indeks, OA, APC, WoS/Scopus tekshirish havolalari), Word |
+| 📚 Adabiyot va tadqiqotlar | 3 | OpenAlex'dan **haqiqiy** maqolalar va dissertatsiyalar: eng mos, eng ko'p iqtibos qilingan, rus tilidagi; DOI, ochiq PDF, GOST 7.1 va APA 7 yozuvlari, Word |
+| 🎯 Mavzu va ixtisoslik | 3 | moslik bahosi, xavflar, tavsiyalar, 4 ta aniqlashtirilgan variant, obyekt-predmet-maqsad |
+| 💡 Mavzu tanlash | 4 | 7 ta dissertatsiya mavzusi: dolzarblik, yangilik, metod, ma'lumot manbalari, xavf (Word) |
+| 📑 Individual reja | PhD 12 / DSc 18 | yakka tartibdagi ish rejasi (Word): «TASDIQLAYMAN», ma'lumotlar jadvali, maqsad-vazifalar, nazariy tayyorgarlik, 6 semestrlik kalendar reja, nashrlar rejasi (2027 loyihasi talablari bo'yicha), dissertatsiya tuzilmasi, imzolar |
+| 📝 Bibliografiya | 2 | ro'yxatni GOST 7.1-2003 / APA 7 bo'yicha rasmiylashtirish, yetishmayotgan elementlarni belgilash (hech narsa qo'shmaydi) |
+| 🧑‍🏫 Ilmiy maslahatchi | 1 / savol | rasmiy ma'lumotlar bazasiga tayangan javob; bilmagan raqamni o'ylab topmaydi |
+
+- Bo'lim menyusida mavjud xizmatlar ham bor: 📝 Maqola (IMRAD), 📋 Tezis, 🔬 Ilmiy muammo, 🌍 Ilmiy tarjimon.
+- Yangi modullar: `ilmiy_izlanuvchi.py`, `oak_jurnallar.py`, `openalex.py`, `ilmiy_qollanma.py`.
+- Marketing: «Ilmiy izlanuvchi» haqida yangi post (3 tilda) — jami 25 ta; narxlar ro'yxatiga yangi guruh.
+- Ixtiyoriy muhit o'zgaruvchilari: `OPENALEX_EMAIL` (OpenAlex «polite pool»), `OPENALEX_KEY`.
+
 ## 15-versiya (21.11.2026) — bitiruvchi va amaliyotchi talabalar uchun 3 ta yangi xizmat
 Namunalar internetdan o'rganildi: VM 13.12.2024 dagi 836-son qarori (yakuniy attestatsiya, BMI, antiplagiat,
 komissiya), OTMlarning BMI uslubiy ko'rsatmalari (tuzilma, hajm, baholash mezonlari), BMI himoyasi bo'yicha qo'llanmalar

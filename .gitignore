@@ -31,3 +31,7 @@ eski_versiya/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ── OAK jurnallari keshi (bot o'zi yuklab oladi) ──
+oak_cache.json
+oak_cache.json.tmp

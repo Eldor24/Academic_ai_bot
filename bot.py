@@ -216,6 +216,15 @@ DOC_NARX = {
     "bmi":         35,   # Bitiruv malakaviy ishi — 65-75 bet, annotatsiya 3 tilda, ilmiy yangilik, ilovalar
     "himoya":       8,   # Himoyaga tayyorlov: taqdimot + himoya nutqi + komissiya savollari (xizmatlar_talaba.py)
     "amaliyot":     8,   # Amaliyot hisoboti: kundalik + hisobot + tavsifnoma (xizmatlar_talaba.py)
+    # 👨‍🔬 Ilmiy izlanuvchi bo'limi (ilmiy_izlanuvchi.py) — OAK jurnallari va qo'llanmalar BEPUL
+    "iz_mos":       3,   # Mos jurnal topish (OAK ro'yxati + OpenAlex)
+    "iz_adab":      3,   # Mavzu bo'yicha haqiqiy adabiyotlar (OpenAlex), GOST/APA
+    "iz_moslik":    3,   # Mavzu va ixtisoslik mosligi
+    "iz_mavzu":     4,   # Dissertatsiya mavzusi variantlari
+    "iz_bib":       2,   # Bibliografiyani rasmiylashtirish
+    "iz_savol":     1,   # Ilmiy maslahatchi (1 savol)
+    "iz_reja_phd": 12,   # Individual reja — PhD
+    "iz_reja_dsc": 18,   # Individual reja — DSc
     "pptx":         5,   # 5  → 6   | Taqdimot 10-15 slayd
     "maqola":       8,   # 7  → 9   | IMRAD format, ilmiy qiymat
     "tezis":        5,   # 5  → 6   | Konferensiya tezisi
@@ -363,6 +372,7 @@ import marketing
 import xizmatlar_yangi
 import xizmatlar_qoshimcha
 import xizmatlar_talaba
+import ilmiy_izlanuvchi
 from security import sanitize_long_text, UnsafeFileError
 FLOOD_GUARD = security.install(
     bot, admin_id=ADMIN_ID,
@@ -11082,9 +11092,10 @@ def main_kb(cid: int, show_tahrir: bool = False):
     # ── Eng ko'p ishlatiladigan hujjatlar ──
     m.add(KeyboardButton(tx(cid, "btn_pptx")), KeyboardButton(tx(cid, "btn_docx")))
     m.add(yb("bmi"), yb("himoya"))
-    m.add(yb("amaliyot"), yb("mustaqil"))
-    m.add(KeyboardButton(tx(cid, "btn_referat")), KeyboardButton(tx(cid, "btn_maqola")))
-    m.add(KeyboardButton(tx(cid, "btn_tezis")), yb("sardor"))
+    m.add(yb("amaliyot"), yb("ilmiy"))              # 👨‍🔬 Ilmiy izlanuvchi bo'limi (ilmiy_izlanuvchi.py)
+    m.add(yb("mustaqil"), KeyboardButton(tx(cid, "btn_referat")))
+    m.add(KeyboardButton(tx(cid, "btn_maqola")), KeyboardButton(tx(cid, "btn_tezis")))
+    m.add(yb("sardor"))
     # ── O'qish va imtihon ──
     m.add(yb("konspekt"), yb("imtihon"))
     m.add(KeyboardButton(tx(cid, "btn_test")), yb("ftest"))
@@ -13869,6 +13880,18 @@ _XIZMAT_GURUHLARI = [
         ("original", "✨ Originallashtirish", "✨ Уникализация", "✨ Originality boost"),
         ("antiplagiat", "🛡 Antiplagiat", "🛡 Антиплагиат", "🛡 Anti-plagiarism"),
         ("esse", "📝 Esse tekshirish", "📝 Проверка эссе", "📝 Essay check"),
+    ]),
+    ({"uz": "👨‍🔬 <b>Ilmiy izlanuvchi</b> <i>(OAK jurnallari va qo'llanmalar — bepul)</i>",
+      "ru": "👨‍🔬 <b>Научному соискателю</b> <i>(журналы ВАК и руководства — бесплатно)</i>",
+      "en": "👨‍🔬 <b>Researchers</b> <i>(HAC journals and guides — free)</i>"}, [
+        ("iz_mos", "🧭 Mos jurnal topish", "🧭 Подбор журнала", "🧭 Journal finder"),
+        ("iz_adab", "📚 Mavzu bo'yicha adabiyotlar", "📚 Литература по теме", "📚 Literature search"),
+        ("iz_moslik", "🎯 Mavzu va ixtisoslik mosligi", "🎯 Тема и специальность", "🎯 Topic vs specialty"),
+        ("iz_mavzu", "💡 Mavzu tanlash (7 variant)", "💡 Выбор темы (7 вариантов)", "💡 Topic ideas (7 options)"),
+        ("iz_reja_phd", "📑 Individual reja (PhD)", "📑 Индивидуальный план (PhD)", "📑 Individual plan (PhD)"),
+        ("iz_reja_dsc", "📑 Individual reja (DSc)", "📑 Индивидуальный план (DSc)", "📑 Individual plan (DSc)"),
+        ("iz_bib", "📝 Bibliografiya (GOST/APA)", "📝 Библиография (ГОСТ/APA)", "📝 Bibliography (GOST/APA)"),
+        ("iz_savol", "🧑‍🏫 Ilmiy maslahatchi (1 savol)", "🧑‍🏫 Научный консультант (1 вопрос)", "🧑‍🏫 Research advisor (1 question)"),
     ]),
     ({"uz": "🎤 <b>Boshqa</b>", "ru": "🎤 <b>Другое</b>", "en": "🎤 <b>Other</b>"}, [
         ("nutq", "🎤 Nutq", "🎤 Речь", "🎤 Speech"),
@@ -20899,6 +20922,8 @@ marketing.setup(
     ref_bonus=REFERRAL_BONUS, xush_bonus=XUSH_BONUS,
 )
 marketing.register(bot)
+ilmiy_izlanuvchi.register(bot, get_db=lambda: users_db, db_lock=USERS_DB_LOCK, mark_dirty=_mark_dirty,
+                          til_of=_mk_til, admin_id=ADMIN_ID)   # 👨‍🔬 Ilmiy izlanuvchi (OAK ro'yxati fonda yangilanadi)
 
 # ═══════════════════════════════════════════════
 # NOMA'LUM XABARLAR
@@ -21109,6 +21134,7 @@ def setup_bot_commands():
             BotCommand("loaddb",       "Bazani botga yuklash (users.json)"),
             BotCommand("aistat",       "AI token sarfi va limitlar"),
             BotCommand("marketing",    "Avtomatik postlar: statistika / test / yubor"),
+            BotCommand("nizom",        "Yangi ilmiy daraja nizomi rekvizitlari (bot javoblarida)"),
         ]
         bot.set_my_commands(admin_cmds, scope=BotCommandScopeChat(ADMIN_ID))
         log.info(f"✅ Admin menyusi o'rnatildi (ADMIN_ID={ADMIN_ID}).")
