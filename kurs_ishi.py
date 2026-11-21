@@ -55,10 +55,10 @@ log = logging.getLogger(__name__)
 # ═══════════════════════════════════════════════
 # O'lchov (LibreOffice'da tekshirilgan): TNR 14, 1,5 interval, A4, 3/1,5/2/2 sm → o'zbekcha ~215 so'z/bet
 HAJMLAR = {
-    "standart": dict(boblar=2, rejalar=3, sec_words=600, kirish_words=750, xulosa_par=4,
-                     takliflar=5, adab=(15, 20), bet="25–30", bet_oraliq=(27, 30), workers=3),
+    "standart": dict(boblar=2, rejalar=3, sec_words=470, kirish_words=750, xulosa_par=4,
+                     takliflar=5, adab=(30, 36), uz_min=25, bet="25–30", bet_oraliq=(27, 30), workers=3),
     "katta":    dict(boblar=3, rejalar=3, sec_words=1300, kirish_words=1150, xulosa_par=7,
-                     takliflar=7, adab=(25, 35), bet="65–70", bet_oraliq=(66, 70), workers=3),
+                     takliflar=7, adab=(36, 45), uz_min=28, bet="65–70", bet_oraliq=(66, 70), workers=3),
 }
 
 WPP = 215          # o'zbekcha so'z / bet (TNR 14, 1,5 interval, A4 — o'lchangan)
@@ -263,19 +263,37 @@ Bob va paragraf nomlari mavzuga ANIQ bog'langan, ilmiy, takrorlanmaydigan bo'lsi
 Har paragraf uchun 3-4 ta "bandlar" — shu paragrafda yoritiladigan aniq masalalar.
 "nomi" va "sarlavha" ga raqam yoki «I BOB», «1.1.» qo'shma — raqamlar avtomatik qo'yiladi.
 
-ADABIYOTLAR: {lo}-{hi} ta manba. FAQAT haqiqatda mavjud, ishonching komil bo'lgan manbalar — kam bo'lsa ham mayli,
-sonini to'ldirish uchun manba O'YLAB TOPMA. Turlari:
-  "normativ" — O'zbekiston Respublikasi Konstitutsiyasi, kodekslar, qonunlar, Prezident farmon va qarorlari
-               (faqat mavzuga aloqador, raqami va sanasini aniq bilganlaringni);
-  "asosiy"   — darsliklar, monografiyalar, ilmiy maqolalar (o'zbek va rus tilida);
+ADABIYOTLAR: jami {lo}-{hi} ta manba, ulardan KAMIDA {h['uz_min']} tasi O'ZBEK TILIDA (o'zbek mualliflari) bo'lsin.
+FAQAT haqiqatda mavjud, ishonching komil bo'lgan manbalar — manba O'YLAB TOPMA. Bir muallifning ko'pi bilan 2 ta asari.
+Turlari ("tur") va tili ("til": "uz" | "ru" | "en"):
+  "normativ" — O'zbekiston Respublikasi Konstitutsiyasi, kodekslar, qonunlar, Prezident farmon va qarorlari,
+               Vazirlar Mahkamasi qarorlari (faqat mavzuga aloqador, raqami va sanasini aniq bilganlaringni);
+  "asosiy"   — o'zbek olimlarining darsliklari, o'quv qo'llanmalari, monografiyalari, lug'atlari, dissertatsiya va
+               avtoreferatlari, ilmiy jurnallardagi maqolalari; rus tilidagi asosiy darslik va monografiyalar;
   "xorijiy"  — ingliz tilidagi taniqli kitob va maqolalar;
-  "internet" — faqat rasmiy saytlarning bosh manzili (masalan https://lex.uz, https://stat.uz, https://www.worldbank.org).
-Yozilish formati (GOST): Familiya I.O. Asar nomi. – Shahar: Nashriyot, yil. – bet soni b.
-Nashriyot, yil yoki bet sonini bilmasang — o'sha qismni tashlab yoz, o'ylab topma.
+  "internet" — faqat rasmiy saytlarning bosh manzili (masalan https://lex.uz, https://stat.uz, https://ziyonet.uz).
+Yozilish formati (GOST): Familiya I.O. Asar nomi. – Shahar: Nashriyot, yil. – 250 b.  (oxirida kitobning umumiy bet soni)
+Nashriyot yoki yilni bilmasang — o'sha qismni tashlab yoz, o'ylab topma.
 
 FAQAT JSON qaytar (Markdown yo'q):
 {{"boblar":[{{"nomi":"bob nomi","rejalar":[{{"sarlavha":"paragraf nomi","bandlar":["...","...","..."]}}]}}],
- "adabiyotlar":[{{"tur":"normativ","matn":"..."}},{{"tur":"asosiy","matn":"..."}}]}}"""
+ "adabiyotlar":[{{"tur":"normativ","til":"uz","matn":"..."}},{{"tur":"asosiy","til":"uz","matn":"..."}}]}}"""
+
+
+def _adab_qoshimcha_prompt(p: dict, plan: dict, adab: list, kerak: int) -> str:
+    return f"""Sen «{p['fan']}» fani bo'yicha tajribali ilmiy rahbarsan.
+«{p['mavzu']}» mavzusidagi kurs ishi uchun FOYDALANILGAN ADABIYOTLAR ro'yxatini to'ldir.
+Kurs ishi rejasi:
+{_outline_text(plan)}
+
+Mavjud ro'yxat (bularni TAKRORLAMA):
+{_adab_text(adab)}
+
+Yana {kerak} ta O'ZBEK TILIDAGI manba qo'sh: o'zbek olimlarining darsliklari, o'quv qo'llanmalari, monografiyalari,
+lug'atlari, dissertatsiya va avtoreferatlari, «O'zbek tili va adabiyoti», «Xalq ta'limi», «Iqtisodiyot va ta'lim» kabi
+jurnallardagi maqolalari, mavzuga aloqador qonun va qarorlar. FAQAT haqiqatda mavjud manbalar, bir muallifdan ko'pi bilan
+2 ta. Format: Familiya I.O. Asar nomi. – Shahar: Nashriyot, yil. – 250 b.
+FAQAT JSON: {{"adabiyotlar":[{{"tur":"asosiy","til":"uz","matn":"..."}}]}}"""
 
 
 def _outline_text(plan: dict) -> str:
@@ -289,6 +307,38 @@ def _outline_text(plan: dict) -> str:
 
 def _adab_text(adab: list) -> str:
     return "\n".join(f"{i + 1}. {a['matn']}" for i, a in enumerate(adab))
+
+
+def _adab_text_sub(adab: list, nums: list | None) -> str:
+    if not nums:
+        return _adab_text(adab)
+    return "\n".join(f"{n}. {adab[n - 1]['matn']}" for n in nums if 1 <= n <= len(adab))
+
+
+def _manba_taqsimoti(adab: list, tasks: list, har: int = 5) -> dict:
+    """Har paragrafga turli manbalar biriktiriladi — bitta muallif butun ish bo'ylab takrorlanib ketmaydi."""
+    citable = [i + 1 for i, a in enumerate(adab) if a.get("tur") != "internet"]
+    if not citable:
+        return {}
+    uz = [n for n in citable if adab[n - 1].get("til") == "uz"]
+    boshqa = [n for n in citable if n not in uz]
+    tartib = []
+    while uz or boshqa:                               # o'zbekcha manbalar ko'proq: 2 ta uz, 1 ta boshqa
+        for _ in range(2):
+            if uz:
+                tartib.append(uz.pop(0))
+        if boshqa:
+            tartib.append(boshqa.pop(0))
+    res, k = {}, 0
+    for t in tasks:
+        sub = []
+        while len(sub) < min(har, len(tartib)):
+            n = tartib[k % len(tartib)]
+            k += 1
+            if n not in sub:
+                sub.append(n)
+        res[t] = sorted(sub)
+    return res
 
 
 def _kirish_prompt(p: dict, plan: dict) -> str:
@@ -333,7 +383,7 @@ def _section_rules(hajm: str, bi: int, ri: int, nbob: int) -> tuple[bool, bool, 
     return (True, ri in (0, 2), ri == 0)
 
 
-def _section_prompt(p: dict, plan: dict, adab: list, bi: int, ri: int) -> str:
+def _section_prompt(p: dict, plan: dict, adab: list, bi: int, ri: int, manbalar: list | None = None) -> str:
     h = HAJMLAR[p["hajm"]]
     b = plan["boblar"][bi]
     r = b["rejalar"][ri]
@@ -384,11 +434,11 @@ HAJM: aynan {npar} ta abzas, har biri {lo}-{hi} so'z (jami ≈{words} so'z). Har
 USLUB: ilmiy-akademik; ta'riflar, dalillar, olimlarning qarashlari (faqat HAQIQIY olimlar va ularning haqiqiy fikrlari),
 sabab-oqibat tahlili, misollar. Abzaslar mantiqan bog'lansin. «Ushbu paragrafda...» bilan boshlama, sarlavhani takrorlama.
 Oxirgi abzas — paragraf bo'yicha qisqa xulosa.
-ILMIY HAVOLALAR: quyidagi ro'yxatdagi manbalarga murojaat qilganda (iqtibos, ta'rif, muhim fikr) gapdan keyin
-[raqam] qo'y — raqam ro'yxatdagi tartib raqami. Paragrafda 2-4 ta havola, bitta abzasda ko'pi bilan bitta.
-Ro'yxatda yo'q manbaga havola qilma, sahifa raqami yozma.
-ADABIYOTLAR:
-{_adab_text(adab)}
+ILMIY HAVOLALAR (snoskalar): iqtibos, ta'rif yoki olim fikri keltirilgan gapdan keyin [raqam:bet] qo'y — raqam
+quyidagi ro'yxatdagi tartib raqami, bet — o'sha fikr kitobning qaysi betida ekanligi (masalan [12:45]).
+Paragrafda 3-5 ta havola, har biri BOSHQA manbaga; bitta abzasda ko'pi bilan bitta havola.
+Faqat shu paragrafga ajratilgan quyidagi manbalardan foydalan (boshqa paragraflar boshqa manbalardan foydalanadi):
+{_adab_text_sub(adab, manbalar)}
 
 {jadval}
 {grafik}
@@ -481,9 +531,58 @@ def _norm_adab(raw: list, hajm: str) -> list:
         if tur == "internet" and not re.search(r"https?://|www\.|\.[a-z]{2,3}\b", m):
             tur = "asosiy"
         seen.add(m.lower())
-        out.append({"tur": tur, "matn": m})
-    out.sort(key=lambda a: GURUH_TARTIB.index(a["tur"]))       # GOST tartibi: normativ → asosiy → xorijiy → internet
-    return out[:HAJMLAR[hajm]["adab"][1]]
+        til = str(a.get("til", "")).lower()[:2]
+        if til not in ("uz", "ru", "en"):
+            til = "ru" if re.search(r"[а-яА-ЯёЁ]", m) and not re.search(r"[ўқғҳЎҚҒҲ]", m) else \
+                  ("en" if tur == "xorijiy" else "uz")
+        out.append({"tur": tur, "til": til, "matn": m})
+    # bir muallif ko'pi bilan 2 marta (o'qituvchi talabi: bitta muallif ustun bo'lib ketmasin)
+    soni: dict = {}
+    natija = []
+    for a in out:
+        mu = re.match(r"^([^\s,.]{3,})\s", a["matn"])
+        k = mu.group(1).lower() if (mu and a["tur"] not in ("normativ", "internet")) else None
+        if k:
+            soni[k] = soni.get(k, 0) + 1
+            if soni[k] > 2:
+                continue
+        natija.append(a)
+    natija.sort(key=lambda a: (GURUH_TARTIB.index(a["tur"]), 0 if a["til"] == "uz" else 1))
+    return natija[:HAJMLAR[hajm]["adab"][1]]
+
+
+def _uz_soni(adab: list) -> int:
+    return sum(1 for a in adab if a.get("til") == "uz")
+
+
+_PAGE_ABBR = {"uz": "B.", "ru": "С.", "en": "P."}
+
+
+def _nbsp(t: str) -> str:
+    """«– 250 b.», «– B. 45.», «T.: O'qituvchi» kabi qismlar qatorlar orasida uzilib qolmasin."""
+    t = re.sub(r"\s+–\s+(?=\S)", " –\u00a0", t)
+    t = re.sub(r"\b(\d+)\s+(b|bet|с|стр|p)\.", "\\1\u00a0\\2.", t)
+    t = re.sub(r"\b(B|С|P)\.\s+(\d+)", "\\1.\u00a0\\2", t)
+    return t
+
+
+def _snoska_matni(a: dict, bet) -> str:
+    """Adabiyot yozuvidan snoska: umumiy bet soni («– 250 b.») o'rniga iqtibos beti («– B. 45.»)."""
+    m = _clean(a.get("matn", "")).rstrip(". ")
+    jami = None
+    mm = re.search(r"\s*[–-]\s*(\d{2,4})\s*(?:b|bet|с|стр|p|pp)\.?$", m, re.I)
+    if mm:
+        jami = int(mm.group(1))
+        m = m[:mm.start()].rstrip(" .")
+    if a.get("tur") in ("internet", "normativ") or not bet:      # qonun/farmonga bet emas, modda bilan murojaat
+        return m + "."
+    try:
+        bet = int(bet)
+    except Exception:
+        return m + "."
+    if bet <= 0 or (jami and bet > jami):
+        return m + "."
+    return f"{m}. – {_PAGE_ABBR.get(a.get('til', 'uz'), 'B.')} {bet}."
 
 
 def _fix_refs(text: str, nadab: int, used: set) -> str:
@@ -501,7 +600,28 @@ def _fix_refs(text: str, nadab: int, used: set) -> str:
 
 
 def _strip_refs(text: str) -> str:
-    return re.sub(r"\s*\[\d+(?:\s*[,;]\s*\d+)*\]", "", text)
+    return re.sub(r"\s*\[\d+(?:\s*:\s*\d+)?(?:\s*[,;]\s*\d+(?:\s*:\s*\d+)?)*\]", "", text)
+
+
+def _bind_refs(text: str, adab: list, snoskalar: dict) -> str:
+    """[12:45] / [12] → mahalliy [k] belgisi; snoskalar[k] = «Muallif. Asar. – T., 1974. – B. 45.».
+    Bitta abzasda ko'pi bilan 2 ta, bitta paragrafda bitta manba ko'pi bilan 2 marta."""
+    text = re.sub(r"\[(\d+(?::\s*\d+)?(?:\s*[,;]\s*\d+(?::\s*\d+)?)+)\]",
+                  lambda m: "".join(f"[{x.strip()}]" for x in re.split(r"[,;]", m.group(1))), text)
+    count = [0]
+
+    def rep(m):
+        n = int(m.group(1))
+        bet = m.group(2)
+        if not (1 <= n <= len(adab)) or count[0] >= 2:
+            return ""
+        if sum(1 for v in snoskalar.values() if v.startswith(_snoska_matni(adab[n - 1], None)[:-1])) >= 2:
+            return ""
+        count[0] += 1
+        k = str(len(snoskalar) + 1)
+        snoskalar[k] = _snoska_matni(adab[n - 1], bet)
+        return f"[{k}]"
+    return re.sub(r"\[(\d+)(?:\s*:\s*(\d+))?\]", rep, text)
 
 
 _NUM_RE = re.compile(r"^[\s\-–+]*[\d\s.,]+\s*(%|‰|mln|mlrd|ming|тыс|млн|млрд|million|billion|thousand)?\.?\s*$", re.I)
@@ -591,13 +711,65 @@ def _dec_chart(s: str):
 # ═══════════════════════════════════════════════
 # GENERATSIYA
 # ═══════════════════════════════════════════════
-def _write_section(p, plan, adab, bi, ri) -> dict:
+def _havola_cheklovi(natija: dict, tasks: list, limit: int = 2):
+    """Butun ish bo'ylab bitta manbaga ko'pi bilan `limit` marta snoska (tartib bo'yicha, ortiqchasi olib tashlanadi)."""
+    soni: dict = {}
+    for t in tasks:
+        r = natija.get(t)
+        if not r:
+            continue
+        sn = r.get("snoskalar", {})
+
+        def rep(m):
+            k = m.group(1)
+            base = re.sub(r"\s*[–-]\s*(B|С|P)\.\s*\d+\.?$", "", sn.get(k, "")).rstrip(". ")
+            soni[base] = soni.get(base, 0) + 1
+            if base and soni[base] > limit:
+                sn.pop(k, None)
+                return ""
+            return m.group(0)
+        r["matn"] = re.sub(r"\[(\d+)\]", rep, r.get("matn", ""))
+
+
+def _bob_kirish_prompt(p: dict, plan: dict, bi: int) -> str:
+    b = plan["boblar"][bi]
+    rejalar = "\n".join(f"  {bi + 1}.{ri + 1}. {r['sarlavha']}" for ri, r in enumerate(b["rejalar"]))
+    oldingi = f"Oldingi bob: «{plan['boblar'][bi - 1]['nomi']}»." if bi > 0 else "Bu ishning birinchi bobi."
+    return f"""Sen «{p['fan']}» fani bo'yicha tajribali ilmiy rahbarsan. {L(p['til'])['lang']}
+«{p['mavzu']}» kurs ishining {ROMAN[bi]} bobi «{b['nomi']}» uchun BOB KIRISH QISMINI yoz — bu matn bob sarlavhasidan
+keyin, {bi + 1}.1-paragrafdan oldin turadi va kamida bir betni egallaydi.
+Bob paragraflari:
+{rejalar}
+{oldingi}
+Aynan 3 ta abzas, har biri 100-120 so'z:
+1) bobning maqsadi, mazmuni va ishdagi o'rni;
+2) bobda ko'rib chiqiladigan masalalar — har bir paragrafning qisqa mazmuni (nomini so'zma-so'z takrorlamay);
+3) qo'llanilgan yondashuv va metodlar, oldingi bob bilan bog'liqligi va kutilayotgan xulosalar.
+Havola, raqamli statistika yozma. «Ushbu bobda» iborasini ko'pi bilan bir marta ishlat.
+FAQAT JSON: {{"paragraflar":["...","...","..."]}}"""
+
+
+def _write_bob_kirish(p, plan, bi) -> str:
+    paras = []
+    for _ in range(2):
+        try:
+            r = _ask(_bob_kirish_prompt(p, plan, bi), f"{ROMAN[bi]} bob kirishi", max_tokens=2500)
+            paras = [_strip_refs(_clean(x)) for x in (r.get("paragraflar") or []) if isinstance(x, str)]
+            paras = [x for x in paras if _words(x) >= 15]
+            if sum(_words(x) for x in paras) >= 240:
+                break
+        except Exception as e:
+            log.warning(f"Bob kirishi xatosi: {e}")
+    return " [ABZAS] ".join(paras)
+
+
+def _write_section(p, plan, adab, bi, ri, manbalar=None) -> dict:
     h = HAJMLAR[p["hajm"]]
     words = h["sec_words"]
     data = None
     for attempt in range(2):
         try:
-            data = _ask(_section_prompt(p, plan, adab, bi, ri), f"{bi + 1}.{ri + 1}-paragraf",
+            data = _ask(_section_prompt(p, plan, adab, bi, ri, manbalar), f"{bi + 1}.{ri + 1}-paragraf",
                         max_tokens=7500 if p["hajm"] == "katta" else 4500)
             if data.get("paragraflar"):
                 break
@@ -628,15 +800,8 @@ def _write_section(p, plan, adab, bi, ri) -> dict:
     if not paras:
         raise ValueError(f"{bi + 1}.{ri + 1}-paragraf bo'sh qaytdi")
 
-    used: set = set()
-    per_par = []
-    for x in paras:                                  # bitta abzasda ko'pi bilan 2 ta havola
-        x = _fix_refs(x, len(adab), used)
-        refs = re.findall(r"\[\d+\]", x)
-        for extra in refs[2:]:
-            x = x.replace(extra, "", 1)
-        per_par.append(x)
-    paras = per_par
+    snoskalar: dict = {}
+    paras = [_bind_refs(x, adab, snoskalar) for x in paras]
 
     jr, jm, gr = _section_rules(p["hajm"], bi, ri, len(plan["boblar"]))
     tbl = _norm_table(data.get("jadval"), p["til"]) if jr else None
@@ -649,7 +814,6 @@ def _write_section(p, plan, adab, bi, ri) -> dict:
         inserts.append((min(max(1, gfk["keyin"]), len(paras)), _enc_chart(gfk)))
     for pos, block in sorted(inserts, key=lambda x: -x[0]):
         blocks.insert(pos, block)
-    snoskalar = {str(n): adab[n - 1]["matn"] for n in sorted(used)}
     return {"sarlavha": f"{bi + 1}.{ri + 1}. {plan['boblar'][bi]['rejalar'][ri]['sarlavha']}",
             "matn": " [ABZAS] ".join(blocks), "snoskalar": snoskalar}
 
@@ -689,7 +853,19 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
     if not plan:
         raise ValueError("Kurs ishi rejasini tuzib bo'lmadi")
     adab = _norm_adab(plan_raw.get("adabiyotlar"), p["hajm"])
-    log.info(f"[{cid}] Kurs ishi rejasi: {len(plan['boblar'])} bob, {len(adab)} ta adabiyot")
+    for _ in range(2):                                # o'zbek tilidagi manbalar yetarli bo'lsin
+        kam = h["uz_min"] - _uz_soni(adab)
+        if kam <= 0 and len(adab) >= h["adab"][0]:
+            break
+        try:
+            qr = _ask(_adab_qoshimcha_prompt(p, plan, adab, max(kam, h["adab"][0] - len(adab)) + 3),
+                      "Adabiyotlar", max_tokens=4000, temperature=0.4)
+            adab = _norm_adab(list(adab) + list(qr.get("adabiyotlar") or []), p["hajm"])
+        except Exception as e:
+            log.warning(f"Qo'shimcha adabiyotlar xatosi: {e}")
+            break
+    log.info(f"[{cid}] Kurs ishi rejasi: {len(plan['boblar'])} bob, {len(adab)} ta adabiyot "
+             f"(o'zbekcha {_uz_soni(adab)})")
 
     # 2) Kirish
     prog(T["kirish"].format(bet=h["bet"]))
@@ -711,19 +887,33 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
     done = [0]
     ctx = _API.get("ai_ctx")
 
+    taqsimot = _manba_taqsimoti(adab, tasks, har=6 if p["hajm"] == "katta" else 5)
+
     def run(bi, ri):
+        if ri == -1:                                  # bob kirish qismi (sarlavhadan keyin, 1.1 dan oldin)
+            fn = lambda: _write_bob_kirish(p, plan, bi)
+        else:
+            fn = lambda: _write_section(p, plan, adab, bi, ri, taqsimot.get((bi, ri)))
         if ctx:
             with ctx(cid):
-                return _write_section(p, plan, adab, bi, ri)
-        return _write_section(p, plan, adab, bi, ri)
+                return fn()
+        return fn()
 
     prog(T["bob"].format(k=0, n=jami_qadam, bet=h["bet"]))
+    bob_kirish: dict = {}
     with cf.ThreadPoolExecutor(max_workers=h["workers"]) as ex:
         futs = {ex.submit(run, bi, ri): (bi, ri) for bi, ri in tasks}
+        futs.update({ex.submit(run, bi, -1): (bi, -1) for bi in range(h["boblar"])})
         for f in cf.as_completed(futs):
-            natija[futs[f]] = f.result()            # xato bo'lsa — butun ish to'xtaydi (tanga qaytariladi)
+            key = futs[f]
+            if key[1] == -1:
+                bob_kirish[key[0]] = f.result()
+                continue
+            natija[key] = f.result()                # xato bo'lsa — butun ish to'xtaydi (tanga qaytariladi)
             done[0] += 1
             prog(T["bob"].format(k=done[0], n=jami_qadam, bet=h["bet"]))
+
+    _havola_cheklovi(natija, tasks)
 
     # 4) Xulosa va takliflar
     prog(T["xulosa"].format(bet=h["bet"]))
@@ -746,7 +936,8 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
     }
     for bi in range(h["boblar"]):
         data[f"bob{bi + 1}_nomi"] = L(p["til"])["bob"].format(r=ROMAN[bi]) + " " + plan["boblar"][bi]["nomi"]
-        data[f"bob{bi + 1}_data"] = {"rejalar": [natija[(bi, ri)] for ri in range(h["rejalar"])]}
+        data[f"bob{bi + 1}_data"] = {"kirish": bob_kirish.get(bi, ""),
+                                      "rejalar": [natija[(bi, ri)] for ri in range(h["rejalar"])]}
 
     # 5) Hajm kafolati: sahifalar aniq hisoblanadi; kam bo'lsa — paragraflar to'ldiriladi, ko'p bo'lsa — qisqartiriladi
     _hajmga_moslash(cid, p, plan, data, lambda k, n: prog(T["hajm"].format(bet=h["bet"], k=k, n=n)))
@@ -795,7 +986,7 @@ def _hajmga_moslash(cid, p, plan, data, prog=None):
                 bl = bloklar(*eng)
                 cand = [i for i in range(1, len(bl) - 1) if matnli(bl[i]) and "{" not in bl[i]]
                 cand = [i for i in cand if not re.search(r"\[\d+\]", bl[i])] or cand   # havolalilar — oxirgi navbatda
-                if len([x for x in bl if matnli(x)]) <= 4 or not cand:
+                if len([x for x in bl if matnli(x)]) <= 3 or not cand:
                     keys = [k for k in keys if k != eng]
                     if not keys:
                         break
@@ -1278,7 +1469,7 @@ def _ref_segs(text: str, snoskalar: dict, adab: list) -> list:
                     src = ""
             src = _clean(src)
             if len(src) >= 8:
-                segs.append(("fn", src.rstrip(".") + "."))
+                segs.append(("fn", _nbsp(src.rstrip(".") + ".")))
     return segs
 
 
@@ -1518,6 +1709,10 @@ def _flow(data: dict, bet_matn: str = "99") -> tuple[list, list, dict]:
     # ── 4. Boblar ──
     for bi in range(nbob):
         H(data.get(f"bob{bi + 1}_nomi", ROMAN[bi]), 1)
+        for ab in str(data.get(f"bob{bi + 1}_data", {}).get("kirish", "") or "").split("[ABZAS]"):
+            ab = _strip_refs(_clean(ab))
+            if _words(ab) >= 3:
+                B.append(_P(ab))
         for rj in data.get(f"bob{bi + 1}_data", {}).get("rejalar", []):
             H(_clean(rj.get("sarlavha", "")), 2)
             matn = str(rj.get("matn", ""))
@@ -1573,7 +1768,7 @@ def _flow(data: dict, bet_matn: str = "99") -> tuple[list, list, dict]:
         if len(groups) > 1:
             B.append(_P(f"{ROMAN[gi]}. {lb['guruhlar'][g]}", bold=True, ind=0, sb=6, sa=2, align="c", keep=True))
         for a in [a for a in adab if a.get("tur", "asosiy") == g]:
-            B.append(_P(f"{n}. {_clean(a['matn'])}", ind=0, align="j"))
+            B.append(_P(f"{n}. {_nbsp(_clean(a['matn']))}", ind=0, align="j"))
             n += 1
 
     # tuzilish matni (sahifa soni keyin qo'yiladi)

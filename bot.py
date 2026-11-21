@@ -17486,23 +17486,23 @@ def h_doc_ism(msg):
 _KURS_HAJM_TXT = {
     "uz": ("📄 <b>Kurs ishi</b>\n\nHajmni tanlang:\n\n"
            "📘 <b>Standart — 25-30 bet</b> · {n1} 🪙\n"
-           "Kirish, 2 bob (6 paragraf), xulosa va takliflar, 15-20 ta adabiyot\n\n"
+           "Kirish, 2 bob (6 paragraf), xulosa va takliflar, 30-36 ta adabiyot\n\n"
            "📚 <b>Kengaytirilgan — 65-70 bet</b> · {n2} 🪙\n"
-           "Kirish, 3 bob (9 paragraf), ko'proq jadval va grafiklar, 25-35 ta adabiyot\n\n"
+           "Kirish, 3 bob (9 paragraf), ko'proq jadval va grafiklar, 36-45 ta adabiyot\n\n"
            "Ikkalasida ham: OTM talablari bo'yicha titul, avtomatik mundarija, sahifa raqamlari, "
-           "Word snoskalari, «1-jadval», «1-rasm» raqamlari va manbalar.\n\n💰 Balans: <b>{c} 🪙</b>"),
+           "bet ko'rsatilgan Word snoskalari, kamida 25 ta o'zbekcha manba, «1-jadval», «1-rasm» raqamlari.\n\n💰 Balans: <b>{c} 🪙</b>"),
     "ru": ("📄 <b>Курсовая работа</b>\n\nВыберите объём:\n\n"
            "📘 <b>Стандарт — 25-30 стр.</b> · {n1} 🪙\n"
-           "Введение, 2 главы (6 параграфов), заключение и рекомендации, 15-20 источников\n\n"
+           "Введение, 2 главы (6 параграфов), заключение и рекомендации, 30-36 источников\n\n"
            "📚 <b>Расширенная — 65-70 стр.</b> · {n2} 🪙\n"
-           "Введение, 3 главы (9 параграфов), больше таблиц и графиков, 25-35 источников\n\n"
+           "Введение, 3 главы (9 параграфов), больше таблиц и графиков, 36-45 источников\n\n"
            "В обоих: титульный лист по требованиям вуза, автоматическое содержание, нумерация страниц, "
            "сноски Word, «Таблица 1», «Рис. 1» и источники.\n\n💰 Баланс: <b>{c} 🪙</b>"),
     "en": ("📄 <b>Course work</b>\n\nChoose the size:\n\n"
            "📘 <b>Standard — 25-30 pages</b> · {n1} 🪙\n"
-           "Introduction, 2 chapters (6 sections), conclusion and recommendations, 15-20 references\n\n"
+           "Introduction, 2 chapters (6 sections), conclusion and recommendations, 30-36 references\n\n"
            "📚 <b>Extended — 65-70 pages</b> · {n2} 🪙\n"
-           "Introduction, 3 chapters (9 sections), more tables and charts, 25-35 references\n\n"
+           "Introduction, 3 chapters (9 sections), more tables and charts, 36-45 references\n\n"
            "Both include: university-style title page, automatic table of contents, page numbers, "
            "Word footnotes, numbered tables/figures with sources.\n\n💰 Balance: <b>{c} 🪙</b>"),
 }

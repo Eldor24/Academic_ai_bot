@@ -81,11 +81,11 @@ def wrap(segs: list, size: float, avail_first: float, avail_rest: float) -> tupl
                 tokens[-1] = (tokens[-1][0], w + width("9", size * 0.65), sp, fns + [s[1]])
             continue
         _, txt, b, it = s
-        parts = re.split(r"(\s+)", txt)
+        parts = re.split(r"([ \t\n\r]+)", txt)            # \u00a0 (bo'linmas bo'shliq) — so'z ichida
         for part in parts:
             if not part:
                 continue
-            if part.isspace():
+            if not part.strip(" \t\n\r"):
                 pending_space = True
                 continue
             w = width(part, size, b, it)

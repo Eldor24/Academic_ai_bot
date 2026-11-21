@@ -1,5 +1,16 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 14-versiya (21.11.2026) — o'qituvchi takliflari bo'yicha kurs ishi
+| Taklif | Nima qilindi |
+|---|---|
+| O'zbek adabiyotlari kam — kamida 25 ta bo'lsin | Adabiyotlar: standart 30–36, kengaytirilgan 36–45 ta; **kamida 25 (kengaytirilganda 28) tasi o'zbek tilida**. Yetmasa bot qo'shimcha o'zbekcha manbalarni alohida so'raydi (darslik, monografiya, lug'at, dissertatsiya, jurnal maqolalari, qonun va qarorlar) |
+| Bitta muallif (masalan A. Hojiyev) haddan tashqari ko'p takrorlangan | Ro'yxatda bir muallifning ko'pi bilan 2 ta asari; har paragrafga **turli manbalar** biriktiriladi; butun ish bo'ylab bitta manbaga ko'pi bilan 2 ta snoska |
+| Snoskada bet ko'rsatilmagan | Snoskalar endi betli: «Hojiyev A. O'zbek tili sinonimlarining izohli lug'ati. – T.: O'qituvchi, 1974. – B. 45.» (rus manbalarida «С.», inglizchada «P.»); bet kitobning umumiy hajmidan oshmaydi; qonun va farmonlarga bet qo'yilmaydi |
+| Bob sarlavhasidan keyin darhol 1.1 boshlanib ketyapti | Har bob boshida **bob kirish qismi** (3 abzas, ~350 so'z — bir betdan ko'p): bobning maqsadi, paragraflar mazmuni, yondashuv va oldingi bob bilan bog'liqligi; undan keyin 1.1, 1.2 ... |
+
+- Hajm baribir kafolatlanadi (standart 27–30, kengaytirilgan 66–70 bet), mundarija raqamlari aniq qoladi (LibreOffice'da qayta tekshirildi)
+- Adabiyotlar ro'yxati va snoskalarda «– 250 b.», «– B. 45.» qismlari qatorlar orasida uzilmaydi
+
 ## 13.3-versiya (19.11.2026) — kurs ishi titul varag'i OTM namunasi bo'yicha
 - 📄 Titul OTM namunasi bo'yicha qayta tuzildi: vazirlik, universitet, chapda fakultet va o'ngda kafedra bilan
   «Ro'yxatga olindi №___» va sana qatorlari, «“…” KAFEDRASI», «“…” FANIDAN», KURS ISHI, MAVZU, Bajardi /
