@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import urllib.parse
 import urllib.request
 
@@ -67,6 +68,11 @@ def _work(w: dict) -> dict:
         "tur": w.get("type") or "", "til": w.get("language") or "",
         "annot": _abstract(w.get("abstract_inverted_index")),
         "nashriyot": (src.get("host_organization_name") or "").strip(),
+        "manba_turi": src.get("type") or "",
+        "doaj": bool(src.get("is_in_doaj")),
+        "core": bool(src.get("is_core")),
+        "indexed": [str(x).lower() for x in (w.get("indexed_in") or [])],
+        "rel": float(w.get("relevance_score") or 0),
     }
 
 
@@ -75,17 +81,40 @@ _FIELDS = ("id,title,display_name,publication_year,authorships,primary_location,
 
 
 def ishlar(query: str, n: int = 20, dan_yil: int | None = None, sort: str | None = None, tur: str | None = None,
-           til: str | None = None) -> list:
-    f = []
+           til: str | None = None, aniq: bool = True) -> list:
+    """Ishlarni qidiradi. Har doim: qaytarib olingan (retracted) va paratext (muqova, mundarija) ishlar chiqarib tashlanadi."""
+    f = ["is_retracted:false", "is_paratext:false"]
     if dan_yil:
         f.append(f"from_publication_date:{dan_yil}-01-01")
     if tur:
         f.append(f"type:{tur}")
     if til:
         f.append(f"language:{til}")
-    d = _get("/works", {"search": query, "filter": ",".join(f), "per-page": min(50, n), "sort": sort,
-                        "select": _FIELDS})
+    q = re.sub(r"[,:|!()\"]+", " ", query or "").strip()
+    if aniq and q:
+        # faqat sarlavha va annotatsiya bo'yicha (to'liq matndagi tasodifiy so'z mosligi hisobga olinmaydi)
+        d = _get("/works", {"filter": ",".join(f + [f"title_and_abstract.search:{q}"]), "per-page": min(50, n),
+                            "sort": sort or "relevance_score:desc"})
+        res = [_work(w) for w in d.get("results", []) if (w.get("title") or w.get("display_name"))]
+        if len(res) >= min(5, n):
+            return res
+    d = _get("/works", {"search": q, "filter": ",".join(f), "per-page": min(50, n), "sort": sort})
     return [_work(w) for w in d.get("results", []) if (w.get("title") or w.get("display_name"))]
+
+
+def soni(query: str, dan_yil: int | None = None) -> int | None:
+    """Sarlavha va annotatsiyasida shu so'rov bo'lgan ishlar soni (mavzu qanchalik o'rganilganini baholash uchun)."""
+    q = re.sub(r"[,:|!()\"]+", " ", query or "").strip()
+    if not q:
+        return None
+    f = ["is_retracted:false", "is_paratext:false", f"title_and_abstract.search:{q}"]
+    if dan_yil:
+        f.append(f"from_publication_date:{dan_yil}-01-01")
+    d = _get("/works", {"filter": ",".join(f), "per-page": 1})
+    try:
+        return int((d.get("meta") or {}).get("count"))
+    except (TypeError, ValueError):
+        return None
 
 
 def jurnallar(query: str, n: int = 10, dan_yil: int = 2019) -> list:
@@ -118,6 +147,39 @@ def jurnallar(query: str, n: int = 10, dan_yil: int = 2019) -> list:
         if len(out) >= n:
             break
     return out
+
+
+def ishonch(w: dict, oak_nomlar: set | None = None, norm=None) -> list:
+    """Ishning ishonchlilik belgilari (kalitlar): oak, pubmed, doaj, doi, jurnal, core."""
+    out = []
+    if oak_nomlar and norm and w.get("jurnal") and norm(w["jurnal"]) in oak_nomlar:
+        out.append("oak")
+    if "pubmed" in w.get("indexed", []):
+        out.append("pubmed")
+    if w.get("core"):
+        out.append("core")
+    if w.get("doaj"):
+        out.append("doaj")
+    if w.get("doi"):
+        out.append("doi")
+    if w.get("jurnal") and (w.get("manba_turi") in ("journal", "") or w.get("tur") in ("article", "review")):
+        out.append("jurnal")
+    return out
+
+
+def qidiruv_havolalari(mavzu: str, en: str = "", ru: str = "") -> list:
+    """Rasmiy va ishonchli bazalarda mavzu bo'yicha tayyor qidiruv havolalari."""
+    from urllib.parse import quote_plus as qp
+    m, e, r = mavzu[:150], (en or mavzu)[:150], (ru or mavzu)[:150]
+    return [
+        ("Lex.uz — O'zbekiston qonunchiligi (normativ-huquqiy hujjatlar)", f"https://lex.uz/uz/search/all?query={qp(m)}"),
+        ("Google Scholar (2019-yildan)", f"https://scholar.google.com/scholar?q={qp(e)}&as_ylo=2019"),
+        ("CyberLeninka (rus tilidagi ochiq maqolalar)", f"https://cyberleninka.ru/search?q={qp(r)}"),
+        ("eLIBRARY.RU (RINTs)", f"https://www.elibrary.ru/querybox.asp?keywords={qp(r)}"),
+        ("PubMed (OAK B toifasi — tibbiyot, biologiya)", f"https://pubmed.ncbi.nlm.nih.gov/?term={qp(e)}&filter=years.2019-2026"),
+        ("DOAJ — ochiq kirishli taqrizlanadigan jurnallar", f"https://doaj.org/search/articles?source=%7B%22query%22%3A%7B%22query_string%22%3A%7B%22query%22%3A%22{qp(e)}%22%7D%7D%7D"),
+        ("OpenAlex", f"https://openalex.org/works?search={qp(e)}&filter=publication_year:2019-2026"),
+    ]
 
 
 def tekshir_havolalar(issn: str) -> dict:

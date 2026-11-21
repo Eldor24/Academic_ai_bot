@@ -4820,7 +4820,7 @@ def xavfsiz_fayl_yukla(
     if kengaytma not in ruxsat_etilgan_kengaytmalar:
         return False, (
             f"⚠️ Ruxsat etilgan formatlar: {', '.join(ruxsat_etilgan_kengaytmalar)}. "
-            f'Yuborilgan: <b>{kengaytma or "noma\'lum"}</b>'
+            f"Yuborilgan: <b>{kengaytma or 'nomaʼlum'}</b>"
         )
 
     # 3. Faylni yuklab olish
@@ -14260,8 +14260,17 @@ def h_back(msg):
         return
     cid = msg.chat.id
     saved_til = holat.get(cid, {}).get("til", "uz")
+    eski_tur = str(holat.get(cid, {}).get("tur") or "")
+    eski_qadam = holat.get(cid, {}).get("qadam")
+    eski_last = holat.get(cid, {}).get("last_doc")
     # ✅ TO'G'RI: Orqaga tugmasi kanalga yozilmaydi — navigatsiya harakati
-    set_holat(cid, {"til": saved_til})
+    set_holat(cid, {"til": saved_til, **({"last_doc": eski_last} if eski_last else {})})
+    if eski_tur.startswith("iz_") and (eski_tur != "iz_menu" or eski_qadam):
+        # 👨‍🔬 Ilmiy izlanuvchi xizmatidan chiqish → bo'lim menyusiga qaytadi
+        update_holat(cid, "tur", "iz_menu")
+        bot.send_message(cid, tx(cid, "back_to_menu"),
+                         reply_markup=ilmiy_izlanuvchi.izlanuvchi_kb(cid), parse_mode="HTML")
+        return
     bot.send_message(cid, tx(cid, "back_to_menu"),
                      reply_markup=main_kb(cid), parse_mode="HTML")
     bot.send_message(cid, tx(cid, "tur_tanlash"), parse_mode="HTML")

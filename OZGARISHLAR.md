@@ -1,5 +1,43 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 16.3-versiya (21.11.2026) — Ilmiy bo'lim: dalillarga asoslangan javoblar, yagona Word shabloni, xavfsizlik
+- 💡 **Mavzu tanlash** endi haqiqiy tadqiqotlarga tayanadi. Bot so'rovdan soha va qidiruv so'zlarini ajratadi,
+  OpenAlex'dan 2019-yildan keyingi eng yaqin ishlarni oladi va yo'nalishda nechta ish borligini hisoblaydi.
+  Har bir variantda: obyekt, predmet, dolzarblik, tadqiqot bo'shlig'i, ilmiy yangilik, ishchi gipoteza, metodlar,
+  ma'lumot manbalari, xavf. Tayanilgan ishlar [n] bilan ko'rsatiladi, hujjat oxirida GOST bo'yicha
+  «Asoslovchi adabiyotlar» ro'yxati beriladi.
+- 🎯 **Mavzu va ixtisoslik**: mavzuga eng yaqin so'nggi ishlar va yo'nalish dinamikasi (so'nggi 5 yil va jami ishlar
+  soni) qo'shildi. «Ilmiy yangilik va takrorlanish xavfi» bandi [n] havolalari bilan beriladi.
+- 🧑‍🏫 **Ilmiy maslahatchi**:
+  - Savol turini aniqlaydi: tartib-qoida yoki ilmiy mazmun. Ilmiy savolda so'nggi tadqiqotlarni dalil sifatida
+    oladi.
+  - Javob akademik tuzilmada beriladi: Qisqa javob → Asoslash → Amaliy qadamlar → E'tibor bering → Keyingi qadam.
+  - Manbalar ro'yxatida rasmiy hujjatlar, OAK yangiliklari va ilmiy maqolalar (GOST) ko'rsatiladi.
+- 📄 Bo'limdagi barcha Word hujjatlar yagona shablonda (`ilmiy_shablon.py`). Shablonda sarlavha bloki, parametrlar
+  jadvali, kolontitul va sahifa raqami bor. Individual reja rasmiy shaklda: «TASDIQLAYMAN» bloki, kulrang sarlavhali
+  jadvallar, imzo jadvali.
+- ↩️ «Orqaga» tugmasi xizmat ichidan «Ilmiy izlanuvchi» menyusiga qaytaradi.
+- 🛡 **Xavfsizlik**:
+  - Foydalanuvchi matni va tashqi manbalar (OpenAlex, OAK yangiliklari) AI'ga «faqat ma'lumot» chegarasida beriladi.
+    Ular ichidagi ko'rsatmalar bajarilmaydi (prompt-injection himoyasi).
+  - Callback ma'lumotlari qat'iy formatda va chegaralarda tekshiriladi. Eskirgan yoki qo'lda o'zgartirilgan tugmalar
+    jim e'tiborsiz qoldiriladi.
+  - Tugmalarni tez-tez bosish cheklangan. Bepul Word ro'yxatini qayta olish uchun 20 soniya kutish kerak.
+  - «🗑 Tarixni tozalash» tugmasi tasdiqlash bilan ishlaydi.
+- 🐍 bot.py: Python 3.11 bilan mos kelmaydigan f-string tuzatildi.
+
+## 16.2-versiya (21.11.2026) — «📚 Adabiyot va tadqiqotlar»: faqat yangi va mavzuga mos manbalar
+- Faqat **2019-yildan keyin** chop etilgan ishlar olinadi. Avval asosiy ro'yxat 2012-yildan, «eng ko'p iqtibos»
+  bo'limi 2000-yildan edi, dissertatsiyalar uchun esa yil chegarasi yo'q edi.
+- Qaytarib olingan (retracted) maqolalar va muqova/mundarija kabi yozuvlar chiqarib tashlanadi.
+- Chuqurroq qidiruv: 3 ta inglizcha (asosiy, sinonimli, torroq), ruscha va o'zbekcha so'rov, iqtiboslar bo'yicha,
+  dissertatsiyalar — jami 100+ nomzod ish.
+- AI har bir topilgan ishning sarlavhasi va annotatsiyasiga qarab mavzuga mosligini baholaydi (bevosita / qisman / mos emas).
+  Mos kelmaganlari olib tashlanadi. AI hech qanday manba qo'shmaydi — faqat haqiqiy topilgan ishlarni saralaydi.
+- Natijada 5 ta bo'lim bor: eng yaqin tadqiqotlar, eng ko'p iqtibos qilinganlar, rus tilidagi, **o'zbek tilidagi**,
+  dissertatsiyalar. Har bir ishda yili, iqtiboslar soni, mosligi, DOI yoki ochiq PDF ko'rsatiladi.
+- Hujjat boshida qidiruv qanday o'tkazilgani yoziladi: nechta ish ko'rib chiqildi, qaysi yillar oralig'i.
+
 ## 16.1-versiya (21.11.2026) — 2027-yildagi yangi tizim, aniqlashtiruvchi savollar, tarix
 - 🧾 «Ilmiy daraja» qo'llanmasi (3 tilda) qayta yozildi:
   - Prezidentning 26.05.2026 dagi **PF-98-son Farmoni** qabul qilingan hujjat sifatida bayon qilinadi: nimalar bekor
