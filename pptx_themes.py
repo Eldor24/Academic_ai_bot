@@ -369,7 +369,7 @@ def _line(sl, th, x1, y1, x2, y2, color, w=1.5):
 
 
 def _est_lines(text: str, w_in: float, size: float) -> int:
-    cpl = max(6, int(w_in * 72 / (size * 0.48)))
+    cpl = max(6, int(w_in * 72 / (size * 0.5)))
     return sum(max(1, math.ceil(len(p) / cpl)) for p in (text or " ").split("\n"))
 
 
@@ -384,7 +384,7 @@ def _fit(text: str, w: float, h: float, mx: float, mn: float = 11, spacing: floa
 
 def _txt(sl, th, x, y, w, h, text, size=18, color="text", bold=False, font=None,
          align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP, italic=False, spacing=1.12,
-         fit=False, min_size=11, caps=False, spc=None):
+         fit=False, min_size=11, caps=False, spc=None, lead_bold=False):
     text = _clean(text)
     if caps:
         text = text.upper()
@@ -400,14 +400,18 @@ def _txt(sl, th, x, y, w, h, text, size=18, color="text", bold=False, font=None,
         p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
         p.alignment = align
         p.line_spacing = spacing
-        r = p.add_run()
-        r.text = par
-        f = r.font
-        f.size = Pt(size); f.bold = bold; f.italic = italic
-        f.name = font or th.font_body
-        f.color.rgb = _rgb(th, color)
-        if spc is not None:
-            r._r.get_or_add_rPr().set("spc", str(int(spc * 100)))
+        # «Atama — izoh» ko'rinishidagi bandlarda atama qalin ajratiladi (ro'yxatni o'qish osonlashadi)
+        m = re.match(r"^(.{2,70}?)(\s[—–-]\s|:\s)(.+)$", par) if lead_bold and not bold else None
+        qismlar = [(m.group(1) + m.group(2), True), (m.group(3), False)] if m else [(par, bold)]
+        for matn_, qalin in qismlar:
+            r = p.add_run()
+            r.text = matn_
+            f = r.font
+            f.size = Pt(size); f.bold = qalin; f.italic = italic
+            f.name = font or th.font_body
+            f.color.rgb = _rgb(th, color)
+            if spc is not None:
+                r._r.get_or_add_rPr().set("spc", str(int(spc * 100)))
     return tb
 
 
@@ -656,7 +660,7 @@ def _start(prs, th, sd, num):
     izoh = _clean(sd.get("izoh", ""))
     if sd.get("tipo") in _NO_IZOH or len(izoh) < 8:
         izoh = ""
-    izoh = izoh if len(izoh) <= 220 else izoh[:217].rsplit(" ", 1)[0] + "…"
+    izoh = izoh if len(izoh) <= 300 else izoh[:297].rsplit(" ", 1)[0] + "…"
     side = th.v["header"] == "side_column"
     rect = _header(sl, th, sd.get("sarlavha"), num, izoh if side else "")
     if izoh and not side:
@@ -750,14 +754,14 @@ def _list_render(sl, th, rect, items, v, check=False):
         rows = math.ceil(n / cols)
         g = 0.3
         cw, ch = (w - g * (cols - 1)) / cols, (h - g * (rows - 1)) / rows
-        fs = min(_fit(t, cw - 0.5, ch - 1.0, 22, 12) for t in items)
+        fs = min(_fit(t, cw - 0.6, ch - 1.15, 22, 11) for t in items)
         for i, it in enumerate(items):
             r, c = divmod(i, cols)
             cx, cy = x + c * (cw + g), y + r * (ch + g)
             _card(sl, th, cx, cy, cw, ch)
             col = _col(th, i) if th.decor in ("pastel", "gradient", "startup", "neon") else th.accent
             _num_circle(sl, th, cx + 0.25, cy + 0.25, 0.5, mark or i + 1, col)
-            _txt(sl, th, cx + 0.25, cy + 0.9, cw - 0.5, ch - 1.05, it, fs, "text", spacing=1.18)
+            _txt(sl, th, cx + 0.25, cy + 0.9, cw - 0.5, ch - 1.05, it, fs, "text", spacing=1.18, lead_bold=True)
         return
     if v == "icon_columns" and 2 <= n <= 5:
         cw = w / n
@@ -768,7 +772,7 @@ def _list_render(sl, th, rect, items, v, check=False):
             col = _col(th, i)
             _box(sl, th, cx + cw / 2 - d / 2, y + 0.15, d, d, col, MSO_SHAPE.OVAL, opacity=0.15)
             _num_circle(sl, th, cx + cw / 2 - 0.35, y + 0.32, 0.7, mark or i + 1, col)
-            _txt(sl, th, cx + 0.2, y + 1.55, cw - 0.4, h - 1.6, it, fs, "text", align=PP_ALIGN.CENTER, spacing=1.2)
+            _txt(sl, th, cx + 0.2, y + 1.55, cw - 0.4, h - 1.6, it, fs, "text", align=PP_ALIGN.CENTER, spacing=1.2, lead_bold=True)
             if i < n - 1:
                 _box(sl, th, cx + cw - 0.01, y + 1.6, 0.012, h - 1.8, "line")
         return
@@ -784,7 +788,7 @@ def _list_render(sl, th, rect, items, v, check=False):
             _box(sl, th, x, ry, rh * 1.25, rh, col, MSO_SHAPE.ROUNDED_RECTANGLE, radius=0.5)
             _txt(sl, th, x, ry, rh * 1.25, rh, mark or f"{i + 1:02d}", min(20, rh * 26), _onc(th, col), True,
                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-            _txt(sl, th, x + rh * 1.25 + 0.3, ry, w - rh * 1.25 - 0.5, rh, it, fs, "text", anchor=MSO_ANCHOR.MIDDLE)
+            _txt(sl, th, x + rh * 1.25 + 0.3, ry, w - rh * 1.25 - 0.5, rh, it, fs, "text", anchor=MSO_ANCHOR.MIDDLE, lead_bold=True)
         return
     if v == "zigzag" and n >= 2:
         cx = x + w / 2
@@ -796,9 +800,9 @@ def _list_render(sl, th, rect, items, v, check=False):
             ry = y + i * rh
             _num_circle(sl, th, cx - 0.25, ry + rh / 2 - 0.25, 0.5, mark or i + 1, _col(th, i))
             if i % 2 == 0:
-                _txt(sl, th, x, ry - rh * 0.3, cw, rh * 1.6, it, fs, "text", align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+                _txt(sl, th, x, ry - rh * 0.3, cw, rh * 1.6, it, fs, "text", align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE, lead_bold=True)
             else:
-                _txt(sl, th, cx + 0.6, ry - rh * 0.3, cw, rh * 1.6, it, fs, "text", anchor=MSO_ANCHOR.MIDDLE)
+                _txt(sl, th, cx + 0.6, ry - rh * 0.3, cw, rh * 1.6, it, fs, "text", anchor=MSO_ANCHOR.MIDDLE, lead_bold=True)
         return
     if v == "numbered_big":
         cols = 2 if n >= 4 else 1
@@ -811,7 +815,7 @@ def _list_render(sl, th, rect, items, v, check=False):
             cx, ry = x + c * (cw + 0.5), y + r * rh
             _txt(sl, th, cx, ry, 1.3, rh, mark or f"{i + 1:02d}", min(44, rh * 40), "accent", True, th.font_head,
                  anchor=MSO_ANCHOR.MIDDLE)
-            _txt(sl, th, cx + 1.4, ry, cw - 1.4, rh, it, fs, "text", anchor=MSO_ANCHOR.MIDDLE)
+            _txt(sl, th, cx + 1.4, ry, cw - 1.4, rh, it, fs, "text", anchor=MSO_ANCHOR.MIDDLE, lead_bold=True)
             _box(sl, th, cx + 1.4, ry + rh - 0.02, cw - 1.4, 0.012, "line")
         return
     # rows
@@ -827,7 +831,7 @@ def _list_render(sl, th, rect, items, v, check=False):
                  anchor=MSO_ANCHOR.MIDDLE)
         else:
             _num_circle(sl, th, x, ry + (rh - ms) / 2, ms, i + 1, th.accent)
-        _txt(sl, th, x + ms + 0.35, ry, w - ms - 0.35, rh, it, fs, "text", anchor=MSO_ANCHOR.MIDDLE)
+        _txt(sl, th, x + ms + 0.35, ry, w - ms - 0.35, rh, it, fs, "text", anchor=MSO_ANCHOR.MIDDLE, lead_bold=True)
         if i < n - 1:
             _box(sl, th, x + ms + 0.35, ry + rh - 0.01, w - ms - 0.35, 0.012, "line")
 

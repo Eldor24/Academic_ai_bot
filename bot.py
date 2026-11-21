@@ -10804,16 +10804,126 @@ _PPTX_EXTRA_TIPO = {
            'It is shown on the slide under the title, so make it precise and meaningful.'),
 }
 _PPTX_EXTRA_QOIDA = {
-    "uz": ("\n- Slayd matnlari QISQA va lo'nda bo'lsin: ro'yxat bandi 6-14 so'z, matn slaydi 4-5 gap."
+    "uz": ("\nHAJM VA CHUQURLIK (yuqoridagi hajmlardan USTUN, MAJBURIY):"
+           "\n- \"matn\" slaydi: 7-9 ta to'liq gap (130-170 so'z): ta'rif yoki asosiy fikr, sabab-oqibat, aniq misol, ahamiyati."
+           "\n- \"royxat\": 5-6 band; har bir band «Atama yoki g'oya — 12-18 so'zlik izoh (nima, qanday, nima uchun muhim)» shaklida."
+           "\n- \"xulosa\": 5 band, har biri 12-18 so'zlik aniq natija yoki amaliy tavsiya."
+           "\n- \"bosqichlar\": 4-5 bosqich, har birining tavsifi 10-16 so'z. \"taqqoslash\": har tomonda 4-5 band, 6-12 so'zdan."
+           "\n- \"jadval_slayd\": 4-5 qator, 3-4 ustun, har katakda 2-8 so'z. \"stat_karta\" tavsifi 8-15 so'z."
+           "\n- \"izoh\": slaydning asosiy xulosasi — 2 ta gap, 25-35 so'z."
+           "\n- Umumiy gaplar va takrorlardan qoch: har slaydda yangi fakt, atama, misol yoki mexanizm bo'lsin."
            "\n- Turlarni aralashtir: bir xil turdagi slaydlar ketma-ket 2 tadan oshmasin."
            "\n- Agar mavzuda jarayon yoki tarixiy rivojlanish bo'lsa, 1 ta \"bosqichlar\" slaydi qo'sh."),
-    "ru": ("\n- Тексты слайдов КОРОТКИЕ: пункт списка 6-14 слов, текстовый слайд 4-5 предложений."
+    "ru": ("\nОБЪЁМ И ГЛУБИНА (ВАЖНЕЕ объёмов выше, ОБЯЗАТЕЛЬНО):"
+           "\n- Слайд \"matn\": 7-9 полных предложений (130-170 слов): определение или главная мысль, причины и следствия, конкретный пример, значение."
+           "\n- \"royxat\": 5-6 пунктов; каждый в виде «Термин или идея — пояснение 12-18 слов (что, как, почему важно)»."
+           "\n- \"xulosa\": 5 пунктов по 12-18 слов: конкретный вывод или практическая рекомендация."
+           "\n- \"bosqichlar\": 4-5 этапов, описание 10-16 слов. \"taqqoslash\": по 4-5 пунктов с каждой стороны, 6-12 слов."
+           "\n- \"jadval_slayd\": 4-5 строк, 3-4 столбца, в ячейке 2-8 слов. Описание \"stat_karta\" 8-15 слов."
+           "\n- \"izoh\": главный вывод слайда — 2 предложения, 25-35 слов."
+           "\n- Избегай общих фраз и повторов: на каждом слайде новый факт, термин, пример или механизм."
            "\n- Чередуй типы: не более 2 слайдов одного типа подряд."
            "\n- Если в теме есть процесс или история развития — добавь 1 слайд \"bosqichlar\"."),
-    "en": ("\n- Keep slide text SHORT: list item 6-14 words, text slide 4-5 sentences."
+    "en": ("\nVOLUME AND DEPTH (OVERRIDES the sizes above, MANDATORY):"
+           "\n- \"matn\" slide: 7-9 complete sentences (130-170 words): definition or key idea, causes and effects, a concrete example, significance."
+           "\n- \"royxat\": 5-6 items; each as «Term or idea — 12-18 word explanation (what, how, why it matters)»."
+           "\n- \"xulosa\": 5 items of 12-18 words: a concrete finding or practical recommendation."
+           "\n- \"bosqichlar\": 4-5 steps, description 10-16 words. \"taqqoslash\": 4-5 items per side, 6-12 words each."
+           "\n- \"jadval_slayd\": 4-5 rows, 3-4 columns, 2-8 words per cell. \"stat_karta\" description 8-15 words."
+           "\n- \"izoh\": the slide's key takeaway — 2 sentences, 25-35 words."
+           "\n- Avoid generic phrases and repetition: every slide adds a new fact, term, example or mechanism."
            "\n- Mix types: no more than 2 slides of the same type in a row."
            "\n- If the topic has a process or history, add 1 \"bosqichlar\" slide."),
 }
+
+def _pptx_json_massiv(raw: str) -> list:
+    m = re.search(r"\[\s*\{.*\}\s*\]", raw or "", re.DOTALL)
+    txt = m.group(0) if m else (raw or "")
+    try:
+        d = json.loads(_fix_newlines_in_strings(txt.strip()), strict=False)
+    except Exception:
+        d = parse_ai_json(raw)
+    if isinstance(d, dict):
+        d = next((v for v in d.values() if isinstance(v, list)), [])
+    return [x for x in (d or []) if isinstance(x, dict)]
+
+
+_PPTX_PARTIYA = 5
+
+
+def _pptx_ikki_bosqich(cid, mavzu, n, til, doc_lang, lang_cmd, intro, tipo_desc, qoidalar, progress=None):
+    """Katta hajmli taqdimot: 1) batafsil reja (har slayd fokus bilan), 2) slaydlar 5 tadan parallel to'liq yoziladi.
+    Bitta so'rovda 20 ta slayd yozilganda AI javob hajmi yetmay matn qisqarib qolardi."""
+    import concurrent.futures as _cf
+    mav = security.wrap_user_block(mavzu, "MAVZU") if hasattr(security, "wrap_user_block") else mavzu
+    dl = (f"\n‼️ {pptx_themes.DOC_LANGS[doc_lang]['cmd']}" if doc_lang != til else "")
+    reja_raw = call_ai(f"""Sen tajribali akademik taqdimot muharririsan. {lang_cmd}{dl}
+Mavzu: {mav}
+VAZIFA: shu mavzuda {n} ta slayddan iborat taqdimotning batafsil REJASINI tuz.
+Mantiqiy ketma-ketlik: tushuncha va ahamiyat → nazariy asoslar va tasnif → tarkib, turlar, xususiyatlar → jarayon yoki
+mexanizm → amaliy misollar (O'zbekiston va xorij tajribasi) → muammolar va yechimlar → istiqbol → xulosa.
+Slayd mavzulari takrorlanmasin; har biri mavzuning aniq bir jihatini ochsin.
+
+{tipo_desc}
+
+QOIDALAR: 1-slayd tipo="reja", oxirgisi tipo="xulosa". Diagramma va stat_karta — faqat taniqli rasmiy statistika aniq
+ma'lum bo'lsa, jami ko'pi bilan 2 ta. 1 ta "jadval_slayd" yoki "taqqoslash" bo'lsin. Bir xil tipo ketma-ket 2 tadan oshmasin.
+"fokus" — slaydda aynan nima yoritilishi: 2-3 ta aniq fikr, atama, fakt yoki misol (20-35 so'z).
+
+FAQAT JSON MASSIV, aynan {n} ta element: [{{"sarlavha":"...","tipo":"...","fokus":"..."}}]""", max_tokens=3000)
+    reja = _pptx_json_massiv(reja_raw)[:n]
+    if len(reja) < max(3, n - 2):
+        raise ValueError(f"reja yetarli emas ({len(reja)}/{n})")
+    if progress:
+        try:
+            progress.update(tx(cid, "prog_pptx2"))
+        except Exception:
+            pass
+    umumiy = "\n".join(f"{i}. {r.get('sarlavha', '')} ({r.get('tipo', '')})" for i, r in enumerate(reja, 1))
+
+    def yoz(boshi):
+        qism = reja[boshi:boshi + _PPTX_PARTIYA]
+        royxat = "\n".join(f"[{boshi + k + 1}] sarlavha: {r.get('sarlavha', '')} | tipo: {r.get('tipo', '')} | fokus: {r.get('fokus', '')}"
+                           for k, r in enumerate(qism))
+        prompt = f"""{intro}
+Mavzu: {mav}
+
+BUTUN TAQDIMOT REJASI (faqat takrorlamaslik uchun):
+{umumiy}
+
+HOZIR FAQAT quyidagi {len(qism)} ta slaydni to'liq yoz (sarlavha va tipo rejadagidek; agar tipo diagramma bo'lsa-yu,
+aniq rasmiy raqam bilmasang — tipo ni "royxat" ga almashtir):
+{royxat}
+
+{tipo_desc}
+
+{qoidalar}
+
+FAQAT JSON MASSIV, aynan {len(qism)} ta element, tartib bilan:
+[{{"sarlavha":"...","matn":"...","tipo":"...","izoh":"..."}}]
+(taqqoslash uchun "chapNom","ongNom"; diagramma uchun "birligi","manba" maydonlarini ham qo'sh){dl}"""
+        _AI_CTX.cid = cid
+        last = None
+        for _ in range(2):
+            try:
+                out = _pptx_json_massiv(call_ai(prompt, max_tokens=7000))
+                if len(out) >= max(1, len(qism) - 1):
+                    return out[:len(qism)]
+                last = ValueError(f"partiya {boshi}: {len(out)}/{len(qism)}")
+            except Exception as e:
+                last = e
+        raise last
+
+    boshlar = list(range(0, len(reja), _PPTX_PARTIYA))
+    with _cf.ThreadPoolExecutor(max_workers=min(4, len(boshlar))) as ex:
+        natija = list(ex.map(yoz, boshlar))
+    slides = [sd for part in natija for sd in part]
+    for sd, r in zip(slides, reja):
+        if not sd.get("tipo"):
+            sd["tipo"] = r.get("tipo", "matn")
+    log.info(f"PPTX 2 bosqich: {len(slides)} slayd, o'rtacha {sum(len(str(x.get('matn', ''))) for x in slides) // max(1, len(slides))} belgi")
+    return slides
+
 
 def pptx_yaratish(cid: int, mavzu: str, ism: str, soni: int, progress=None,
                   theme: str = "akademik", doc_lang: str | None = None, tpl_path: str | None = None) -> str:
@@ -10987,20 +11097,25 @@ def pptx_yaratish(cid: int, mavzu: str, ism: str, soni: int, progress=None,
         prompt += (f"\n\n‼️ {pptx_themes.DOC_LANGS[doc_lang]['cmd']} "
                    f"(sarlavha, matn, izoh, chapNom, ongNom, birligi, manba — hammasi shu tilda; JSON kalitlari o'zgarmasin.)")
 
-    raw = call_ai(prompt)
-    if progress:
-        progress.update(tx(cid, "prog_pptx2"))
-        
+    slides_data = None
     try:
+        slides_data = _pptx_ikki_bosqich(cid, mavzu, ai_count, til, doc_lang, lang_cmd, _pptx_intro,
+                                         _tipo_desc, _pptx_qoidalar, progress)
+    except Exception as e:
+        log.warning(f"PPTX 2 bosqichli generatsiya o'xshamadi ({e}) — bir so'rovli usulga o'tamiz")
+    if slides_data is None:
+      raw = call_ai(prompt, max_tokens=8000)
+      if progress:
+        progress.update(tx(cid, "prog_pptx2"))
+      try:
         # 1. AI ortiqcha gap yozgan bo'lsa, faqat [...] oraliqdagi JSONni qirqib olamiz
-        import re
-        match = re.search(r'\[\s*\{.*?\}\s*\]', raw, re.DOTALL)
+        match = re.search(r'\[\s*\{.*\}\s*\]', raw, re.DOTALL)
         if match:
             raw = match.group(0)
             
         raw_fixed = _fix_newlines_in_strings(raw.strip())
         slides_data = json.loads(raw_fixed, strict=False)
-    except Exception as e:
+      except Exception as e:
         log.warning(f"PPTX JSON 1-urinishda xato: {e}. parse_ai_json orqali urinib ko'ramiz...")
         try:
             # 2. Agar baribir xato bersa, loyihangizdagi aqlli parserga uzatamiz
@@ -11035,9 +11150,12 @@ def pptx_yaratish(cid: int, mavzu: str, ism: str, soni: int, progress=None,
     for sd in slides_data:
         if not isinstance(sd, dict):
             continue
+        # Faqat «Presenter: ...», «Sana: ...» kabi xizmat slaydlari o'chiriladi. Oddiy matndagi «update», «sanab»
+        # kabi so'zlar tufayli mazmunli slayd tushib qolmasligi uchun so'z chegarasi va sarlavha/qator boshi tekshiriladi.
+        sarlavha_lower = str(sd.get("sarlavha", "")).lower().strip()
         matn_lower = str(sd.get("matn", "")).lower()
-        sarlavha_lower = str(sd.get("sarlavha", "")).lower()
-        is_skip = any(kw in matn_lower or kw in sarlavha_lower for kw in skip_keywords)
+        is_skip = any(re.match(rf"{re.escape(kw)}\b", sarlavha_lower) or re.search(rf"(?m)^\s*{re.escape(kw)}\s*:", matn_lower)
+                      for kw in skip_keywords)
 
         # Noto'g'ri tipo ni "matn" ga tuzatamiz
         if sd.get("tipo") not in VALID_TIPOS:

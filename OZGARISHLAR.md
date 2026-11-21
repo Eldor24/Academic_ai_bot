@@ -1,5 +1,27 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 16.4-versiya (21.11.2026) — Taqdimot: slaydlarda ma'lumot ancha ko'p
+- Taqdimot endi ikki bosqichda tayyorlanadi:
+  1. AI avval batafsil reja tuzadi: har slayd uchun sarlavha, turi va aniq yoritiladigan fikrlar. Reja mantiqiy
+     ketma-ketlikda boradi: tushuncha → nazariya → tarkib → jarayon → O'zbekiston va xorij tajribasi → muammolar →
+     istiqbol → xulosa.
+  2. Slaydlar 5 tadan parallel, to'liq yoziladi.
+
+  Avval 20 tagacha slayd bitta so'rovda yozilardi va matn qisqarib qolardi. Reja olinmasa, bot avvalgi bir so'rovli
+  usulga o'tadi.
+- Yangi hajm talablari:
+  - matn slaydi: 7-9 gap (130-170 so'z);
+  - ro'yxat: 5-6 band, «Atama — izoh» shaklida;
+  - xulosa: 5 ta aniq natija yoki tavsiya;
+  - bosqichlar: 4-5 bosqich;
+  - taqqoslash: har tomonda 4-5 band;
+  - jadval: 4-5 qator;
+  - har slayd ostidagi asosiy fikr: 2 gap.
+- Ro'yxatlarda atama qalin harf bilan ajratiladi. Slayd ostidagi izoh uchun joy 220 belgidan 300 belgiga oshirildi.
+  Kartochkalarda matn ramkadan chiqib ketmaydi.
+- Mazmunli slayd matnida «update», «sanab» kabi so'zlar uchraganda u xizmat slaydi deb noto'g'ri o'chirilib
+  ketardi. Bu xato tuzatildi.
+
 ## 16.3-versiya (21.11.2026) — Ilmiy bo'lim: dalillarga asoslangan javoblar, yagona Word shabloni, xavfsizlik
 - 💡 **Mavzu tanlash** endi haqiqiy tadqiqotlarga tayanadi. Bot so'rovdan soha va qidiruv so'zlarini ajratadi,
   OpenAlex'dan 2019-yildan keyingi eng yaqin ishlarni oladi va yo'nalishda nechta ish borligini hisoblaydi.
