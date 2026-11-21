@@ -1,5 +1,24 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 14.1-versiya (21.11.2026) — kurs ishi ma'lumotlarini kiritish va 3 til
+- 🐞 «Fakultet va Kafedra nomini yozing» deb so'ralib, kafedra keyin yana so'ralardi — endi avval faqat **fakultet**, kafedra keyinroq bir marta
+- ✍️ Har bir qadamda **namuna**: OTM («Samarqand davlat universiteti»), fakultet («Filologiya»), fan («O'zbek tili praktikumi»),
+  mavzu, familiya-ism («Abdug'afforova Gavharoy»), guruh va rahbar, kafedra («O'zbek tilshunosligi»), shahar; kiritilgan qiymat
+  tasdiq bilan qaytariladi («✅ Fan: O'zbek tili praktikumi»)
+- 🔤 Yangi `matn_norm.py` — foydalanuvchi qanday yozsa ham titul to'g'ri chiqadi:
+  - HAMMASI KATTA / hammasi kichik → odatiy yozuv (ism-familiya har so'z bosh harf bilan; nomlarda atoqli otlar — O'zbekiston,
+    Toshkent, Mirzo Ulug'bek ... — bosh harf bilan; inglizchada Title Case)
+  - kirillda yozilgan o'zbekcha matn o'zbekcha hujjatda lotinga o'giriladi; so'z ichida aralashib qolgan kirill harflari tuzatiladi
+  - turli apostroflar (’ ‘ ʻ ʼ `) bir xil ko'rinishga keltiriladi
+  - «Ona tili kafedrasi», «Filologiya fakulteti», «14-guruh», «Andijon shahri-2026» — titulda so'z ikki marta yozilmaydi
+  - rahbar: «f.f.n., dots. karimov a.b.» → «f.f.n., dots. Karimov A.B.», «phd» → «PhD»
+- 🌐 Rus va ingliz titulida tartib o'sha tilga mos: «Кафедра русского языка», «Филологический факультет»,
+  «студент(ка) группы РЯ-21», «Department of English Philology», «student of group ENG-21»
+- 🌐 Rus tilidagi kurs ishida kamida 25 ta rus/o'zbek tilidagi manba (12+ O'zbekiston mualliflari), inglizchada xalqaro manbalar
+- 🌐 Yangi `tarjima_shim.py`: kodda qattiq yozilgan o'zbekcha xabarlar («💰 Qolgan tangalar», telefon/email/sana/fayl xatolari,
+  esse tekshiruvi izohlari ...) rus va ingliz tilidagi foydalanuvchilarga tarjima qilib yuboriladi
+- Barcha menyu tugmalari uch tilda qayta tekshirildi (muammo topilmadi)
+
 ## 14-versiya (21.11.2026) — o'qituvchi takliflari bo'yicha kurs ishi
 | Taklif | Nima qilindi |
 |---|---|

@@ -263,7 +263,7 @@ Bob va paragraf nomlari mavzuga ANIQ bog'langan, ilmiy, takrorlanmaydigan bo'lsi
 Har paragraf uchun 3-4 ta "bandlar" — shu paragrafda yoritiladigan aniq masalalar.
 "nomi" va "sarlavha" ga raqam yoki «I BOB», «1.1.» qo'shma — raqamlar avtomatik qo'yiladi.
 
-ADABIYOTLAR: jami {lo}-{hi} ta manba, ulardan KAMIDA {h['uz_min']} tasi O'ZBEK TILIDA (o'zbek mualliflari) bo'lsin.
+ADABIYOTLAR: jami {lo}-{hi} ta manba, {_til_talab(p)}
 FAQAT haqiqatda mavjud, ishonching komil bo'lgan manbalar — manba O'YLAB TOPMA. Bir muallifning ko'pi bilan 2 ta asari.
 Turlari ("tur") va tili ("til": "uz" | "ru" | "en"):
   "normativ" — O'zbekiston Respublikasi Konstitutsiyasi, kodekslar, qonunlar, Prezident farmon va qarorlari,
@@ -280,6 +280,25 @@ FAQAT JSON qaytar (Markdown yo'q):
  "adabiyotlar":[{{"tur":"normativ","til":"uz","matn":"..."}},{{"tur":"asosiy","til":"uz","matn":"..."}}]}}"""
 
 
+def _til_talab(p: dict) -> str:
+    n = HAJMLAR[p["hajm"]]["uz_min"]
+    if p["til"] == "ru":
+        return (f"ulardan KAMIDA {n} tasi rus yoki o'zbek tilida bo'lsin, shundan kamida 12 tasi O'zbekiston "
+                "mualliflarining asarlari (o'zbek olimlarining rus va o'zbek tilidagi ishlari).")
+    if p["til"] == "en":
+        return ("asosan ingliz tilidagi taniqli xalqaro manbalar, shuningdek kamida 8 ta O'zbekiston mualliflarining "
+                "asarlari va mavzuga aloqador O'zbekiston qonunlari.")
+    return f"ulardan KAMIDA {n} tasi O'ZBEK TILIDA (o'zbek mualliflari) bo'lsin."
+
+
+def _mahalliy_soni(adab: list, til: str) -> int:
+    if til == "ru":
+        return sum(1 for a in adab if a.get("til") in ("uz", "ru"))
+    if til == "en":
+        return 10 ** 6                                # ingliz tilidagi ish uchun o'zbekcha minimum talab qilinmaydi
+    return sum(1 for a in adab if a.get("til") == "uz")
+
+
 def _adab_qoshimcha_prompt(p: dict, plan: dict, adab: list, kerak: int) -> str:
     return f"""Sen «{p['fan']}» fani bo'yicha tajribali ilmiy rahbarsan.
 «{p['mavzu']}» mavzusidagi kurs ishi uchun FOYDALANILGAN ADABIYOTLAR ro'yxatini to'ldir.
@@ -289,7 +308,7 @@ Kurs ishi rejasi:
 Mavjud ro'yxat (bularni TAKRORLAMA):
 {_adab_text(adab)}
 
-Yana {kerak} ta O'ZBEK TILIDAGI manba qo'sh: o'zbek olimlarining darsliklari, o'quv qo'llanmalari, monografiyalari,
+Yana {kerak} ta {"RUS YOKI O'ZBEK TILIDAGI" if p["til"] == "ru" else ("ingliz tilidagi yoki O'zbekiston mualliflarining" if p["til"] == "en" else "O'ZBEK TILIDAGI")} manba qo'sh: o'zbek olimlarining darsliklari, o'quv qo'llanmalari, monografiyalari,
 lug'atlari, dissertatsiya va avtoreferatlari, «O'zbek tili va adabiyoti», «Xalq ta'limi», «Iqtisodiyot va ta'lim» kabi
 jurnallardagi maqolalari, mavzuga aloqador qonun va qarorlar. FAQAT haqiqatda mavjud manbalar, bir muallifdan ko'pi bilan
 2 ta. Format: Familiya I.O. Asar nomi. – Shahar: Nashriyot, yil. – 250 b.
@@ -854,11 +873,11 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
         raise ValueError("Kurs ishi rejasini tuzib bo'lmadi")
     adab = _norm_adab(plan_raw.get("adabiyotlar"), p["hajm"])
     for _ in range(2):                                # o'zbek tilidagi manbalar yetarli bo'lsin
-        kam = h["uz_min"] - _uz_soni(adab)
+        kam = h["uz_min"] - _mahalliy_soni(adab, p["til"])
         if kam <= 0 and len(adab) >= h["adab"][0]:
             break
         try:
-            qr = _ask(_adab_qoshimcha_prompt(p, plan, adab, max(kam, h["adab"][0] - len(adab)) + 3),
+            qr = _ask(_adab_qoshimcha_prompt(p, plan, adab, max(min(kam, 40), h["adab"][0] - len(adab)) + 3),
                       "Adabiyotlar", max_tokens=4000, temperature=0.4)
             adab = _norm_adab(list(adab) + list(qr.get("adabiyotlar") or []), p["hajm"])
         except Exception as e:
@@ -1520,7 +1539,7 @@ SHAHARLAR = [
 TITUL = {
     "uz": dict(fak="fakulteti", kaf="kafedrasi", royxat="Ro'yxatga olindi №__________",
                sana="“_____” ____________ 20___ y.", kaf_line="“{x}” KAFEDRASI", fan_line="“{x}” FANIDAN",
-               kurs="KURS ISHI", mavzu="MAVZU:", bajardi="Bajardi:", fak2="fakulteti", talaba="guruh talabasi",
+               kurs="KURS ISHI", mavzu="MAVZU:", bajardi="Bajardi:", fak2="fakulteti", talaba="{g} guruh talabasi",
                tekshirdi="Tekshirdi:", t_top="Kurs ishi taqrizga\ntopshirilgan sana\n“____” ________ 20___ y.",
                t_qayt="Kurs ishi taqrizdan\nqaytarilgan sana\n“____” ________ 20___ y.",
                t_himoya="Kurs ishi himoya\nqilingan sana\n“____” ________ 20___ y.\n\nBaho “____” ________",
@@ -1528,13 +1547,13 @@ TITUL = {
     "ru": dict(fak="факультет", kaf="кафедра", royxat="Зарегистрировано №__________",
                sana="«_____» ____________ 20___ г.", kaf_line="КАФЕДРА «{x}»", fan_line="ПО ДИСЦИПЛИНЕ «{x}»",
                kurs="КУРСОВАЯ РАБОТА", mavzu="ТЕМА:", bajardi="Выполнил(а):", fak2="факультет",
-               talaba="студент(ка) группы", tekshirdi="Проверил(а):",
+               talaba="студент(ка) группы {g}", tekshirdi="Проверил(а):",
                t_top="Сдана на рецензию\n«____» ________ 20___ г.", t_qayt="Возвращена с рецензии\n«____» ________ 20___ г.",
                t_himoya="Дата защиты\n«____» ________ 20___ г.\n\nОценка «____» ________", imzo="(подпись)",
                komissiya="Члены комиссии:"),
     "en": dict(fak="faculty", kaf="department", royxat="Registered №__________",
                sana="“_____” ____________ 20___", kaf_line="DEPARTMENT OF {x}", fan_line="SUBJECT: {x}",
-               kurs="COURSE WORK", mavzu="TOPIC:", bajardi="Prepared by:", fak2="faculty", talaba="group student",
+               kurs="COURSE WORK", mavzu="TOPIC:", bajardi="Prepared by:", fak2="faculty", talaba="student of group {g}",
                tekshirdi="Checked by:", t_top="Submitted for review\n“____” ________ 20___",
                t_qayt="Returned from review\n“____” ________ 20___",
                t_himoya="Defended on\n“____” ________ 20___\n\nGrade “____” ________", imzo="(signature)",
@@ -1578,8 +1597,22 @@ def _no_borders(tbl):
 
 def _render_titul(doc, t: dict, til: str):
     lb, T = L(til), TITUL.get(til, TITUL["uz"])
-    fak = _nom_tozala(t.get("fakultet"), ("fakulteti", "fakultet", "факультет", "faculty", "faculty of"))
-    kaf = _nom_tozala(t.get("kafedra"), ("kafedrasi", "kafedra", "кафедра", "department", "department of"))
+    fak = _nom_tozala(t.get("fakultet"), ("fakulteti", "fakultet", "факультети", "факультет", "faculty", "faculty of"))
+    kaf = _nom_tozala(t.get("kafedra"), ("kafedrasi", "kafedra", "кафедраси", "кафедра", "department", "department of"))
+    fak_xom, kaf_xom = _clean(t.get("fakultet") or ""), _clean(t.get("kafedra") or "")
+
+    def birikma(nom, xom, soz, kalit):
+        """«Filologiya fakulteti» (o'zbekcha: nom + so'z); rus/ingliz: foydalanuvchi yozgan to'liq nom
+        («Филологический факультет», «Кафедра русского языка») yoki «Факультет: …»."""
+        if not nom:
+            return f"{_BLANK} {soz}"
+        if til == "uz":
+            return f"{nom} {soz}"
+        if re.search(kalit, xom, re.I):
+            return xom[:1].upper() + xom[1:]
+        return f"{soz[:1].upper() + soz[1:]}: {nom}"
+    fak_txt = birikma(fak, fak_xom, T["fak"], r"факультет|faculty")
+    kaf_txt = birikma(kaf, kaf_xom, T["kaf"], r"кафедр|department")
     otm = _clean(t.get("otm") or "").upper() or "______________________________ UNIVERSITETI"
     fan = _clean(t.get("fan") or "")
     shahar = _clean(t.get("shahar") or "") or shahar_aniqla(t.get("otm", ""), til)
@@ -1597,11 +1630,15 @@ def _render_titul(doc, t: dict, til: str):
         c = tb.rows[0].cells[ci]
         c.width = Cm(8.25)
         al = "l" if ci == 0 else "r"
-        _tp(c, (nom if nom else _BLANK) + f" {soz}", 14, align=al, sa=6, new=False)
+        _tp(c, fak_txt if ci == 0 else kaf_txt, 14, align=al, sa=6, new=False)
         _tp(c, T["royxat"], 14, align=al, sa=2)
         _tp(c, T["sana"], 14, align=al)
 
-    _tp(doc, T["kaf_line"].format(x=(kaf.upper() if kaf else "_" * 28)), 16, sb=30 if not uzun else 16)
+    if til != "uz" and kaf and re.search(r"кафедр|department", kaf_xom, re.I):
+        kaf_line = kaf_xom.upper()                     # «КАФЕДРА РУССКОГО ЯЗЫКА»
+    else:
+        kaf_line = T["kaf_line"].format(x=(kaf.upper() if kaf else "_" * 28))
+    _tp(doc, kaf_line, 16, sb=30 if not uzun else 16)
     _tp(doc, T["fan_line"].format(x=(fan.upper() if fan else "_" * 28)), 16, sb=4)
     _tp(doc, T["kurs"], 28, sb=40 if not uzun else 18, sa=12)
     p = _tp(doc, "", 14, ls=1.15, sa=4)
@@ -1611,8 +1648,8 @@ def _render_titul(doc, t: dict, til: str):
     # Talaba va rahbar (o'ng tomonda)
     guruh = _clean(t.get("guruh") or "")
     rows = [(T["bajardi"], _clean(t.get("ism") or "") or _BLANK),
-            ("", f"{fak if fak else _BLANK} {T['fak2']}"),
-            ("", f"{guruh if guruh else '__________'} {T['talaba']}"),
+            ("", fak_txt),
+            ("", T["talaba"].format(g=guruh if guruh else "__________")),
             (T["tekshirdi"], _clean(t.get("rahbar") or "") or _BLANK)]
     for i, (lbl, val) in enumerate(rows):
         p = _tp(doc, "", 14, align="l", left=8.0, sb=(34 if not uzun else 14) if i == 0 else 3)

@@ -115,6 +115,8 @@ Academic_ai_bot/
 ├── bot.py                # Asosiy bot: menyu, xizmatlar, tanga tizimi, admin panel
 ├── pptx_themes.py        # Taqdimot shablonlari dvigateli (15 shablon)
 ├── marketing.py          # Haftada 2 marta xizmatlar haqida avtomatik post, /marketing
+├── matn_norm.py          # Titul ma'lumotlarini tartibga keltirish (harf, kirill/lotin, takroriy so'zlar)
+├── tarjima_shim.py       # Qattiq yozilgan o'zbekcha xabarlarni rus/ingliz foydalanuvchilarga tarjima
 ├── sahifalash.py        # Word sahifalarini oldindan hisoblash (mundarija raqamlari, hajm nazorati)
 ├── kurs_ishi.py          # Kurs ishi generatori (25–30 / 65–70 bet, mundarija, snoska, jadval, grafik)
 ├── xizmatlar_yangi.py    # Konspekt, Imtihonga tayyorlov, Masala yechish, Mustaqil ish

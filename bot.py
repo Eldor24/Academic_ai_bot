@@ -354,6 +354,8 @@ bot = telebot.TeleBot(BOT_TOKEN, parse_mode=None)
 import security
 import pptx_themes
 import kurs_ishi
+import matn_norm
+import tarjima_shim
 import marketing
 import xizmatlar_yangi
 import xizmatlar_qoshimcha
@@ -2611,7 +2613,8 @@ I18N = {
         ),
         "doc_start": (
             "📄 <b>Kurs ishi tayyorlaymiz!</b>\n\n"
-            "🏛️ <b>OTM</b> nomini to'liq yozing:"
+            "🏛️ <b>OTM</b> nomini to'liq yozing:\n<i>Masalan: Samarqand davlat universiteti</i>\n\n"
+            "💡 Lotin yoki kirillda, katta yoki kichik harfda yozsangiz ham bo'ladi — bot o'zi to'g'rilaydi."
         ),
         "ask_mavzu_ppt": "✅ Mavzu qabul qilindi!\n\n👤 <b>Ism va familiyangizni</b> yozing:",
         "ask_ism_ppt": (
@@ -2621,12 +2624,15 @@ I18N = {
         ),
         "soni_err": "⚠️ Iltimos, <b>5 dan 20 gacha</b> raqam kiriting.",
         "ask_otm": (
-            "✅ OTM qabul qilindi!\n\n"
-            "🏫 <b>Fakultet va Kafedra</b> nomini yozing:"
+            "✅ OTM: <b>{v}</b>\n\n"
+            "🏫 <b>Fakultet</b> nomini yozing:\n<i>Masalan: Filologiya</i>\n"
+            "(«fakulteti» so'zini yozish shart emas — titulga o'zi qo'shiladi; kafedrani keyinroq so'raymiz)"
         ),
-        "ask_fak": "✅ Qabul qilindi!\n\n📚 <b>Fan</b> nomini kiriting:",
-        "ask_fan": "✅ Qabul qilindi!\n\n✏️ Kurs ishi <b>mavzusini</b> yozing:",
-        "ask_mavzu_doc": "✅ Mavzu saqlandi!\n\n👤 Titulga <b>Ism va familiyangizni</b> yozing:",
+        "ask_fak": "✅ Fakultet: <b>{v}</b>\n\n📚 <b>Fan</b> nomini yozing:\n<i>Masalan: O'zbek tili praktikumi</i>",
+        "ask_fan": ("✅ Fan: <b>{v}</b>\n\n✏️ Kurs ishi <b>mavzusini</b> yozing:\n"
+                    "<i>Masalan: O'zbek tilida sinonim so'zlar va ularning xususiyatlari</i>"),
+        "ask_mavzu_doc": ("✅ Mavzu: <b>{v}</b>\n\n👤 Titul uchun <b>familiya va ismingizni</b> yozing:\n"
+                          "<i>Masalan: Abdug'afforova Gavharoy</i>"),
         "wait_ppt": (
             "⏳ <b>Taqdimot tayyorlanmoqda...</b>\n\n"
             "📌 Mavzu: <i>{mavzu}</i>\n"
@@ -3401,14 +3407,18 @@ I18N = {
         "tezis_xulosa": "Заключение",
         "tezis_kirish": "Введение",
         "ppt_start": "📊 <b>Создаём презентацию!</b>\n\n✏️ Введите <b>тему</b>:",
-        "doc_start": "📄 <b>Создаём курсовую работу!</b>\n\n🏛️ Введите полное название <b>ВУЗа</b>:",
+        "doc_start": ("📄 <b>Создаём курсовую работу!</b>\n\n🏛️ Введите полное название <b>вуза</b>:\n"
+                      "<i>Например: Самаркандский государственный университет</i>\n\n"
+                      "💡 Можно писать кириллицей или латиницей, заглавными или строчными — бот всё приведёт в порядок."),
         "ask_mavzu_ppt": "✅ Тема принята!\n\n👤 Введите <b>Имя и Фамилию</b>:",
         "ask_ism_ppt": "✅ Имя сохранено!\n\n🔢 <b>Сколько слайдов?</b>\n<i>📌 Число от 5 до 20</i>",
         "soni_err": "⚠️ Пожалуйста, введите число <b>от 5 до 20</b>.",
-        "ask_otm": "✅ ВУЗ принят!\n\n🏫 <b>Факультет и Кафедра:</b>",
-        "ask_fak": "✅ Принято!\n\n📚 <b>Название предмета:</b>",
-        "ask_fan": "✅ Принято!\n\n✏️ <b>Тема</b> курсовой работы:",
-        "ask_mavzu_doc": "✅ Тема сохранена!\n\n👤 <b>Имя и Фамилия</b> для титула:",
+        "ask_otm": ("✅ Вуз: <b>{v}</b>\n\n🏫 Название <b>факультета</b>:\n<i>Например: Филологический факультет</i>\n"
+                    "(кафедру спросим чуть позже)"),
+        "ask_fak": "✅ Факультет: <b>{v}</b>\n\n📚 Название <b>дисциплины</b>:\n<i>Например: Современный русский язык</i>",
+        "ask_fan": ("✅ Дисциплина: <b>{v}</b>\n\n✏️ <b>Тема</b> курсовой работы:\n"
+                    "<i>Например: Синонимы в русском языке и их особенности</i>"),
+        "ask_mavzu_doc": "✅ Тема: <b>{v}</b>\n\n👤 <b>Фамилия и имя</b> для титула:\n<i>Например: Иванова Анна</i>",
         "wait_ppt": (
             "⏳ <b>Создаётся презентация...</b>\n\n"
             "📌 Тема: <i>{mavzu}</i>\n"
@@ -4089,14 +4099,18 @@ I18N = {
         "tezis_xulosa": "Conclusion",
         "tezis_kirish": "Introduction",
         "ppt_start": "📊 <b>Creating a presentation!</b>\n\n✏️ Enter the <b>topic</b>:",
-        "doc_start": "📄 <b>Creating course work!</b>\n\n🏛️ Enter your <b>University</b> name:",
+        "doc_start": ("📄 <b>Creating course work!</b>\n\n🏛️ Enter the full name of your <b>university</b>:\n"
+                      "<i>e.g. Samarkand State University</i>\n\n"
+                      "💡 Latin or Cyrillic, upper or lower case — the bot will tidy it up."),
         "ask_mavzu_ppt": "✅ Topic accepted!\n\n👤 Enter your <b>Full Name</b>:",
         "ask_ism_ppt": "✅ Name saved!\n\n🔢 <b>How many slides?</b>\n<i>📌 Enter a number from 5 to 20</i>",
         "soni_err": "⚠️ Please enter a number <b>from 5 to 20</b>.",
-        "ask_otm": "✅ University accepted!\n\n🏫 <b>Faculty and Department:</b>",
-        "ask_fak": "✅ Accepted!\n\n📚 <b>Subject name:</b>",
-        "ask_fan": "✅ Accepted!\n\n✏️ <b>Topic</b> of your course work:",
-        "ask_mavzu_doc": "✅ Topic saved!\n\n👤 <b>Full Name</b> for the title page:",
+        "ask_otm": ("✅ University: <b>{v}</b>\n\n🏫 <b>Faculty</b> name:\n<i>e.g. Faculty of Philology</i>\n"
+                    "(we'll ask for the department later)"),
+        "ask_fak": "✅ Faculty: <b>{v}</b>\n\n📚 <b>Subject</b> name:\n<i>e.g. English Lexicology</i>",
+        "ask_fan": ("✅ Subject: <b>{v}</b>\n\n✏️ <b>Topic</b> of your course work:\n"
+                    "<i>e.g. Synonyms in English and their features</i>"),
+        "ask_mavzu_doc": "✅ Topic: <b>{v}</b>\n\n👤 Your <b>full name</b> for the title page:\n<i>e.g. Karimova Dilnoza</i>",
         "wait_ppt": (
             "⏳ <b>Creating presentation...</b>\n\n"
             "📌 Topic: <i>{mavzu}</i>\n"
@@ -17392,8 +17406,9 @@ def h_otm(msg):
         return
 
     # ✅ TO'G'RI: update_holat() orqali xavfsiz yozish
-    update_holat(cid, "otm", msg.text.strip())
-    bot.send_message(cid, tx(cid, "ask_otm"),
+    _v = _titul_norm(cid, msg.text, "otm", strip=True)
+    update_holat(cid, "otm", _v)
+    bot.send_message(cid, tx(cid, "ask_otm").format(v=security.esc(_v)),
                      reply_markup=back_kb(cid), parse_mode="HTML")
     update_holat(cid, "qadam", "fak")
 
@@ -17409,8 +17424,9 @@ def h_fak(msg):
         return
 
     # ✅ TO'G'RI
-    update_holat(cid, "fakultet", msg.text.strip())
-    bot.send_message(cid, tx(cid, "ask_fak"),
+    _v = _titul_norm(cid, msg.text, "fakultet", strip=False)
+    update_holat(cid, "fakultet", _v)
+    bot.send_message(cid, tx(cid, "ask_fak").format(v=security.esc(_v)),
                      reply_markup=back_kb(cid), parse_mode="HTML")
     update_holat(cid, "qadam", "fan")
 
@@ -17426,8 +17442,9 @@ def h_fan(msg):
         return
 
     # ✅ TO'G'RI
-    update_holat(cid, "fan", msg.text.strip())
-    bot.send_message(cid, tx(cid, "ask_fan"),
+    _v = _titul_norm(cid, msg.text, "fan", strip=True)
+    update_holat(cid, "fan", _v)
+    bot.send_message(cid, tx(cid, "ask_fan").format(v=security.esc(_v)),
                      reply_markup=back_kb(cid), parse_mode="HTML")
     update_holat(cid, "qadam", "mavzu_doc")
 
@@ -17443,8 +17460,9 @@ def h_doc_mavzu(msg):
         return
 
     # ✅ TO'G'RI
-    update_holat(cid, "mavzu", msg.text.strip())
-    bot.send_message(cid, tx(cid, "ask_mavzu_doc"),
+    _v = _titul_norm(cid, msg.text, "mavzu", strip=True)
+    update_holat(cid, "mavzu", _v)
+    bot.send_message(cid, tx(cid, "ask_mavzu_doc").format(v=security.esc(_v)),
                      reply_markup=back_kb(cid), parse_mode="HTML")
     update_holat(cid, "qadam", "ism_doc")
 
@@ -17459,7 +17477,7 @@ def h_doc_ism(msg):
         bot.send_message(cid, err_msg, reply_markup=back_kb(cid), parse_mode="HTML")
         return
 
-    update_holat(cid, "ism", msg.text.strip())
+    update_holat(cid, "ism", _titul_norm(cid, msg.text, "ism"))
 
     # ✅ LOG: Foydalanuvchi kurs ishi yaratishni so'radi
     fn, un, til = _user_info_from_msg(msg)
@@ -17514,7 +17532,7 @@ _KURS_HAJM_BTN = {
 _KURS_TANLANDI = {"uz": "✅ Tanlandi: <b>{t}</b>", "ru": "✅ Выбрано: <b>{t}</b>", "en": "✅ Selected: <b>{t}</b>"}
 _KURS_GURUH_TXT = {
     "uz": ("👥 Titul varag'i uchun <b>guruh</b> va <b>ilmiy rahbar</b>ni yozing:\n\n"
-           "<i>1-qatorda guruh, 2-qatorda ilmiy rahbar. Masalan:</i>\n<code>BI-21-03\ni.f.n., dots. Karimov A.B.</code>\n\n"
+           "<i>1-qatorda guruh, 2-qatorda ilmiy rahbar. Masalan:</i>\n<code>BI-21-03\ni.f.n., dots. Karimov A.B.</code>\n(«guruh» so'zini yozish shart emas)\n\n"
            "Bilmasangiz — «O'tkazib yuborish» (rahbar qatori bo'sh chiziq bo'lib qoladi)."),
     "ru": ("👥 Укажите для титульного листа <b>группу</b> и <b>научного руководителя</b>:\n\n"
            "<i>1-я строка — группа, 2-я — руководитель. Например:</i>\n<code>БИ-21-03\nк.э.н., доц. Каримов А.Б.</code>\n\n"
@@ -17537,6 +17555,16 @@ def _kurs_caption_info(cid: int, gd) -> str:
         return _KURS_CAP.get(til, _KURS_CAP["uz"]).format(bet=gd["bet"])
     except Exception:
         return ""
+
+
+def _titul_norm(cid: int, matn: str, tur: str, strip: bool = True) -> str:
+    """Titul ma'lumotini tartibga keltirish: harflar, kirill/lotin, apostroflar, ortiqcha «kafedrasi» va h.k."""
+    til = holat.get(cid, {}).get("til", "uz")
+    try:
+        return matn_norm.normallashtir(matn or "", tur, til if til in ("uz", "ru", "en") else "uz", strip=strip)
+    except Exception as e:
+        log.warning(f"[{cid}] Titul normallashtirish xatosi: {e}")
+        return (matn or "").strip()
 
 
 def _kurs_hajm_menu(cid: int):
@@ -17611,17 +17639,18 @@ def h_kurs_guruh(msg):
     qatorlar = [x.strip() for x in msg.text.strip().split("\n") if x.strip()]
     if len(qatorlar) == 1 and "," in qatorlar[0] and len(qatorlar[0].split(",", 1)[0]) <= 15:
         qatorlar = [x.strip() for x in qatorlar[0].split(",", 1)]
-    guruh = qatorlar[0][:60] if qatorlar else ""
-    rahbar = " ".join(qatorlar[1:])[:120]
+    guruh = _titul_norm(cid, qatorlar[0], "guruh")[:60] if qatorlar else ""
+    rahbar = _titul_norm(cid, " ".join(qatorlar[1:]), "rahbar")[:120] if len(qatorlar) > 1 else ""
     update_holat(cid, "kurs_guruh", guruh)
     update_holat(cid, "kurs_rahbar", rahbar)
     _kurs_kafedra_sora(cid)
 
 
 _KURS_KAF_TXT = {
-    "uz": "🏛 Titul uchun <b>kafedra</b> nomini yozing:\n<i>Masalan: O'zbek tilshunosligi kafedrasi</i>",
-    "ru": "🏛 Укажите для титульного листа <b>кафедру</b>:\n<i>Например: кафедра узбекского языкознания</i>",
-    "en": "🏛 Enter the <b>department</b> for the title page:\n<i>e.g. Department of Uzbek Linguistics</i>",
+    "uz": ("🏛 Titul uchun <b>kafedra</b> nomini yozing:\n<i>Masalan: O'zbek tilshunosligi</i>\n"
+           "(«kafedrasi» so'zini yozish shart emas — titulga o'zi qo'shiladi)"),
+    "ru": "🏛 Укажите для титульного листа <b>кафедру</b>:\n<i>Например: Кафедра русского языка и литературы</i>",
+    "en": "🏛 Enter the <b>department</b> for the title page:\n<i>e.g. Department of English Philology</i>",
 }
 _KURS_SHAHAR_TXT = {
     "uz": "📍 Titul pastidagi <b>shahar</b>ni tanlang (masalan «Toshkent – 2026») yoki o'zingiz yozing:",
@@ -17661,7 +17690,7 @@ def h_kurs_kafedra(msg):
     if not ok:
         bot.send_message(cid, err_msg, parse_mode="HTML")
         return
-    update_holat(cid, "kurs_kafedra", msg.text.strip())
+    update_holat(cid, "kurs_kafedra", _titul_norm(cid, msg.text, "kafedra", strip=False))
     _kurs_shahar_sora(cid)
 
 
@@ -17710,8 +17739,7 @@ def h_kurs_shahar(msg):
     if not ok:
         bot.send_message(cid, err_msg, parse_mode="HTML")
         return
-    nom = re.sub(r"[\s–\-]*\d{4}\s*$", "", msg.text.strip()).strip(" -–,.")   # «Andijon-2026» → «Andijon»
-    update_holat(cid, "kurs_shahar", nom[:1].upper() + nom[1:] if nom else "")
+    update_holat(cid, "kurs_shahar", _titul_norm(cid, msg.text, "shahar"))   # «andijon shahri-2026» → «Andijon»
     _yaratish(msg, is_docx=True)
 
 # ═══════════════════════════════════════════════
@@ -20730,6 +20758,9 @@ def _mk_open_service(call, key: str):
     m.content_type = "text"
     h_tur(m)
 
+
+# Rus/ingliz tilidagi foydalanuvchilar uchun eski o'zbekcha qattiq yozilgan xabarlar tarjimasi
+tarjima_shim.install(bot, _mk_til)
 
 marketing.setup(
     bot=bot, get_db=lambda: users_db, db_lock=USERS_DB_LOCK, mark_dirty=_mark_dirty, narx=DOC_NARX,
