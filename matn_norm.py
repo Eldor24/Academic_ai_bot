@@ -16,6 +16,14 @@ from __future__ import annotations
 
 import re
 
+# ── Joriy yil (Toshkent vaqti, UTC+5) ─────────────────────────────
+def joriy_yil() -> int:
+    """Hujjatlardagi yil har doim hujjat tayyorlangan paytdagi yil. Server UTC vaqtida ishlaydi, shuning uchun
+    Toshkent vaqti (UTC+5) olinadi: 31-dekabr kuni soat 19:00 dan keyin yangi yil to'g'ri chiqadi."""
+    import datetime as _dt
+    return _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=5))).year
+
+
 # ── Apostroflar ───────────────────────────────────────────────────
 _APOS = "’‘ʻʼ`´‛′"
 

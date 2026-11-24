@@ -41,6 +41,14 @@ SW, SH = 13.333, 7.5
 ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "themes")
 
 
+
+def _joriy_yil() -> int:
+    try:
+        import matn_norm
+        return matn_norm.joriy_yil()
+    except Exception:
+        return datetime.date.today().year
+
 def _hex(h: str) -> tuple:
     h = h.lstrip("#")
     return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
@@ -1598,7 +1606,7 @@ def _title_slide(prs, th: Theme, mavzu: str, ism: str, lb: dict):
     sl = prs.slides.add_slide(_blank(prs))
     v = th.v["title"]
     hf = th.font_head
-    year = str(datetime.date.today().year)
+    year = str(_joriy_yil())
     by = f"{lb.get('bajardi', 'Bajardi')}: {ism}" if ism else ""
     kind = lb.get("taqdimot", "Taqdimot")
     if v != "template_title":

@@ -30,6 +30,7 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+import matn_norm
 import security
 
 log = logging.getLogger(__name__)
@@ -1188,7 +1189,7 @@ def _mi_docx(cid, data, otm, fan, mavzu, ism, uslub, til) -> str:
     p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     p.add_run(f"{L[4]}: ").bold = True; p.add_run("________________")
     import datetime
-    center(f"{L[9]} — {datetime.date.today().year}", 14, False, before=90)
+    center(f"{L[9]} — {matn_norm.joriy_yil()}", 14, False, before=90)
     doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
 
     # Reja

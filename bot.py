@@ -373,6 +373,8 @@ import xizmatlar_yangi
 import xizmatlar_qoshimcha
 import xizmatlar_talaba
 import ilmiy_izlanuvchi
+import uz_apostrof
+uz_apostrof.ornat()   # o‘, g‘ va tutuq belgisi barcha Word/PowerPoint hujjatlarda standart ko'rinishda
 from security import sanitize_long_text, UnsafeFileError
 FLOOD_GUARD = security.install(
     bot, admin_id=ADMIN_ID,
@@ -4715,7 +4717,7 @@ I18N = {
 
 def hozirgi_yil() -> str:
     """Joriy yilni qaytaradi. Har yil avtomatik yangilanadi."""
-    return str(datetime.datetime.now().year)
+    return str(matn_norm.joriy_yil())
 
 # I18N lug'atida "yil": "2026" o'rniga "yil": hozirgi_yil() ishlatiladi.
 # Lekin lug'at oddiy dict bo'lgani uchun, tx() ichida dinamik almashtirish kerak.
@@ -7660,7 +7662,7 @@ yozma (kamroq bo'lsa ham mayli). Uydirma muallif, kitob, URL yoki DOI TAQIQLANAD
     _mavzu_lbl   = {"uz": "Mavzu:", "ru": "Тема:", "en": "Topic:"}.get(til, "Mavzu:")
     _bajardi_lbl = {"uz": "Bajardi:", "ru": "Выполнил(а):", "en": "Prepared by:"}.get(til, "Bajardi:")
     _tekshirdi_lbl = {"uz": "Tekshirdi:", "ru": "Проверил(а):", "en": "Checked by:"}.get(til, "Tekshirdi:")
-    _yil = str(datetime.datetime.now().year)
+    _yil = str(matn_norm.joriy_yil())
     _shahar = {"uz": "TOSHKENT", "ru": "ТАШКЕНТ", "en": "TASHKENT"}.get(til, "TOSHKENT")
 
     add_para(_vazirlik_lbl.upper(), bold=True, center=True, size=12, space_before=0, indent=False)
@@ -17932,9 +17934,9 @@ _KURS_KAF_TXT = {
     "en": "🏛 Enter the <b>department</b> for the title page:\n<i>e.g. Department of English Philology</i>",
 }
 _KURS_SHAHAR_TXT = {
-    "uz": "📍 Titul pastidagi <b>shahar</b>ni tanlang (masalan «Toshkent – 2026») yoki o'zingiz yozing:",
-    "ru": "📍 Выберите <b>город</b> для нижней строки титула (например «Ташкент – 2026») или напишите свой:",
-    "en": "📍 Choose the <b>city</b> for the bottom of the title page (e.g. «Tashkent – 2026») or type your own:",
+    "uz": "📍 Titul pastidagi <b>shahar</b>ni tanlang (masalan «Toshkent – {yil}») yoki o'zingiz yozing:",
+    "ru": "📍 Выберите <b>город</b> для нижней строки титула (например «Ташкент – {yil}») или напишите свой:",
+    "en": "📍 Choose the <b>city</b> for the bottom of the title page (e.g. «Tashkent – {yil}») or type your own:",
 }
 
 
@@ -17985,7 +17987,7 @@ def _kurs_shahar_sora(cid: int):
                                   callback_data=f"kish_{nomlar.index(n) if n in nomlar else 0}")
              for i, n in enumerate(tartib)])
     update_holat(cid, "qadam", "kurs_shahar")
-    bot.send_message(cid, _KURS_SHAHAR_TXT.get(til, _KURS_SHAHAR_TXT["uz"]), reply_markup=kb, parse_mode="HTML")
+    bot.send_message(cid, _KURS_SHAHAR_TXT.get(til, _KURS_SHAHAR_TXT["uz"]).format(yil=matn_norm.joriy_yil()), reply_markup=kb, parse_mode="HTML")
 
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith("kish_"))
@@ -18005,7 +18007,7 @@ def cb_kurs_shahar(call):
     except Exception:
         nom = kurs_ishi.SHAHARLAR[0][til]
     update_holat(cid, "kurs_shahar", nom)
-    bot.send_message(cid, f"📍 <b>{nom} – {datetime.datetime.now().year}</b>", parse_mode="HTML")
+    bot.send_message(cid, f"📍 <b>{nom} – {matn_norm.joriy_yil()}</b>", parse_mode="HTML")
     _yaratish(call.message, is_docx=True)
 
 

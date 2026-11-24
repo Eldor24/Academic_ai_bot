@@ -48,7 +48,17 @@ def _font(bold: bool, italic: bool, size: float):
     return f
 
 
+def matn_shakl(text: str) -> str:
+    """Hujjat saqlanganda o‘/g‘ va tutuq belgisi standart belgiga almashadi (uz_apostrof) — kenglik ham shunday o'lchanadi."""
+    try:
+        import uz_apostrof
+        return uz_apostrof.tuzat(text) if uz_apostrof._UZ_BELGI.search(text or "") else text
+    except Exception:
+        return text
+
+
 def width(text: str, size: float = 14, bold: bool = False, italic: bool = False) -> float:
+    text = matn_shakl(text)
     k = (text, size, bold, italic)
     w = _wcache.get(k)
     if w is None:

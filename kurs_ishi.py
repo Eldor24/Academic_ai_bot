@@ -1619,6 +1619,7 @@ def _chart_png_draw(g: dict) -> bytes | None:
 # HUJJAT TUZILMASI → SAHIFALASH → WORD
 # ═══════════════════════════════════════════════
 import sahifalash as SH
+import matn_norm
 
 _AL = {"j": WD_ALIGN_PARAGRAPH.JUSTIFY, "c": WD_ALIGN_PARAGRAPH.CENTER, "r": WD_ALIGN_PARAGRAPH.RIGHT,
        "l": WD_ALIGN_PARAGRAPH.LEFT}
@@ -1755,6 +1756,16 @@ def _no_borders(tbl):
     tblPr.append(b)
 
 
+def _blok_chap(satrlar, katak_cm: float, size: float) -> float:
+    """O'ng ustundagi qatorlar blokining chap chekinishi (sm): eng uzun qator o'ng chetga yetadi."""
+    ichki = katak_cm - 0.4                      # katakning chap/o'ng ichki bo'shlig'i (~0.19 sm x2)
+    try:
+        eng_uzun = max(SH.width(SH.matn_shakl(x), size, bold=True) for x in satrlar if x) / SH.PT_CM
+    except Exception:
+        return 0.0
+    return round(max(0.0, min(ichki - eng_uzun - 0.1, ichki * 0.5)), 2)
+
+
 def _render_titul(doc, t: dict, til: str):
     lb, T = L(til), TITUL.get(til, TITUL["uz"])
     fak = _nom_tozala(t.get("fakultet"), ("fakulteti", "fakultet", "факультети", "факультет", "faculty", "faculty of"))
@@ -1776,7 +1787,7 @@ def _render_titul(doc, t: dict, til: str):
     otm = _clean(t.get("otm") or "").upper() or "______________________________ UNIVERSITETI"
     fan = _clean(t.get("fan") or "")
     shahar = _clean(t.get("shahar") or "") or shahar_aniqla(t.get("otm", ""), til)
-    yil = datetime.datetime.now().year
+    yil = matn_norm.joriy_yil()
     uzun = len(otm) > 70 or len(t.get("mavzu") or "") > 110
 
     _tp(doc, lb["vazirlik"], 16 if not uzun else 15, new=False if doc.paragraphs else True, sa=6)
@@ -1789,10 +1800,13 @@ def _render_titul(doc, t: dict, til: str):
     for ci, (nom, soz) in enumerate(((fak, T["fak"]), (kaf, T["kaf"]))):
         c = tb.rows[0].cells[ci]
         c.width = Cm(8.25)
-        al = "l" if ci == 0 else "r"
-        _tp(c, fak_txt if ci == 0 else kaf_txt, 14, align=al, sa=6, new=False)
-        _tp(c, T["royxat"], 14, align=al, sa=2)
-        _tp(c, T["sana"], 14, align=al)
+        satrlar = (fak_txt if ci == 0 else kaf_txt, T["royxat"], T["sana"])
+        # O'ng ustun: uchala qator bir xil chap chiziqdan boshlanadi (o'ngga tekislanganda qisqa qator ichkariga
+        # kirib, qiyshiq ko'rinardi), blok esa o'ng chetga yopishib turadi.
+        chap = 0.0 if ci == 0 else _blok_chap(satrlar, 8.25, 14)
+        _tp(c, satrlar[0], 14, align="l", sa=6, new=False, left=chap)
+        _tp(c, satrlar[1], 14, align="l", sa=2, left=chap)
+        _tp(c, satrlar[2], 14, align="l", left=chap)
 
     if til != "uz" and kaf and re.search(r"кафедр|department", kaf_xom, re.I):
         kaf_line = kaf_xom.upper()                     # «КАФЕДРА РУССКОГО ЯЗЫКА»
@@ -1872,7 +1886,7 @@ def _render_titul_bmi(doc, t: dict, til: str):
     otm = _clean(t.get("otm") or "").upper() or "______________________________ UNIVERSITETI"
     yon = _clean(t.get("fan") or "") or "_" * 30
     shahar = _clean(t.get("shahar") or "") or shahar_aniqla(t.get("otm", ""), til)
-    yil = datetime.datetime.now().year
+    yil = matn_norm.joriy_yil()
     uzun = len(otm) > 70 or len(t.get("mavzu") or "") > 110
 
     _tp(doc, lb["vazirlik"], 15, new=False if doc.paragraphs else True, sa=4)

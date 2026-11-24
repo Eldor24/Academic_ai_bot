@@ -1,5 +1,20 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 16.5-versiya (24.11.2026) — O‘/G‘ va tutuq belgisi, titul tekisligi, joriy yil
+- 🔤 **O'zbek alifbosi belgilari.** Barcha Word va PowerPoint hujjatlarda (kurs ishi, BMI, mustaqil ish, referat,
+  maqola, tezis, taqdimot va boshqalar) saqlash paytida belgilar standartga keltiriladi:
+  - o‘ va g‘ teskari vergul (‘) bilan yoziladi: o‘zbek, g‘oya, tog‘;
+  - tutuq belgisi ’ bilan yoziladi: ta’lim, san’at, ma’lumot.
+
+  Hujjat o'zbek-lotin matni ekani avtomatik aniqlanadi. Ruscha, inglizcha va kirill yozuvidagi hujjatlarga
+  tegilmaydi. Yangi modul: `uz_apostrof.py`. Mundarija sahifalash hisobida ham belgi kengligi shunga mos o'lchanadi.
+- 📐 **Kurs ishi tituli.** O'ng tomondagi blokda («... kafedrasi», «Ro‘yxatga olindi №», sana) uchala qator endi bir
+  xil chap chiziqdan boshlanadi va blok o'ng chetga yopishib turadi. Avval qisqa qator ichkariga kirib, qiyshiq
+  ko'rinardi.
+- 📅 **Yil.** Titul pastidagi «Shahar – yil», referat va taqdimot titulidagi yil hujjat tayyorlangan kundagi yil
+  bo'ladi: 2027-yilda avtomatik 2027 chiqadi. Yil Toshkent vaqti bo'yicha olinadi (server UTC vaqtida ishlaydi).
+  Shahar so'ralganda ko'rsatiladigan misol («Toshkent – 2026») ham joriy yilni ko'rsatadi.
+
 ## 16.4-versiya (21.11.2026) — Taqdimot: slaydlarda ma'lumot ancha ko'p
 - Taqdimot endi ikki bosqichda tayyorlanadi:
   1. AI avval batafsil reja tuzadi: har slayd uchun sarlavha, turi va aniq yoritiladigan fikrlar. Reja mantiqiy
