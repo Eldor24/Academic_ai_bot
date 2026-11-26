@@ -35,3 +35,11 @@ desktop.ini
 # ── OAK jurnallari keshi (bot o'zi yuklab oladi) ──
 oak_cache.json
 oak_cache.json.tmp
+
+# ── SSH kalitlar va server arxivlari (HECH QACHON GitHub'ga chiqmasin) ──
+*.key
+*.pem
+*.ppk
+id_rsa*
+id_ed25519*
+*.tar.gz

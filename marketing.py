@@ -298,6 +298,60 @@ POSTS = [
            "reports — in Word in minutes.\n\n💰 <b>{narx} coins</b>"},
 ]
 
+# «yangi» sanasi bor postlar — YANGI xizmat e'loni: navbatdagi slotda hali olmagan har bir foydalanuvchiga
+# aylanmadan OLDIN yuboriladi (shu sanadan YANGI_KUN kungacha). Keyin odatdagi aylanmaga qo'shiladi.
+POSTS.extend([
+    {"key": "ragbat", "narx2": "rg_dars", "yangi": "2026-11-25",
+     "uz": "🏅 <b>Yangi bo'lim: Rag'batlantirish!</b>\n\nO'qituvchi, tarbiyachi, murabbiy va sardorlar uchun:\n"
+           "🏆 <b>Faxriy yorliq, tashakkurnoma, maqtov yorlig'i, sertifikat, diplom</b> — 8 xil chiroyli dizayn "
+           "(rasmiy va bolalar uchun), chop etishga tayyor PDF + rasm. Butun sinfga — bir zumda, har biriga alohida ism bilan.\n"
+           "🎓 <b>Dars to'plami</b> — mavzu yoki ma'ruza matningizdan tarqatma, savollar, javob kaliti va dars rejasi — "
+           "<b>{narx2} tanga</b>\n"
+           "📊 Natijalarni yuborsangiz — har o'quvchiga ballga mos yorliq va <b>shaxsiy maqtov matni</b>.\n\n"
+           "💰 Yorliq — <b>{narx} tangadan</b>",
+     "ru": "🏅 <b>Новый раздел: Поощрение!</b>\n\nДля учителей, воспитателей, наставников и старост:\n"
+           "🏆 <b>Почётная грамота, благодарность, похвальный лист, сертификат, диплом</b> — 8 красивых дизайнов "
+           "(официальные и детские), готовый к печати PDF + картинка. Для всего класса — сразу, каждому со своим именем.\n"
+           "🎓 <b>Пакет к уроку</b> — по теме или тексту лекции: раздатка, вопросы, ключ ответов и план урока — "
+           "<b>{narx2} монет</b>\n"
+           "📊 Отправьте результаты — каждому ученику грамота по баллам и <b>личный текст похвалы</b>.\n\n"
+           "💰 Грамота — <b>от {narx} монет</b>",
+     "en": "🏅 <b>New section: Awards!</b>\n\nFor teachers, tutors, mentors and class leaders:\n"
+           "🏆 <b>Certificates of honor, merit, appreciation, diplomas</b> — 8 beautiful designs (formal and for kids), "
+           "print-ready PDF + image. For a whole class at once, each with their own name.\n"
+           "🎓 <b>Lesson pack</b> — from a topic or your lecture: handout, questions, answer key and lesson plan — "
+           "<b>{narx2} coins</b>\n"
+           "📊 Send the results — every learner gets the right certificate and a <b>personal praise note</b>.\n\n"
+           "💰 Certificates — <b>from {narx} coins</b>"},
+    {"key": "test", "narx2": None,
+     "uz": "📝 <b>Test kerakmi? Kimga mo'ljallanganini ayting — qolganini bot qiladi</b>\n\n"
+           "🎒 1-4 sinf · 📘 5-9 sinf · 🎓 10-11 sinf · 🏁 Abituriyent (DTM) · 🏛 Talaba · 👔 Mutaxassis\n\n"
+           "✅ Mavzu yoki ma'ruza matningiz asosida\n✅ Oddiydan murakkabga (Bloom taksonomiyasi)\n"
+           "✅ Har bir javob mustaqil tekshiriladi\n✅ 1, 2 yoki 4 variant — ko'chirib bo'lmaydi\n"
+           "✅ O'quvchiga — javobsiz test va javoblar varaqasi, o'qituvchiga — kalit va izohlar\n\n💰 <b>{narx} tanga</b>",
+     "ru": "📝 <b>Нужен тест? Скажите, для кого — остальное сделает бот</b>\n\n"
+           "🎒 1-4 класс · 📘 5-9 класс · 🎓 10-11 класс · 🏁 Абитуриент (ДТМ) · 🏛 Студент · 👔 Специалист\n\n"
+           "✅ По теме или вашему тексту лекции\n✅ От простого к сложному (таксономия Блума)\n"
+           "✅ Каждый ответ проверяется независимо\n✅ 1, 2 или 4 варианта — не списать\n"
+           "✅ Ученикам — тест без ответов и бланк, учителю — ключи и пояснения\n\n💰 <b>{narx} монет</b>",
+     "en": "📝 <b>Need a test? Tell us who it's for — the bot does the rest</b>\n\n"
+           "🎒 Grades 1-4 · 📘 5-9 · 🎓 10-11 · 🏁 Applicants · 🏛 Students · 👔 Professionals\n\n"
+           "✅ From a topic or your own lecture text\n✅ Simple to complex (Bloom's taxonomy)\n"
+           "✅ Every answer independently checked\n✅ 1, 2 or 4 versions — no copying\n"
+           "✅ Learners get a clean test and answer sheet, the teacher gets keys and explanations\n\n💰 <b>{narx} coins</b>"},
+    {"key": "qayta", "narx2": None,
+     "uz": "🔄 <b>Matningizni boshqa uslubda qayta yozib beramiz</b>\n\nAkademik, neytral yoki rasmiy uslubni tanlang — "
+           "mazmun saqlanadi, jumlalar ravon va tushunarli bo'ladi. Ariza, xat, maqola yoki referat qismlari uchun qulay.\n\n"
+           "💰 <b>{narx} tanga</b>",
+     "ru": "🔄 <b>Перепишем ваш текст в другом стиле</b>\n\nВыберите академический, нейтральный или официальный стиль — "
+           "смысл сохранится, фразы станут ясными и гладкими. Удобно для заявлений, писем, статей и рефератов.\n\n"
+           "💰 <b>{narx} монет</b>",
+     "en": "🔄 <b>We'll rewrite your text in another style</b>\n\nChoose academic, neutral or formal — the meaning stays, "
+           "the sentences become clear and smooth. Handy for applications, letters, articles and essays.\n\n"
+           "💰 <b>{narx} coins</b>"},
+])
+YANGI_KUN = 45
+
 BTN_GO = {"uz": "👉 Sinab ko'rish", "ru": "👉 Попробовать", "en": "👉 Try it"}
 BTN_KAB = {"uz": "👤 Kabinetni ochish", "ru": "👤 Открыть кабинет", "en": "👤 Open profile"}
 BTN_OFF = {"uz": "🔕 Bunday xabarlar kerak emas", "ru": "🔕 Не присылать такие сообщения",
@@ -325,6 +379,7 @@ def _mk() -> dict:
     m.setdefault("blok", {})         # uid -> bloklagan vaqti
     m.setdefault("yoqilgan", True)
     m.setdefault("tarix", [])        # oxirgi yuborishlar statistikasi
+    m.setdefault("yangi_ok", {})     # yangi post kaliti -> uni olgan uid'lar (str)
     return m
 
 
@@ -351,6 +406,20 @@ def _posts_for_send() -> list:
     """Narxi topilmagan xizmat postlari (masalan o'chirilgan xizmat) chiqarib tashlanadi."""
     narx = _A["narx"]
     return [p for p in POSTS if p["key"] in ("kabinet", "ilmiy") or p["key"] in narx]
+
+
+def _yangi_postlar(posts: list) -> list:
+    """E'lon muddati tugamagan yangi xizmat postlari."""
+    bugun = datetime.date.today()
+    out = []
+    for p in posts:
+        try:
+            d = datetime.date.fromisoformat(p.get("yangi") or "")
+        except Exception:
+            continue
+        if 0 <= (bugun - d).days <= YANGI_KUN:
+            out.append(p)
+    return out
 
 
 def onboarding_faol(db: dict, uid) -> bool:
@@ -395,17 +464,26 @@ def kampaniya(sabab: str = "jadval") -> dict:
             uids = list(db.get("all_users", []))
             nomzod = [u for u in uids if _yuborishi_mumkin(u, m, db)]
             idx = dict(m["idx"])
+            yangi_ok = {k: set(v) for k, v in m["yangi_ok"].items()}
+        yangilar = _yangi_postlar(posts)
         ok = blok = xato = 0
         post_stat: dict = {}
         for uid in nomzod:
-            i = idx.get(str(uid), 0) % len(posts)
-            post = posts[i]
+            # 1) yangi xizmat e'loni — hali olmagan bo'lsa, navbatdan oldin
+            post = next((p for p in yangilar if str(uid) not in yangi_ok.get(p["key"], set())), None)
+            i = None
+            if post is None:
+                i = idx.get(str(uid), 0) % len(posts)
+                post = posts[i]
             til = _A["til_of"](uid)
             try:
                 bot.send_message(uid, matn(uid, post, til), reply_markup=klaviatura(post, til),
                                  parse_mode="HTML", disable_web_page_preview=True)
                 ok += 1
-                idx[str(uid)] = i + 1
+                if i is None:
+                    yangi_ok.setdefault(post["key"], set()).add(str(uid))
+                else:
+                    idx[str(uid)] = i + 1
                 post_stat[post["key"]] = post_stat.get(post["key"], 0) + 1
             except Exception as e:
                 s = str(e).lower()
@@ -420,6 +498,9 @@ def kampaniya(sabab: str = "jadval") -> dict:
         with _A["db_lock"]:
             m = _mk()
             m["idx"].update(idx)
+            # eski (muddati o'tgan) e'lonlar ro'yxati tozalanadi — baza o'smasin
+            amal = {p["key"] for p in yangilar}
+            m["yangi_ok"] = {k: sorted(v) for k, v in yangi_ok.items() if k in amal}
             m["tarix"] = (m["tarix"] + [{"vaqt": int(time.time()), "sabab": sabab, "ok": ok, "blok": blok,
                                           "xato": xato, "nomzod": len(nomzod)}])[-30:]
         _A["mark_dirty"]()

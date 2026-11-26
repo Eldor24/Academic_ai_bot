@@ -233,7 +233,8 @@ DOC_NARX = {
     "tarjima":      3,   # o'zgarmadi — raqobat ko'p
     "grammatika":   2,   # o'zgarmadi — kichik xizmat
     "referat":      5,   # 5  → 6   | 8-12 bet
-    "test":         4,   # 3  → 4   | Test generatori
+    "test":         4,   # 3  → 4   | Test generatori (30 tagacha savol)
+    "test_katta":   6,   # Test generatori: 40-50 savol
     "nutq":         4,   # 3  → 4   | Teleprompter nutq
     "cv":           6,   # 5  → 9   | Ish topishga yordam = yuqori qiymat
     "antiplagiat":  5,   # 4  → 5   | Kerakli, muqobil yo'q
@@ -251,6 +252,13 @@ DOC_NARX = {
     "quiz":         2,   # Test markazi: tayyor testni Telegram quizga aylantirish
     "tts":          2,   # Matnni ovozga (MP3)
     "sardor":       4,   # Sinf sardori: bayonnoma, ssenariy, tarbiyaviy soat...
+    # 🏅 Rag'batlantirish (ragbat.py) — narxlar ragbat.NARX bilan bir xil bo'lishi shart
+    "ragbat":       2,   # bo'lim (marketing posti uchun «...dan» narx)
+    "rg_bitta":     2,   # tashakkurnoma / yorliq — 1 kishiga (PDF + rasm)
+    "rg_guruh":     4,   # guruhga: 2-60 ta ism, har biriga alohida varaq (PDF + ZIP)
+    "rg_shablon":   1,   # bo'sh shablon (ism qo'lda yoziladi)
+    "rg_dars":      6,   # dars to'plami: tarqatma + savollar + javob kaliti + rubrika + dars rejasi
+    "rg_natija":    5,   # natijalar bo'yicha taqdirlash: shaxsiy matnlar + qaydnoma
 }
 XUSH_BONUS     = 5
 HAFTALIK_BONUS = 5    # har dushanba balansi shundan kam bo'lganlarga shu miqdorgacha to'ldiriladi (1 taqdimot)
@@ -263,8 +271,9 @@ QUEUE_LOCK = threading.Semaphore(MAX_CONCURRENT_REQUESTS)
 # ── PER-USER AI JARAYON FLAGI ──
 # Foydalanuvchi AI jarayonida bo'lsa cid bu set'ga qo'shiladi,
 # tugagandan keyin o'chiriladi. Ikki marta so'rov yuborishni bloklaydi.
-_AI_JARAYON: set = set()
+_AI_JARAYON: dict = {}          # cid -> bajarilayotgan + navbatdagi ishlar soni
 _AI_JARAYON_LOCK = threading.Lock()
+NAVBAT_MAX = 3                  # bitta foydalanuvchi uchun: 1 ta bajarilmoqda + 2 tasi navbatda
 
 # Bloklash xabari message_id lari — set_holat dan mustaqil
 _BLOCK_MSG: dict = {}
@@ -276,21 +285,25 @@ def _ai_jarayon_boshlash(cid: int) -> bool:
     False — foydalanuvchi allaqachon jarayonda, bloklash kerak.
     """
     with _AI_JARAYON_LOCK:
-        if cid in _AI_JARAYON:
+        if _AI_JARAYON.get(cid, 0) >= NAVBAT_MAX:
             return False
     # Kunlik AI limitlari (token byudjeti va foydalanuvchi limiti)
     if not AI_BUDGET.allow_job(cid):
         return False
     with _AI_JARAYON_LOCK:
-        if cid in _AI_JARAYON:
+        if _AI_JARAYON.get(cid, 0) >= NAVBAT_MAX:
             return False
-        _AI_JARAYON.add(cid)
+        _AI_JARAYON[cid] = _AI_JARAYON.get(cid, 0) + 1
         return True
 
 def _ai_jarayon_tugatish(cid: int):
     """Jarayon tugadi — flagni o'chir va bloklash xabarini o'chir."""
     with _AI_JARAYON_LOCK:
-        _AI_JARAYON.discard(cid)
+        n = _AI_JARAYON.get(cid, 0) - 1
+        if n > 0:
+            _AI_JARAYON[cid] = n
+        else:
+            _AI_JARAYON.pop(cid, None)
     # Bloklash xabari yuborilgan bo'lsa — o'chir (alohida dict dan)
     with _BLOCK_MSG_LOCK:
         msg_id = _BLOCK_MSG.pop(cid, None)
@@ -373,6 +386,8 @@ import xizmatlar_yangi
 import xizmatlar_qoshimcha
 import xizmatlar_talaba
 import ilmiy_izlanuvchi
+import ragbat
+import test_pro
 import uz_apostrof
 uz_apostrof.ornat()   # o‘, g‘ va tutuq belgisi barcha Word/PowerPoint hujjatlarda standart ko'rinishda
 from security import sanitize_long_text, UnsafeFileError
@@ -528,8 +543,113 @@ class ProgressUpdater:
     
 
 client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
-holat: dict = {}
+class _HolatNusxa(dict):
+    """Navbatda kutgan ish uchun holat: o'qish — ish qabul qilingan paytdagi nusxadan (foydalanuvchi shu orada
+    boshqa bo'limga o'tib, ma'lumot kiritsa ham aralashmaydi), yozish — ham nusxaga, ham haqiqiy holatga."""
+    def __init__(self, snap, real):
+        super().__init__(snap)
+        self._real = real
+
+    def __setitem__(self, k, v):
+        super().__setitem__(k, v)
+        self._real[k] = v
+
+    def __delitem__(self, k):
+        super().pop(k, None)
+        self._real.pop(k, None)
+
+    def pop(self, k, *d):
+        self._real.pop(k, None)
+        return super().pop(k, *d)
+
+    def setdefault(self, k, d=None):
+        if k not in self:
+            self[k] = d
+        return dict.__getitem__(self, k)
+
+    def update(self, *a, **kw):
+        super().update(*a, **kw)
+        self._real.update(*a, **kw)
+
+
+_ISH_TL = threading.local()
+
+
+class _HolatDict(dict):
+    def _nusxa(self, cid):
+        sn = getattr(_ISH_TL, "snap", None)
+        if not sn or cid not in sn or not dict.__contains__(self, cid):
+            return None
+        real = dict.__getitem__(self, cid)
+        ov = sn[cid]
+        if not isinstance(ov, _HolatNusxa) or ov._real is not real:
+            ov = _HolatNusxa(dict(ov), real)
+            sn[cid] = ov
+        return ov
+
+    def __getitem__(self, cid):
+        ov = self._nusxa(cid)
+        return ov if ov is not None else dict.__getitem__(self, cid)
+
+    def get(self, cid, default=None):
+        ov = self._nusxa(cid)
+        return ov if ov is not None else dict.get(self, cid, default)
+
+
+holat: dict = _HolatDict()
 HOLAT_LOCK = threading.Lock()
+
+# ── FOYDALANUVCHI NAVBATI ─────────────────────────────────────────────
+# Hujjat tayyorlanayotganda yana so'rov yuborilsa, u rad etilmaydi: navbatga qo'yiladi va oldingisi tugashi
+# bilan avtomatik boshlanadi. Har foydalanuvchida bir vaqtda faqat BITTA ish bajariladi (xotira va adolat uchun),
+# umumiy parallel ishlar esa QUEUE_LOCK (semafor) bilan cheklanadi.
+from collections import deque as _deque
+_NAVBAT: dict = {}
+_NAVBAT_LOCK = threading.Lock()
+
+
+def _navbat_start(cid: int, fn):
+    with HOLAT_LOCK:
+        snap = dict(dict.get(holat, cid, {}) or {})
+    with _NAVBAT_LOCK:
+        q = _NAVBAT.setdefault(cid, _deque())
+        q.append((fn, snap))
+        orin = len(q)
+    if orin == 1:
+        threading.Thread(target=_navbat_ishchi, args=(cid,), daemon=True, name=f"navbat-{cid}").start()
+    else:
+        try:
+            bot.send_message(cid, tx(cid, "navbat_qoyildi").format(n=orin - 1), parse_mode="HTML")
+        except Exception:
+            pass
+
+
+def _navbat_ishchi(cid: int):
+    birinchi = True
+    while True:
+        with _NAVBAT_LOCK:
+            q = _NAVBAT.get(cid)
+            if not q:
+                _NAVBAT.pop(cid, None)
+                return
+            fn, snap = q[0]
+        try:
+            if not birinchi:
+                _ISH_TL.snap = {cid: snap}
+                try:
+                    bot.send_message(cid, tx(cid, "navbat_boshlandi"), parse_mode="HTML")
+                except Exception:
+                    pass
+            fn()
+        except Exception as e:
+            log.error(f"[{cid}] Navbatdagi ish xatosi: {e}", exc_info=True)
+        finally:
+            _ISH_TL.snap = None
+            with _NAVBAT_LOCK:
+                q = _NAVBAT.get(cid)
+                if q:
+                    q.popleft()
+        birinchi = False
 HOLAT_SAQLANISH_SOAT = 24  # 24 soat
 
 # Har bir holat yozuviga oxirgi faollik vaqtini saqlash uchun kalit
@@ -560,7 +680,7 @@ def tozala_eski_holat():
     with HOLAT_LOCK:
         for cid, h in list(holat.items()):
             oxirgi = h.get(_HOLAT_VAQT_KALIT, 0)
-            if hozir - oxirgi > chegara:
+            if hozir - oxirgi > chegara and cid not in _AI_JARAYON and cid not in _NAVBAT:
                 o_chiriladigan.append(cid)
 
         for cid in o_chiriladigan:
@@ -2674,7 +2794,9 @@ I18N = {
         "btn_retry":     "🔄 Qayta urinish",
         "retry_no_data": "⚠️ Sessiya ma'lumotlari yo'qoldi. Iltimos, qaytadan boshlang.",
         "rate_limit":    "⏳ <b>Juda ko'p so'rov!</b>\n\nIltimos, 1 daqiqa kuting.",
-        "ai_jarayonda":  "⏳ <b>Oldingi so'rovingiz hali bajarilmoqda!</b>\n\n🔄 Iltimos, natija kelguncha kuting.\nBot sizga javobni tayyorlayapti...",
+        "navbat_qoyildi": "📥 <b>So'rovingiz navbatga qo'yildi</b> ({n}-o'rinda).\n\nOldingi hujjatingiz tayyor bo'lishi bilan avtomatik boshlanadi — kutib turing, hech narsa bosish shart emas.",
+        "navbat_boshlandi": "▶️ <b>Navbatdagi so'rovingiz boshlandi.</b>",
+        "ai_jarayonda":  "⏳ <b>Navbatingiz to'la!</b>\n\n🔄 Sizda allaqachon 3 ta so'rov bajarilmoqda yoki navbatda turibdi. Ulardan biri tayyor bo'lgach, yangisini yuboring.",
         "sessiya_yoq":   "⚠️ Sessiya yo'qoldi. Iltimos, /start bosib qaytadan boshlang.",
         "input_qisqa":   "⚠️ Juda qisqa (minimum {min} belgi).\nIltimos, batafsil yozing.",
         "input_uzun":    "⚠️ Juda uzun ({uzunlik} belgi).\nMaksimal: <b>{max} belgi</b>. Qisqartiring.",
@@ -2685,7 +2807,7 @@ I18N = {
         "qabul": "Qabul qildi: Ilmiy rahbar",
         "shahar": "Toshkent", "yil": "{yil}",
         "mundarija": "MUNDARIJA", "kirish": "KIRISH",
-        "xulosa": "XULOSA VA TAKLIFLAR",
+        "xulosa": "XULOSA",
         "adabiyotlar": "FOYDALANILGAN ADABIYOTLAR RO'YXATI",
         "dolzarb": "Mavzuning dolzarbligi:",
         "maqsad": "Tadqiqotning maqsadi:",
@@ -3460,7 +3582,9 @@ I18N = {
         "btn_retry":     "🔄 Повторить",
         "retry_no_data": "⚠️ Данные сессии утеряны. Пожалуйста, начните заново.",
         "rate_limit":    "⏳ <b>Слишком много запросов!</b>\n\nПожалуйста, подождите 1 минуту.",
-        "ai_jarayonda":  "⏳ <b>Ваш предыдущий запрос ещё обрабатывается!</b>\n\n🔄 Пожалуйста, дождитесь результата.\nБот готовит ответ...",
+        "navbat_qoyildi": "📥 <b>Запрос поставлен в очередь</b> (место: {n}).\n\nОн начнётся автоматически, как только будет готов предыдущий документ — ничего нажимать не нужно.",
+        "navbat_boshlandi": "▶️ <b>Ваш запрос из очереди запущен.</b>",
+        "ai_jarayonda":  "⏳ <b>Очередь заполнена!</b>\n\n🔄 У вас уже 3 запроса выполняются или ждут в очереди. Когда один из них будет готов, отправьте новый.",
         "sessiya_yoq":   "⚠️ Сессия истекла. Пожалуйста, нажмите /start и начните заново.",
         "input_qisqa":   "⚠️ Слишком коротко (минимум {min} символов).\nПожалуйста, напишите подробнее.",
         "input_uzun":    "⚠️ Слишком длинно ({uzunlik} символов).\nМаксимум: <b>{max} символов</b>. Сократите.",
@@ -3471,7 +3595,7 @@ I18N = {
         "qabul": "Принял: Научный руководитель",
         "shahar": "Ташкент", "yil": "{yil}",
         "mundarija": "СОДЕРЖАНИЕ", "kirish": "ВВЕДЕНИЕ",
-        "xulosa": "ЗАКЛЮЧЕНИЕ И РЕКОМЕНДАЦИИ",
+        "xulosa": "ЗАКЛЮЧЕНИЕ",
         "adabiyotlar": "СПИСОК ИСПОЛЬЗОВАННОЙ ЛИТЕРАТУРЫ",
         "dolzarb":   "Актуальность темы:",
         "maqsad":    "Цель исследования:",
@@ -4152,7 +4276,9 @@ I18N = {
         "btn_retry":     "🔄 Retry",
         "retry_no_data": "⚠️ Session data lost. Please start over.",
         "rate_limit":    "⏳ <b>Too many requests!</b>\n\nPlease wait 1 minute and try again.",
-        "ai_jarayonda":  "⏳ <b>Your previous request is still being processed!</b>\n\n🔄 Please wait for the result.\nThe bot is preparing your answer...",
+        "navbat_qoyildi": "📥 <b>Your request is queued</b> (position {n}).\n\nIt will start automatically as soon as your previous document is ready — no need to press anything.",
+        "navbat_boshlandi": "▶️ <b>Your queued request has started.</b>",
+        "ai_jarayonda":  "⏳ <b>Your queue is full!</b>\n\n🔄 You already have 3 requests running or waiting. Send a new one when one of them is ready.",
         "sessiya_yoq":   "⚠️ Session expired. Please press /start to begin again.",
         "input_qisqa":   "⚠️ Too short (minimum {min} characters).\nPlease write more detail.",
         "input_uzun":    "⚠️ Too long ({uzunlik} characters).\nMaximum: <b>{max} characters</b>. Please shorten it.",
@@ -4163,7 +4289,7 @@ I18N = {
         "qabul": "Accepted by: Scientific Supervisor",
         "shahar": "Tashkent", "yil": "{yil}",
         "mundarija": "TABLE OF CONTENTS", "kirish": "INTRODUCTION",
-        "xulosa": "CONCLUSION AND RECOMMENDATIONS",
+        "xulosa": "CONCLUSION",
         "adabiyotlar": "LIST OF REFERENCES",
         "dolzarb": "Relevance of the topic:", "maqsad": "Research objective:",
         "obyekt": "Object of research:", "predmet": "Subject of research:",
@@ -5289,7 +5415,7 @@ def tahrir_qism_aniqla(cid: int, so_rov: str, doc_data: dict) -> dict | None:
             available.append(f"bob2_reja_{i} — {r.get('sarlavha','')}")
         for i, r in enumerate(bob_list.get("bob3_data", {}).get("rejalar", [])):
             available.append(f"bob3_reja_{i} — {r.get('sarlavha','')}")
-        available.append("xulosa — Xulosa va takliflar")
+        available.append("xulosa — Xulosa")
     elif doc_tur == "maqola":
         available = [
             "annotatsiya — Maqola annotatsiyasi",
@@ -5427,6 +5553,13 @@ def tahrir_qism_qayta_yoz(cid: int, qism_kodi: str, so_rov: str, doc_data: dict)
     import copy
     new_data = copy.deepcopy(doc_data)
     inner = new_data.get("data", {})
+
+    # ── Yangi (v2) kurs ishi / BMI: tahrir kurs_ishi modulida — snoskalar faqat adabiyotlar ro'yxatidan,
+    #    bet raqami bilan; material bazasi, xulosa formati va ish turi qoidalari saqlanadi ──
+    if doc_tur == "docx" and inner.get("v") == 2 and (qism_kodi in ("kirish", "xulosa")
+                                                      or re.fullmatch(r"bob\d_reja_\d+", qism_kodi or "")):
+        new_data["data"] = kurs_ishi.qism_qayta_yoz(cid, inner, qism_kodi, so_rov)
+        return new_data
 
     # ── DOCX: KIRISH ──
     if qism_kodi == "kirish" and doc_tur == "docx":
@@ -11215,7 +11348,7 @@ def main_kb(cid: int, show_tahrir: bool = False):
     m.add(yb("amaliyot"), yb("ilmiy"))              # 👨‍🔬 Ilmiy izlanuvchi bo'limi (ilmiy_izlanuvchi.py)
     m.add(yb("mustaqil"), KeyboardButton(tx(cid, "btn_referat")))
     m.add(KeyboardButton(tx(cid, "btn_maqola")), KeyboardButton(tx(cid, "btn_tezis")))
-    m.add(yb("sardor"))
+    m.add(yb("sardor"), yb("ragbat"))              # 🏅 Rag'batlantirish bo'limi (ragbat.py)
     # ── O'qish va imtihon ──
     m.add(yb("konspekt"), yb("imtihon"))
     m.add(KeyboardButton(tx(cid, "btn_test")), yb("ftest"))
@@ -13990,7 +14123,8 @@ _XIZMAT_GURUHLARI = [
         ("masala", "🧮 Masala yechish", "🧮 Решение задач", "🧮 Problem solving"),
         ("ftest", "🧠 Materialdan test", "🧠 Тест по материалу", "🧠 Test from material"),
         ("quiz", "✅ Testni quizga aylantirish", "✅ Тест → квиз", "✅ Test → quiz"),
-        ("test", "❓ Test savollari", "❓ Тестовые вопросы", "❓ Test questions"),
+        ("test", "❓ Test savollari (30 tagacha)", "❓ Тестовые вопросы (до 30)", "❓ Test questions (up to 30)"),
+        ("test_katta", "❓ Test savollari (40-50 ta)", "❓ Тестовые вопросы (40-50)", "❓ Test questions (40-50)"),
         ("tts", "🎧 Ovozli matn (MP3)", "🎧 Озвучка текста (MP3)", "🎧 Text to voice (MP3)"),
     ]),
     ({"uz": "✍️ <b>Matn bilan ishlash</b>", "ru": "✍️ <b>Работа с текстом</b>", "en": "✍️ <b>Text tools</b>"}, [
@@ -14019,6 +14153,15 @@ _XIZMAT_GURUHLARI = [
         ("cv", "💼 Resume / CV", "💼 Резюме / CV", "💼 Resume / CV"),
         ("gipoteza", "🔬 Ilmiy muammo va gipoteza", "🔬 Научная проблема", "🔬 Research problem"),
         ("sardor", "🧑‍🏫 Sinf sardori hujjatlari", "🧑‍🏫 Документы старосты", "🧑‍🏫 Class leader docs"),
+    ]),
+    ({"uz": "🏅 <b>Rag'batlantirish</b> <i>(o'qituvchi va murabbiylar uchun)</i>",
+      "ru": "🏅 <b>Поощрение</b> <i>(для учителей и наставников)</i>",
+      "en": "🏅 <b>Awards</b> <i>(for teachers and mentors)</i>"}, [
+        ("rg_bitta", "🏅 Tashakkurnoma / yorliq (1 kishi)", "🏅 Грамота / благодарность (1 чел.)", "🏅 Certificate (1 person)"),
+        ("rg_guruh", "👥 Guruhga yorliqlar (2-60 kishi)", "👥 Грамоты для группы (2-60)", "👥 Group certificates (2-60)"),
+        ("rg_shablon", "🖨 Bo'sh shablon", "🖨 Пустой бланк", "🖨 Blank template"),
+        ("rg_dars", "🎓 Dars to'plami (tarqatma + savollar)", "🎓 Пакет к уроку (раздатка + вопросы)", "🎓 Lesson pack (handout + questions)"),
+        ("rg_natija", "🏆 Natijalar bo'yicha taqdirlash", "🏆 Награждение по результатам", "🏆 Awards by results"),
     ]),
 ]
 
@@ -14561,7 +14704,7 @@ def h_tahrir_so_rov(msg):
             # HOLAT_LOCK bilan qadam tozalanadi
             pop_holat_key(cid, "qadam")
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 
 def _h_tur_filter(m) -> bool:
     """
@@ -14856,7 +14999,7 @@ def h_qayta_uslub_tanlash(call):
             _ai_jarayon_tugatish(cid)
             pop_holat_key(cid, "qadam")
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 
 # ═══════════════════════════════════════════════════════════
 # ✨ MATN originalLASHTIRISH — HANDLERLAR
@@ -15097,7 +15240,7 @@ def h_original_kuch(call):
                 except Exception:
                     pass
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 
 # ═══════════════════════════════════════════════
 # BOT — ILMIY TARJIMA HANDLERLARI (v2)
@@ -15301,7 +15444,7 @@ def _tarjima_matn_ishga_tushir(cid: int, maqsad_til: str, til: str):
             _ai_jarayon_tugatish(cid)
             pop_holat_key(cid, "qadam")
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 # ── RASM TARJIMASI ─────────────────────────────────────────────────────────
 def _tarjima_rasm_ishga_tushir(cid: int, maqsad_til: str, til: str):
     file_id = holat.get(cid, {}).get("tarj_file_id", "")
@@ -15349,7 +15492,7 @@ def _tarjima_rasm_ishga_tushir(cid: int, maqsad_til: str, til: str):
             _ai_jarayon_tugatish(cid)
             pop_holat_key(cid, "qadam")
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 
 
 # ── DOCX TARJIMASI ─────────────────────────────────────────────────────────
@@ -15409,7 +15552,7 @@ def _tarjima_docx_ishga_tushir(cid: int, maqsad_til: str, til: str):
                 except Exception: pass
             pop_holat_key(cid, "qadam")
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 
 
 # ═══════════════════════════════════════════════
@@ -15605,7 +15748,7 @@ def _yaratish_referat(msg):
             saved_til = holat.get(cid, {}).get("til", "uz")
             update_holat(cid, "til", saved_til)
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 # ───────────────────────────────────────────────
 # TEST SAVOLLARI HANDLERLARI
 # ───────────────────────────────────────────────
@@ -15624,10 +15767,9 @@ def h_test_boshlash(msg):
         bot.send_message(cid, tx(cid, "yetarsiz_tanga").format(
             mavjud=coins, kerak=DOC_NARX["test"]), parse_mode="HTML")
         return
-    update_holat(cid, "qadam", "test_fan")
-    update_holat(cid, "tur",   "test")
-    bot.send_message(cid, tx(cid, "test_start"),
-                     reply_markup=back_kb(cid), parse_mode="HTML")
+    # Professional test generatori (test_pro.py): auditoriya, Bloom taqsimoti, mustaqil tekshiruv, variantlar,
+    # o'quvchi va o'qituvchi uchun alohida fayllar. (Eski oqim — test_fan/test_soni/test_daraja — endi ishlatilmaydi.)
+    test_pro.boshlash(msg)
 
 
 @bot.message_handler(func=_q("test_fan"))
@@ -15732,7 +15874,7 @@ def h_test_daraja(call):
                 except: pass
             pop_holat_key(cid, "qadam")
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 
 # ───────────────────────────────────────────────
 # NUTQ HANDLERLARI
@@ -16051,7 +16193,7 @@ def _nutq_yaratish_ishga_tushir(msg):
                 except Exception:
                     pass
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 
 # ───────────────────────────────────────────────
 # CV HANDLERLARI
@@ -16686,7 +16828,7 @@ def h_cv_til_done(call):
                     pass
             pop_holat_key(cid, "qadam") # ✅ LOCK bilan
 
-    threading.Thread(target=_run, daemon=True).start()# ───────────────────────────────────────────────
+    _navbat_start(cid, _run)# ───────────────────────────────────────────────
 # ANTIPLAGIAT HANDLERLARI
 # ───────────────────────────────────────────────
 
@@ -16772,7 +16914,7 @@ def h_antiplagiat_matn(msg):
         finally:
             _ai_jarayon_tugatish(cid)
             pop_holat_key(cid, "qadam")  # ✅ LOCK bilan
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 # ───────────────────────────────────────────────
 # GIPOTEZA HANDLERLARI
 # ───────────────────────────────────────────────
@@ -16906,7 +17048,7 @@ def h_gipoteza_daraja(call):
                     pass
             pop_holat_key(cid, "qadam")
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
     
     # ═══════════════════════════════════════════════
 # TAQDIMOT NUTQI HANDLERLARI
@@ -17070,7 +17212,7 @@ def h_spiker_fayl(msg):
                     except Exception:
                         pass
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 
 @bot.message_handler(
     content_types=["text", "document"],
@@ -17260,7 +17402,7 @@ def h_grammatika_matn(msg):
                     pass
             pop_holat_key(cid, "qadam")
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 # ═══════════════════════════════════════════════
 # BOT — PPTX QADAMLARI
 # ═══════════════════════════════════════════════
@@ -17667,21 +17809,21 @@ def h_doc_ism(msg):
 _KURS_HAJM_TXT = {
     "uz": ("📄 <b>Kurs ishi</b>\n\nHajmni tanlang:\n\n"
            "📘 <b>Standart — 25-30 bet</b> · {n1} 🪙\n"
-           "Kirish, 2 bob (6 paragraf), xulosa va takliflar, 30-36 ta adabiyot\n\n"
+           "Kirish, 2 bob (6 paragraf), xulosa, 30-36 ta adabiyot\n\n"
            "📚 <b>Kengaytirilgan — 65-70 bet</b> · {n2} 🪙\n"
            "Kirish, 3 bob (9 paragraf), ko'proq jadval va grafiklar, 36-45 ta adabiyot\n\n"
            "Ikkalasida ham: OTM talablari bo'yicha titul, avtomatik mundarija, sahifa raqamlari, "
            "bet ko'rsatilgan Word snoskalari, kamida 25 ta o'zbekcha manba, «1-jadval», «1-rasm» raqamlari.\n\n💰 Balans: <b>{c} 🪙</b>"),
     "ru": ("📄 <b>Курсовая работа</b>\n\nВыберите объём:\n\n"
            "📘 <b>Стандарт — 25-30 стр.</b> · {n1} 🪙\n"
-           "Введение, 2 главы (6 параграфов), заключение и рекомендации, 30-36 источников\n\n"
+           "Введение, 2 главы (6 параграфов), заключение, 30-36 источников\n\n"
            "📚 <b>Расширенная — 65-70 стр.</b> · {n2} 🪙\n"
            "Введение, 3 главы (9 параграфов), больше таблиц и графиков, 36-45 источников\n\n"
            "В обоих: титульный лист по требованиям вуза, автоматическое содержание, нумерация страниц, "
            "сноски Word, «Таблица 1», «Рис. 1» и источники.\n\n💰 Баланс: <b>{c} 🪙</b>"),
     "en": ("📄 <b>Course work</b>\n\nChoose the size:\n\n"
            "📘 <b>Standard — 25-30 pages</b> · {n1} 🪙\n"
-           "Introduction, 2 chapters (6 sections), conclusion and recommendations, 30-36 references\n\n"
+           "Introduction, 2 chapters (6 sections), conclusion, 30-36 references\n\n"
            "📚 <b>Extended — 65-70 pages</b> · {n2} 🪙\n"
            "Introduction, 3 chapters (9 sections), more tables and charts, 36-45 references\n\n"
            "Both include: university-style title page, automatic table of contents, page numbers, "
@@ -18343,7 +18485,7 @@ def _yaratish_maqola(msg):
                 except Exception:
                     pass
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 
 def _yaratish_tezis(msg):
     """
@@ -18473,7 +18615,7 @@ def _yaratish_tezis(msg):
                 except Exception:
                     pass
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 
 # ═══════════════════════════════════════════════
 # QO'SHIMCHA TALABLAR — AI taxmin qilmasligi uchun foydalanuvchidan aniqlik so'raymiz
@@ -18799,7 +18941,7 @@ def _yaratish(msg, is_docx: bool):
                 except Exception:
                     pass
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 """
 ╔══════════════════════════════════════════════════════════════════════╗
 ║  ESSE MODULI — ACADEMIC AI BOT  |  Loyiha rahbari: Xurramov Eldor  ║
@@ -20904,7 +21046,7 @@ def _esse_tekshir_va_yuborish(msg_or_call, esse_matn: str):
                     except Exception:
                         pass
 
-    threading.Thread(target=_run, daemon=True).start()
+    _navbat_start(cid, _run)
 @bot.callback_query_handler(func=lambda c: c.data == "esse_mentor_boshlash")
 @ban_koruv
 def h_esse_mentor_boshlash(call):
@@ -20996,23 +21138,41 @@ def h_esse_yangi(call):
 # ═══════════════════════════════════════════════
 # YANGI XIZMATLARNI ULASH (h_unknown dan OLDIN bo'lishi shart)
 # ═══════════════════════════════════════════════
+def _pptx_mavzu_bilan(cid: int, mavzu: str):
+    """Boshqa bo'limdan (masalan, dars to'plamidan) shu mavzuda taqdimot oqimini boshlaydi: mavzu tayyor,
+    keyingi qadam — ism. Tanga taqdimot yaratilayotganda odatdagidek yechiladi."""
+    kerak, mavjud = DOC_NARX["pptx"], get_coins(cid)
+    if cid != ADMIN_ID and mavjud < kerak:
+        bot.send_message(cid, tx(cid, "yetarsiz_tanga").format(mavjud=mavjud, kerak=kerak), parse_mode="HTML")
+        return
+    old = holat.get(cid, {}) or {}
+    set_holat(cid, {k: old[k] for k in ("til", "last_doc") if old.get(k)})
+    update_holat(cid, "tur", "pptx")
+    update_holat(cid, "mavzu", (mavzu or "")[:MAX_MAVZU_LEN].strip())
+    bot.send_message(cid, f"📊 <b>{_html_escape((mavzu or '')[:200])}</b>", parse_mode="HTML")
+    bot.send_message(cid, tx(cid, "ask_mavzu_ppt"), reply_markup=back_kb(cid), parse_mode="HTML")
+    update_holat(cid, "qadam", "ism_ppt")
+
+
 from types import SimpleNamespace as _NS
 xizmatlar_yangi.register(bot, _NS(
     holat=holat, set_holat=set_holat, update_holat=update_holat,
     tx=tx, main_kb=main_kb, back_kb=back_kb, is_back=_is_back, is_banned=is_banned,
     get_coins=get_coins, add_coins=add_coins, deduct=_deduct_and_notify,
-    ai_start=_ai_jarayon_boshlash, ai_end=_ai_jarayon_tugatish,
+    ai_start=_ai_jarayon_boshlash, ai_end=_ai_jarayon_tugatish, navbat_start=_navbat_start,
     QUEUE_LOCK=QUEUE_LOCK, RATE_LIMITER=RATE_LIMITER, ProgressUpdater=ProgressUpdater,
     call_ai=call_ai, parse_ai_json=parse_ai_json, fix_newlines=_fix_newlines_in_strings,
     genai=_genai_client, make_fname=make_fname, validate_input=validate_input,
     sanitize=sanitize_user_input, add_page_numbers=add_footer_page_number,
     increment_docs=_increment_docs_count, log_action=log_action, log_javob=_log_bot_javob,
     log_xato=_log_bot_xatolik, user_info=_user_info_from_msg, ADMIN_ID=ADMIN_ID,
-    band_xabar=_ai_band_xabar, ai_ctx=ai_ctx,
+    band_xabar=_ai_band_xabar, ai_ctx=ai_ctx, pptx_mavzu=_pptx_mavzu_bilan,
     qtalab=dict(txt=_QTALAB_TXT, skip=_QTALAB_SKIP, ok=_QTALAB_OK, bad=_QTALAB_BAD, max=QTALAB_MAX),
 ))
 xizmatlar_qoshimcha.register(bot)
 xizmatlar_talaba.register(bot, bmi_boshlash)   # 🎓 BMI, 🛡 Himoyaga tayyorlov, 📋 Amaliyot hisoboti
+ragbat.register(bot)                            # 🏅 Rag'batlantirish: yorliqlar, dars to'plami, natijalar
+test_pro.register(bot)                          # 📝 Test generatori (auditoriya, tekshiruv, variantlar)
 
 
 # ── Marketing: haftasiga 2 marta xizmatlar haqida post (marketing.py) ──

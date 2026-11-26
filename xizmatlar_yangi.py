@@ -300,7 +300,10 @@ def _run_job(msg_or_cid, tur: str, wait_key: str, worker, xizmat_nomi: str):
             except Exception:
                 pass
             _api.ai_end(cid)
-    threading.Thread(target=_run, daemon=True).start()
+    if hasattr(_api, "navbat_start"):
+        _api.navbat_start(cid, _run)          # foydalanuvchi navbati: oldingi ish tugagach boshlanadi
+    else:
+        threading.Thread(target=_run, daemon=True).start()
 
 
 def _ai_json(prompt: str, max_tokens: int = 7000) -> dict:

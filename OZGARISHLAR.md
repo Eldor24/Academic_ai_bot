@@ -1,5 +1,97 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 16.7-versiya (26.11.2026) — Kurs ishi: o'qituvchi e'tirozlari, snoskalar nazorati; professional test generatori
+- 📄 **Kurs ishi** (o'qituvchi e'tirozlari bo'yicha):
+  - Kurs ishida endi faqat **«XULOSA»** bo'limi bor. Takliflar alohida raqamlanmaydi — xulosaning oxirgi
+    abzaslarida uzluksiz matn sifatida beriladi. Mundarija, «Kurs ishining tuzilishi» bandi va bot xabarlari ham
+    shunga moslandi. BMI'da «Xulosa va tavsiyalar» avvalgidek qoladi.
+  - Kirishga **«Tadqiqotning materiali (amaliy bazasi)»** bandi qo'shildi: tahlil qaysi aniq qoidalar, lug'atlar,
+    darsliklar, matnlar, statistik manbalar asosida olib borilgani adabiyotlar ro'yxatidagi nomlar bilan ochiq
+    ko'rsatiladi. Tahlil boblari shu materiallarga tayanib, aniq misollar bilan yoziladi.
+  - Kurs ishi matnida «mazkur bitiruv malakaviy ishi», «ВКР», «graduation thesis» kabi iboralar ishlatilmaydi:
+    AI'ga qat'iy qoida beriladi, qolganlari avtomatik tuzatiladi.
+- 📎 **Snoskalar va adabiyotlar ro'yxati — qat'iy moslik.** Topilgan va tuzatilgan sabablar:
+  - Hajmni to'ldirish uchun qo'shiladigan abzaslarda havolalar majburan o'chirilardi (olim fikri snoskasiz
+    qolardi, ayniqsa 3.2-3.3 fasllarda). Endi bu abzaslar ham ro'yxatdagi manbadan bet bilan havola oladi.
+  - «Bitta manba ko'pi bilan 2 marta» va «abzasda ko'pi bilan 1 ta havola» cheklovlari snoskalarni jim o'chirib
+    yuborardi. Endi snoska hech qachon o'chirilmaydi, manbalar paragraflarga oldindan taqsimlanadi.
+  - Snoska kaliti topilmasa, ro'yxatdagi shu raqamli BOSHQA kitob olinib qolishi mumkin edi. Tuzatildi.
+  - Kurs ishini tahrirlashda (bobni qayta yozish) AI ro'yxatda yo'q, uydirma manbalarni snoskaga qo'yardi. Endi
+    tahrir `kurs_ishi.qism_qayta_yoz` orqali, faqat adabiyotlar ro'yxatidan, bet bilan qilinadi.
+  - **Yangi nazorat bosqichi** (`_snoska_nazorati`): olim nomi bor-u havolasi yo'q har bir gapga mos manba va bet
+    qo'yiladi yoki gap muallif nomisiz qayta yoziladi; kitobga snoskada bet yo'q bo'lsa, bet aniqlanadi.
+  - **Adabiyotlar to'liqligi** (`_adab_toliqlash`): yili, shahri yoki nashriyoti yo'q manbalar to'ldiriladi,
+    aniq bilinmaganlari ro'yxatdan chiqariladi. Internet manbalari GOST bo'yicha: «Nomi. – URL: ...
+    (murojaat sanasi: ...)».
+  - `snoska_hisobot()`: har snoska ro'yxatdagi manbaning aynan o'zimi, betsiz kitob snoskasi va havolasiz olim
+    fikri qolmaganmi — logga yoziladi va testlarda tekshiriladi.
+- 🏅 **Rag'batlantirish:** yorliqdagi sana — hujjat yaratilgan kundagi Toshkent sanasi. Dizaynlar namunasidagi
+  sana ham bugungi kunni ko'rsatadi.
+- 📝 **Test generatori qaytadan yozildi** (`test_pro.py`):
+  - Auditoriya tanlanadi: 1-4 sinf (3 variantli, sodda), 5-9 sinf, 10-11 sinf / litsey, abituriyent (DTM
+    uslubi), talaba (OTM), mutaxassis (attestatsiya).
+  - Test mavzu bo'yicha yoki ma'ruza matni / Word / PDF / rasm asosida tuziladi.
+  - Qiyinlik: oson / o'rta / qiyin / aralash — Bloom taksonomiyasi bo'yicha aniq taqsimot. Avval reja tuziladi:
+    har savol mavzuning boshqa jihatini tekshiradi.
+  - **Mustaqil tekshiruv:** har savolni AI kalitga qaramay qayta yechadi. Mos kelmasa yoki noaniq bo'lsa, savol
+    almashtiriladi.
+  - Javoblar A/B/C/D bo'yicha teng taqsimlanadi. «Barchasi to'g'ri», «hech biri» kabi variantlar taqiqlangan.
+  - 1, 2 yoki 4 variant: savollar va javoblar tartibi aralashtiriladi, har variantga alohida kalit beriladi.
+  - Ikki fayl:
+    - o'quvchilar uchun — javobsiz test, yo'riqnoma, tavsiya etilgan vaqt, javoblar varaqasi;
+    - o'qituvchi uchun — kalitlar, har savol izohi, Bloom darajasi, baholash shkalasi.
+  - Narx: 30 tagacha savol — 4 🪙, 40-50 ta — 6 🪙.
+  - Eski oqimdagi xato tuzatildi: «O'rta» darajada AI'ga ko'rsatma umuman berilmasdi (`orta` / `o'rta` farqi).
+    Javoblar o'quvchi nusxasida ✅ bilan ko'rinib turardi — endi faqat o'qituvchi faylida.
+
+## 16.6-versiya (25.11.2026) — 🏅 Rag'batlantirish bo'limi, foydalanuvchi navbati, marketing
+- 🏅 **Yangi bo'lim «Rag'batlantirish»** (`ragbat.py`, `ragbat_dizayn.py`) — 3 tilda, bosh menyuda «Sinf sardori»
+  yonida:
+  - **Tashakkurnoma va yorliqlar.**
+    - Turlar: tashakkurnoma, faxriy yorliq, maqtov yorlig'i, sertifikat, diplom (I-II-III daraja),
+      minnatdorchilik xati.
+    - Bitta kishiga (2 🪙) yoki guruhga — 2-60 ism, har biriga alohida varaq (4 🪙). Bo'sh shablon — ism qo'lda
+      yoziladi (1 🪙).
+    - Hujjat tili alohida tanlanadi: o'zbek, rus yoki ingliz.
+    - Sabab matnini AI rasmiy uslubga keltiradi; matn boshiga «=» qo'yilsa, o'zgarishsiz qoladi. Tayyor
+      namunalar ham bor.
+    - Beruvchi: lavozim, F.I.Sh., tashkilot, shahar — shaxs, jamoa yoki tashkilot nomidan.
+  - **8 ta dizayn**, kod bilan chiziladi (vektor PDF, chop etishda sifat yo'qolmaydi): rasmiy oltin, milliy naqsh,
+    akademik, zamonaviy, premium, tabiat va bolalar uchun 2 ta (quvnoq, kosmos). Dizayn tanlashda 8 tasining
+    namunasi bitta rasmda ko'rsatiladi.
+  - **Natija fayllari.** Bitta kishi: rasm + PDF. Guruh: barcha varaqlar bitta PDF'da va har kimning rasmi
+    alohida ZIP'da (ota-onalarga yuborish uchun).
+  - **🎓 Dars to'plami (6 🪙).** Mavzu yoki ma'ruza matni / fayl / rasm asosida tuziladi.
+    - Tarqatma: asosiy tushunchalar; Bloom taksonomiyasi bo'yicha savollar (test, to'g'ri/noto'g'ri, bo'sh joy
+      to'ldirish, moslashtirish, qisqa javob, ijodiy); refleksiya «3-2-1»; o'z-o'zini baholash.
+    - O'qituvchi uchun: javob kaliti, baholash mezoni, mukofot shkalasi, dars rejasi, maqtov iboralari.
+    - Yakunda tugmalar: «Natijalarni kiritib taqdirlash» va «Shu mavzuda taqdimot» (taqdimot oqimi mavzu
+      kiritilgan holda boshlanadi).
+  - **🏆 Natijalar bo'yicha taqdirlash (5 🪙).** «Ism — ball» ro'yxatidan ishlaydi: 17, 4,5, 9/20 kabi
+    yozuvlarni tushunadi.
+    - Rejimlar:
+      - ballga qarab: 86% va yuqori — faxriy yorliq, 71-85% — maqtov yorlig'i, 56-70% — tashakkurnoma,
+        qolganlarga ishtirok sertifikati;
+      - g'oliblar: 1-2-3 o'rin diplom, qolganlarga tashakkurnoma;
+      - hammaga bir xil hujjat;
+      - 56% dan pastlarga hujjat berilmaydi.
+    - Har kim uchun shaxsiy maqtov matni yoziladi: natijani emas, harakat va strategiyani e'tirof etadi.
+    - Natijalar qaydnomasi Word'da: o'rtacha natija, mukofotlar taqsimoti va yordam kerak bo'lganlar.
+  - **💡 Bepul qo'llanma:** samarali rag'batlantirishning 7 tamoyili (Hattie & Timperley, Black & Wiliam, Dweck,
+    Brophy).
+- 📥 **Foydalanuvchi navbati.** Hujjat tayyorlanayotganda yana so'rov yuborilsa, u rad etilmaydi: navbatga
+  qo'yiladi va oldingisi tugashi bilan avtomatik boshlanadi.
+  - Har foydalanuvchida bir vaqtda faqat bitta ish bajariladi va navbatda yana 2 tasi turishi mumkin. To'la
+    bo'lsa, xabar beriladi va tanga qaytariladi.
+  - Navbatda kutgan ish qabul qilingan paytdagi ma'lumotlar bilan bajariladi: shu orada boshqa bo'limga
+    o'tilsa ham aralashib ketmaydi.
+  - Umumiy parallel ishlar soni avvalgidek 3 ta, 1 GB RAM'li server uchun. Bajarilayotgan yoki navbatdagi
+    ishi bor foydalanuvchining sessiyasi RAM tozalashda o'chirilmaydi.
+- 📣 **Marketing.** Yangi postlar qo'shildi: «Rag'batlantirish», «Test savollari», «Qayta yozish».
+  - Yangi xizmat e'lonlari (`"yangi": "YYYY-MM-DD"`) navbatdagi slotda hali olmagan har bir foydalanuvchiga
+    aylanmadan oldin yuboriladi (45 kun davomida). Keyin odatdagi aylanmaga qo'shiladi.
+- 🔤 Shriftlar (OFL): Forum, Old Standard, Marck Script, Lobster, PT Sans — `assets/fonts/SHRIFTLAR.txt`.
+
 ## 16.5-versiya (24.11.2026) — O‘/G‘ va tutuq belgisi, titul tekisligi, joriy yil
 - 🔤 **O'zbek alifbosi belgilari.** Barcha Word va PowerPoint hujjatlarda (kurs ishi, BMI, mustaqil ish, referat,
   maqola, tezis, taqdimot va boshqalar) saqlash paytida belgilar standartga keltiriladi:

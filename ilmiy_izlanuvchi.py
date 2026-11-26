@@ -1833,7 +1833,10 @@ def _bepul_job(cid, worker, nom):
             except Exception:
                 pass
             _api().ai_end(cid)
-    threading.Thread(target=run, daemon=True).start()
+    if hasattr(_api(), "navbat_start"):
+        _api().navbat_start(cid, run)
+    else:
+        threading.Thread(target=run, daemon=True).start()
 
 
 # ═══════════════════════════════════════════════════════════════════

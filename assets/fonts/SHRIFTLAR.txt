@@ -1,0 +1,11 @@
+Sertifikat va yorliqlar (ragbat_dizayn.py) uchun shriftlar — hammasi SIL Open Font License 1.1 (LICENSE-OFL.txt)
+asosida tarqatiladi, Google Fonts loyihasidan olingan (github.com/google/fonts, ofl/ papkasi):
+
+  Forum-Regular.ttf          — Denis Masharov (Forum)
+  OldStandard-Bold.ttf,
+  OldStandard-Italic.ttf     — Alexey Kryukov (Old Standard TT)
+  MarckScript-Regular.ttf    — Denis Masharov (Marck Script)
+  Lobster-Regular.ttf        — Pablo Impallari (Lobster)
+  PT_Sans-Web-Regular.ttf,
+  PT_Sans-Web-Bold.ttf       — ParaType (PT Sans)
+  LiberationSerif-*.ttf      — Liberation Fonts (OFL)

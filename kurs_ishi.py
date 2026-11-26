@@ -83,7 +83,7 @@ LBL = {
         "vazirlik": "O'ZBEKISTON RESPUBLIKASI TA'LIM VA ILM-FAN VAZIRLIGI",
         "kurs_ishi": "KURS ISHI", "fan": "Fan", "mavzu": "Mavzu", "bajardi": "Bajardi",
         "guruh": "Guruh", "rahbar": "Ilmiy rahbar", "mundarija": "MUNDARIJA", "kirish": "KIRISH",
-        "xulosa": "XULOSA VA TAKLIFLAR", "adab": "FOYDALANILGAN ADABIYOTLAR RO'YXATI",
+        "xulosa": "XULOSA", "adab": "FOYDALANILGAN ADABIYOTLAR RO'YXATI",
         "takliflar": "Takliflar:", "bob": "{r} BOB.", "jadval": "{n}-jadval", "rasm": "{n}-rasm.",
         "jref": "{n}-jadval", "rref": "{n}-rasm",
         "manba": "Manba", "muallif_ishlanmasi": "Muallif ishlanmasi",
@@ -93,10 +93,11 @@ LBL = {
             "dolzarbligi": "Mavzuning dolzarbligi.", "organilganlik_darajasi": "Muammoning o'rganilganlik darajasi.",
             "maqsadi": "Tadqiqotning maqsadi.", "vazifalari": "Tadqiqotning vazifalari:",
             "obyekti": "Tadqiqot obyekti.", "predmeti": "Tadqiqot predmeti.",
+            "material_bazasi": "Tadqiqotning materiali (amaliy bazasi).",
             "metodologik_asosi": "Tadqiqot metodlari.", "amaliy_ahamiyati": "Ishning amaliy ahamiyati.",
             "tuzilishi": "Kurs ishining tuzilishi.",
         },
-        "tuzilish": ("Kurs ishi kirish, {b} ta bob ({p} ta paragraf), xulosa va takliflar hamda "
+        "tuzilish": ("Kurs ishi kirish, {b} ta bob ({p} ta paragraf), xulosa hamda "
                      "foydalanilgan adabiyotlar ro'yxatidan iborat.{extra} Ishning umumiy hajmi {bet} betni tashkil etadi."),
         "tuz_extra": " Ishda {j} ta jadval{r} keltirilgan.", "tuz_rasm": " va {r} ta rasm",
         "shaharlar": ["Toshkent", "Samarqand", "Buxoro", "Andijon", "Namangan", "Farg'ona", "Qarshi", "Termiz",
@@ -107,7 +108,7 @@ LBL = {
         "vazirlik": "МИНИСТЕРСТВО ОБРАЗОВАНИЯ И НАУКИ РЕСПУБЛИКИ УЗБЕКИСТАН",
         "kurs_ishi": "КУРСОВАЯ РАБОТА", "fan": "Дисциплина", "mavzu": "Тема", "bajardi": "Выполнил(а)",
         "guruh": "Группа", "rahbar": "Научный руководитель", "mundarija": "СОДЕРЖАНИЕ", "kirish": "ВВЕДЕНИЕ",
-        "xulosa": "ЗАКЛЮЧЕНИЕ И РЕКОМЕНДАЦИИ", "adab": "СПИСОК ИСПОЛЬЗОВАННОЙ ЛИТЕРАТУРЫ",
+        "xulosa": "ЗАКЛЮЧЕНИЕ", "adab": "СПИСОК ИСПОЛЬЗОВАННОЙ ЛИТЕРАТУРЫ",
         "takliflar": "Рекомендации:", "bob": "ГЛАВА {r}.", "jadval": "Таблица {n}", "rasm": "Рис. {n}.",
         "jref": "табл. {n}", "rref": "рис. {n}",
         "manba": "Источник", "muallif_ishlanmasi": "Составлено автором",
@@ -117,10 +118,11 @@ LBL = {
             "dolzarbligi": "Актуальность темы.", "organilganlik_darajasi": "Степень изученности проблемы.",
             "maqsadi": "Цель исследования.", "vazifalari": "Задачи исследования:",
             "obyekti": "Объект исследования.", "predmeti": "Предмет исследования.",
+            "material_bazasi": "Материал исследования (практическая база).",
             "metodologik_asosi": "Методы исследования.", "amaliy_ahamiyati": "Практическая значимость работы.",
             "tuzilishi": "Структура работы.",
         },
-        "tuzilish": ("Курсовая работа состоит из введения, {b} глав ({p} параграфов), заключения и рекомендаций, "
+        "tuzilish": ("Курсовая работа состоит из введения, {b} глав ({p} параграфов), заключения и "
                      "списка использованной литературы.{extra} Общий объём работы — {bet} страниц."),
         "tuz_extra": " В работе приведены {j} таблиц{r}.", "tuz_rasm": " и {r} рисунков",
         "shaharlar": ["Ташкент", "Самарканд", "Бухара", "Андижан", "Наманган", "Фергана", "Карши", "Термез",
@@ -131,7 +133,7 @@ LBL = {
         "vazirlik": "MINISTRY OF EDUCATION AND SCIENCE OF THE REPUBLIC OF UZBEKISTAN",
         "kurs_ishi": "COURSE WORK", "fan": "Subject", "mavzu": "Topic", "bajardi": "Prepared by",
         "guruh": "Group", "rahbar": "Scientific supervisor", "mundarija": "TABLE OF CONTENTS",
-        "kirish": "INTRODUCTION", "xulosa": "CONCLUSION AND RECOMMENDATIONS", "adab": "LIST OF REFERENCES",
+        "kirish": "INTRODUCTION", "xulosa": "CONCLUSION", "adab": "LIST OF REFERENCES",
         "takliflar": "Recommendations:", "bob": "CHAPTER {r}.", "jadval": "Table {n}", "rasm": "Figure {n}.",
         "jref": "Table {n}", "rref": "Figure {n}",
         "manba": "Source", "muallif_ishlanmasi": "Compiled by the author",
@@ -141,11 +143,12 @@ LBL = {
             "dolzarbligi": "Relevance of the topic.", "organilganlik_darajasi": "Degree of study of the problem.",
             "maqsadi": "Aim of the research.", "vazifalari": "Objectives of the research:",
             "obyekti": "Object of the research.", "predmeti": "Subject of the research.",
+            "material_bazasi": "Research material (empirical base).",
             "metodologik_asosi": "Research methods.", "amaliy_ahamiyati": "Practical significance.",
             "tuzilishi": "Structure of the work.",
         },
-        "tuzilish": ("The course work consists of an introduction, {b} chapters ({p} sections), a conclusion with "
-                     "recommendations and a list of references.{extra} The total volume of the work is {bet} pages."),
+        "tuzilish": ("The course work consists of an introduction, {b} chapters ({p} sections), a conclusion "
+                     "and a list of references.{extra} The total volume of the work is {bet} pages."),
         "tuz_extra": " The work contains {j} tables{r}.", "tuz_rasm": " and {r} figures",
         "shaharlar": ["Tashkent", "Samarkand", "Bukhara", "Andijan", "Namangan", "Fergana", "Karshi", "Termez",
                       "Nukus", "Urgench", "Jizzakh", "Gulistan", "Navoi", "Khiva", "Kokand", "Chirchik"],
@@ -153,7 +156,7 @@ LBL = {
     },
 }
 KIRISH_TARTIB = ["dolzarbligi", "organilganlik_darajasi", "maqsadi", "vazifalari", "obyekti", "predmeti",
-                 "metodologik_asosi", "ilmiy_yangiligi", "amaliy_ahamiyati", "tuzilishi"]
+                 "material_bazasi", "metodologik_asosi", "ilmiy_yangiligi", "amaliy_ahamiyati", "tuzilishi"]
 ROMAN = ["I", "II", "III", "IV", "V", "VI"]
 GURUH_TARTIB = ["normativ", "asosiy", "xorijiy", "internet"]
 
@@ -219,6 +222,16 @@ def _bmi(p: dict) -> bool:
 
 def _ish(p: dict) -> str:
     return "bitiruv malakaviy ishi" if _bmi(p) else "kurs ishi"
+
+
+def _tur_qoida(p: dict) -> str:
+    """Kurs ishi matnida boshqa ish turlari nomi ishlatilmasin (o'qituvchi e'tirozi: «mazkur bitiruv malakaviy ishi»)."""
+    if _bmi(p):
+        return ("ISH TURI: bu BITIRUV MALAKAVIY ISHI — o'z ishingga «mazkur bitiruv malakaviy ishi» deb murojaat qil, "
+                "«kurs ishi» yoki «dissertatsiya» dema.")
+    return ("ISH TURI: bu KURS ISHI. O'z ishingga faqat «mazkur kurs ishi» / «ushbu kurs ishida» deb murojaat qil. "
+            "«Bitiruv malakaviy ishi», «BMI», «dissertatsiya», «magistrlik ishi», «diplom ishi» iboralarini o'z ishingga "
+            "nisbatan HECH QACHON ishlatma (boshqa olimlarning dissertatsiyalarini tilga olish mumkin).")
 
 
 def _soha(p: dict) -> str:
@@ -426,7 +439,7 @@ def _manba_taqsimoti(adab: list, tasks: list, har: int = 5) -> dict:
     return res
 
 
-def _kirish_prompt(p: dict, plan: dict) -> str:
+def _kirish_prompt(p: dict, plan: dict, adab: list | None = None) -> str:
     katta = p["hajm"] in ("katta", "bmi")
     yangilik = ('- "ilmiy_yangiligi": 3-4 ta band ro\'yxati (har biri 1-2 gap): ishda birinchi marta nima taklif '
                 'etilgani, qaysi tushuncha aniqlashtirilgani, qanday model/tavsiya ishlab chiqilgani — '
@@ -448,14 +461,23 @@ Talablar (so'z soni — taxminiy):
 - "maqsadi": {w['m']} so'z, bitta aniq maqsad.
 - "vazifalari": {w['v']} ta vazifa ro'yxati (har biri — fe'l bilan boshlanadigan to'liq gap; paragraflarga mos).
 - "obyekti": {w['ob']} so'z. "predmeti": {w['pr']} so'z (obyekt va predmet aniq farqlansin).
+- "material_bazasi": {w['ob'] + 30} so'z — TADQIQOTNING AMALIY BAZASI: tahlil AYNAN qaysi materiallar asosida olib
+  borilgani ochiq va aniq ko'rsatilsin: normativ hujjatlar va qoidalar (masalan, imlo qoidalari, standartlar — nomi va
+  qabul qilingan yili bilan), lug'atlar, darsliklar, badiiy/ilmiy matnlar yoki asarlar, statistik ma'lumot manbalari,
+  tashkilot (maktab, korxona) amaliyoti, til materiallari (misollar qayerdan olingani). Iloji boricha quyidagi
+  ADABIYOTLAR ro'yxatidagi aniq nomlarni keltir (raqamini emas, nomini). O'tkazilmagan so'rovnoma yoki tajribani yozma.
 - "metodologik_asosi": {w['me']} so'z — qo'llanilgan ilmiy metodlar (tahlil, sintez, qiyosiy, tizimli, statistik,
   mantiqiy umumlashtirish va h.k.) va nazariy-uslubiy asos.
 {yangilik}- "amaliy_ahamiyati": {w['a']} so'z — natijalardan kim, qayerda foydalanishi mumkin.
 Kirishda [1] kabi havolalar va raqamli statistik ma'lumotlar YOZILMASIN.
+{_tur_qoida(p)}
+
+ADABIYOTLAR (material bazasini aniqlash uchun):
+{_adab_text(adab or [])[:6000]}
 
 FAQAT JSON:
 {{"dolzarbligi":"...","organilganlik_darajasi":"...","maqsadi":"...","vazifalari":["...","..."],
- "obyekti":"...","predmeti":"...","metodologik_asosi":"...",{'"ilmiy_yangiligi":["...","..."],' if _bmi(p) else ""}"amaliy_ahamiyati":"..."}}"""
+ "obyekti":"...","predmeti":"...","material_bazasi":"...","metodologik_asosi":"...",{'"ilmiy_yangiligi":["...","..."],' if _bmi(p) else ""}"amaliy_ahamiyati":"..."}}"""
 
 
 def _section_rules(hajm: str, bi: int, ri: int, nbob: int) -> tuple[bool, bool, bool]:
@@ -471,7 +493,8 @@ def _section_rules(hajm: str, bi: int, ri: int, nbob: int) -> tuple[bool, bool, 
     return (True, ri in (0, 2), ri == 0)
 
 
-def _section_prompt(p: dict, plan: dict, adab: list, bi: int, ri: int, manbalar: list | None = None) -> str:
+def _section_prompt(p: dict, plan: dict, adab: list, bi: int, ri: int, manbalar: list | None = None,
+                    material: str = "", talab: str = "") -> str:
     h = HAJMLAR[p["hajm"]]
     b = plan["boblar"][bi]
     r = b["rejalar"][ri]
@@ -522,9 +545,12 @@ HAJM: aynan {npar} ta abzas, har biri {lo}-{hi} so'z (jami ≈{words} so'z). Har
 USLUB: ilmiy-akademik; ta'riflar, dalillar, olimlarning qarashlari (faqat HAQIQIY olimlar va ularning haqiqiy fikrlari),
 sabab-oqibat tahlili, misollar. Abzaslar mantiqan bog'lansin. «Ushbu paragrafda...» bilan boshlama, sarlavhani takrorlama.
 Oxirgi abzas — paragraf bo'yicha qisqa xulosa.
-ILMIY HAVOLALAR (snoskalar): iqtibos, ta'rif yoki olim fikri keltirilgan gapdan keyin [raqam:bet] qo'y — raqam
-quyidagi ro'yxatdagi tartib raqami, bet — o'sha fikr kitobning qaysi betida ekanligi (masalan [12:45]).
-Paragrafda 3-5 ta havola, har biri BOSHQA manbaga; bitta abzasda ko'pi bilan bitta havola.
+{_tur_qoida(p)}
+{("TADQIQOT MATERIALI (amaliy baza): " + material + chr(10) + "Tahlilni aynan shu materiallarga tayanib, ulardan aniq misollar (qoida bandi, lug'atdagi izoh, matndan parcha, hujjat moddasi) bilan olib bor." + chr(10)) if material and bi > 0 else ""}ILMIY HAVOLALAR (snoskalar) — QAT'IY QOIDA: olim yoki muallif nomi tilga olingan, uning fikri, ta'rifi, tasnifi yoki
+iqtibos keltirilgan HAR BIR gapdan keyin, nuqtadan oldin [raqam:bet] qo'y — raqam quyidagi ro'yxatdagi tartib raqami,
+bet — o'sha fikr kitobning qaysi betida ekanligi (masalan [12:45]). Havolasiz olim fikri bo'lmasin: agar fikr qaysi
+asardan ekanini bilmasang — olim nomini yozma, fikrni umumiy ilmiy qarash sifatida ber.
+Paragrafda 3-5 ta havola, imkon qadar har biri boshqa manbaga.
 Faqat shu paragrafga ajratilgan quyidagi manbalardan foydalan (boshqa paragraflar boshqa manbalardan foydalanadi):
 {_adab_text_sub(adab, manbalar)}
 
@@ -534,11 +560,13 @@ Faqat shu paragrafga ajratilgan quyidagi manbalardan foydalan (boshqa paragrafla
 ANIQLIK: sana, raqam, foiz va statistikani faqat aniq bilsang va manbasi bo'lsa yoz; aks holda sifat tavsifi ber.
 O'tkazilmagan so'rovnoma, tajriba yoki respondentlar haqida yozma. Qonun va farmonlarni faqat aniq bilgan holda tilga ol.
 
+{("FOYDALANUVCHI TALABI (paragrafni shunga muvofiq qayta yoz, yuqoridagi qoidalar saqlansin): " + talab) if talab else ""}
 FAQAT JSON (Markdown yo'q, matn ichida yangi qator yo'q):
 {{"paragraflar":["1-abzas matni","2-abzas matni"],"jadval":null,"grafik":null}}"""
 
 
-def _davom_prompt(p: dict, plan: dict, bi: int, ri: int, mavjud: list, kerak: int) -> str:
+def _davom_prompt(p: dict, plan: dict, bi: int, ri: int, mavjud: list, kerak: int, adab: list | None = None,
+                  manbalar: list | None = None) -> str:
     b = plan["boblar"][bi]
     r = b["rejalar"][ri]
     oxirgi = " ".join(mavjud[-2:])[-1200:]
@@ -548,13 +576,35 @@ yana {kerak} ta yangi abzas yoz (har biri 100-130 so'z), oldingi fikrlarni takro
 {chr(10).join('  - ' + x for x in r.get('bandlar', []))}
 Paragrafning oxirgi qismi (davomini shu fikrdan boshla):
 «{oxirgi}»
-Havola, jadval va raqamli statistika qo'shma. Yangi abzaslar paragrafning yakuniy xulosasidan OLDIN qo'yiladi —
+Jadval va raqamli statistika qo'shma. Yangi abzaslar paragrafning yakuniy xulosasidan OLDIN qo'yiladi —
 shuning uchun ular xulosa bilan tugamasin, yangi jihatlar, misollar va tahlil bilan boyitsin.
+{_tur_qoida(p)}
+{("ILMIY HAVOLALAR: olim/muallif fikri, ta'rifi yoki iqtibosi keltirilgan har bir gapdan keyin [raqam:bet] qo'y (raqam — "
+  "quyidagi ro'yxatdan, bet — kitob beti). Havolasiz olim fikri bo'lmasin; manbasini bilmasang — olim nomini yozma." + chr(10)
+  + _adab_text_sub(adab, manbalar)) if adab else "Havola qo'shma."}
 FAQAT JSON: {{"paragraflar":["...","..."]}}"""
 
 
 def _xulosa_prompt(p: dict, plan: dict) -> str:
     h = HAJMLAR[p["hajm"]]
+    if not _bmi(p):
+        bandlar = []
+        for bi, b in enumerate(plan["boblar"]):
+            for ri, r in enumerate(b["rejalar"]):
+                bandlar.append(f"{bi + 1}.{ri + 1}. {r['sarlavha']}: " + "; ".join(r.get("bandlar", [])))
+        n = h["xulosa_par"] + 1
+        return f"""Sen tajribali ilmiy rahbarsan. {L(p['til'])['lang']}
+«{p['mavzu']}» mavzusidagi kurs ishining XULOSA qismini yoz.
+Ishning tarkibi:
+{chr(10).join(bandlar)}
+
+"xulosalar": aynan {n} ta abzas (har biri 100-130 so'z): har bir bob bo'yicha asosiy ilmiy xulosalar (nazariy
+xulosalar, tahlil natijalari, aniqlangan muammolar). Oxirgi 1-2 abzasda ishdan kelib chiqadigan amaliy taklif va
+tavsiyalar UZLUKSIZ MATN ichida bayon qilinsin («...maqsadga muvofiq», «...tavsiya etiladi» kabi) — ro'yxat,
+raqamlash, «Takliflar:» sarlavhasi bo'lmasin.
+Ishda bo'lmagan yangi raqam yoki faktlarni qo'shma, [1] kabi havolalar yozma, «Xulosa qilib aytganda» kabi shablonlardan qoch.
+{_tur_qoida(p)}
+FAQAT JSON: {{"xulosalar":["...","..."]}}"""
     bandlar = []
     for bi, b in enumerate(plan["boblar"]):
         for ri, r in enumerate(b["rejalar"]):
@@ -691,23 +741,20 @@ def _strip_refs(text: str) -> str:
     return re.sub(r"\s*\[\d+(?:\s*:\s*\d+)?(?:\s*[,;]\s*\d+(?:\s*:\s*\d+)?)*\]", "", text)
 
 
-def _bind_refs(text: str, adab: list, snoskalar: dict) -> str:
+def _bind_refs(text: str, adab: list, snoskalar: dict, manba_map: dict | None = None) -> str:
     """[12:45] / [12] → mahalliy [k] belgisi; snoskalar[k] = «Muallif. Asar. – T., 1974. – B. 45.».
     Bitta abzasda ko'pi bilan 2 ta, bitta paragrafda bitta manba ko'pi bilan 2 marta."""
     text = re.sub(r"\[(\d+(?::\s*\d+)?(?:\s*[,;]\s*\d+(?::\s*\d+)?)+)\]",
                   lambda m: "".join(f"[{x.strip()}]" for x in re.split(r"[,;]", m.group(1))), text)
-    count = [0]
-
     def rep(m):
         n = int(m.group(1))
         bet = m.group(2)
-        if not (1 <= n <= len(adab)) or count[0] >= 2:
-            return ""
-        if sum(1 for v in snoskalar.values() if v.startswith(_snoska_matni(adab[n - 1], None)[:-1])) >= 2:
-            return ""
-        count[0] += 1
-        k = str(len(snoskalar) + 1)
+        if not (1 <= n <= len(adab)):
+            return ""                                 # ro'yxatda yo'q raqam — havola emas
+        k = str(max([int(x) for x in snoskalar if str(x).isdigit()] or [0]) + 1)
         snoskalar[k] = _snoska_matni(adab[n - 1], bet)
+        if manba_map is not None:
+            manba_map[k] = n
         return f"[{k}]"
     return re.sub(r"\[(\d+)(?:\s*:\s*(\d+))?\]", rep, text)
 
@@ -834,6 +881,8 @@ Aynan 3 ta abzas, har biri 100-120 so'z:
 2) bobda ko'rib chiqiladigan masalalar — har bir paragrafning qisqa mazmuni (nomini so'zma-so'z takrorlamay);
 3) qo'llanilgan yondashuv va metodlar, oldingi bob bilan bog'liqligi va kutilayotgan xulosalar.
 Havola, raqamli statistika yozma. «Ushbu bobda» iborasini ko'pi bilan bir marta ishlat.
+Olim nomini havolasiz tilga olma (bob kirishida olim fikri keltirilmaydi).
+{_tur_qoida(p)}
 FAQAT JSON: {{"paragraflar":["...","...","..."]}}"""
 
 
@@ -851,13 +900,13 @@ def _write_bob_kirish(p, plan, bi) -> str:
     return " [ABZAS] ".join(paras)
 
 
-def _write_section(p, plan, adab, bi, ri, manbalar=None) -> dict:
+def _write_section(p, plan, adab, bi, ri, manbalar=None, material: str = "", talab: str = "") -> dict:
     h = HAJMLAR[p["hajm"]]
     words = h["sec_words"]
     data = None
     for attempt in range(2):
         try:
-            data = _ask(_section_prompt(p, plan, adab, bi, ri, manbalar), f"{bi + 1}.{ri + 1}-paragraf",
+            data = _ask(_section_prompt(p, plan, adab, bi, ri, manbalar, material, talab), f"{bi + 1}.{ri + 1}-paragraf",
                         max_tokens=7500 if p["hajm"] in ("katta", "bmi") else 4500)
             if data.get("paragraflar"):
                 break
@@ -876,8 +925,9 @@ def _write_section(p, plan, adab, bi, ri, manbalar=None) -> dict:
             break
         kerak = max(2, min(8, round((words - jami) / 115)))
         try:
-            dv = _ask(_davom_prompt(p, plan, bi, ri, paras, kerak), f"{bi + 1}.{ri + 1} davomi", max_tokens=5000)
-            add = [_strip_refs(_clean(x)) for x in (dv.get("paragraflar") or []) if isinstance(x, str)]
+            dv = _ask(_davom_prompt(p, plan, bi, ri, paras, kerak, adab, manbalar), f"{bi + 1}.{ri + 1} davomi",
+                      max_tokens=5000)
+            add = [_clean(x) for x in (dv.get("paragraflar") or []) if isinstance(x, str)]
             add = [x for x in add if _words(x) >= 12]
             if not add:
                 break
@@ -889,7 +939,8 @@ def _write_section(p, plan, adab, bi, ri, manbalar=None) -> dict:
         raise ValueError(f"{bi + 1}.{ri + 1}-paragraf bo'sh qaytdi")
 
     snoskalar: dict = {}
-    paras = [_bind_refs(x, adab, snoskalar) for x in paras]
+    smap: dict = {}
+    paras = [_bind_refs(x, adab, snoskalar, smap) for x in paras]
 
     jr, jm, gr = _section_rules(p["hajm"], bi, ri, len(plan["boblar"]))
     tbl = _norm_table(data.get("jadval"), p["til"]) if jr else None
@@ -903,7 +954,310 @@ def _write_section(p, plan, adab, bi, ri, manbalar=None) -> dict:
     for pos, block in sorted(inserts, key=lambda x: -x[0]):
         blocks.insert(pos, block)
     return {"sarlavha": f"{bi + 1}.{ri + 1}. {plan['boblar'][bi]['rejalar'][ri]['sarlavha']}",
-            "matn": " [ABZAS] ".join(blocks), "snoskalar": snoskalar}
+            "matn": " [ABZAS] ".join(blocks), "snoskalar": snoskalar, "snoska_manba": smap}
+
+
+
+# ═══════════════════════════════════════════════
+# SIFAT NAZORATI: adabiyotlar to'liqligi, snoskalar, ish turi
+# ═══════════════════════════════════════════════
+_MUROJAAT = {"uz": "murojaat sanasi", "ru": "дата обращения", "en": "accessed"}
+_SAYTLAR = {
+    "lex.uz": {"uz": "O'zbekiston Respublikasi Qonunchilik ma'lumotlari milliy bazasi",
+               "ru": "Национальная база данных законодательства Республики Узбекистан",
+               "en": "National Database of Legislation of the Republic of Uzbekistan"},
+    "stat.uz": {"uz": "O'zbekiston Respublikasi Prezidenti huzuridagi Statistika agentligi rasmiy sayti",
+                "ru": "Официальный сайт Агентства статистики при Президенте Республики Узбекистан",
+                "en": "Official website of the Statistics Agency under the President of Uzbekistan"},
+    "ziyonet.uz": {"uz": "ZiyoNET axborot-ta'lim tarmog'i", "ru": "Информационно-образовательная сеть ZiyoNET",
+                   "en": "ZiyoNET educational network"},
+    "gov.uz": {"uz": "O'zbekiston Respublikasi Hukumat portali", "ru": "Правительственный портал Республики Узбекистан",
+               "en": "Government portal of the Republic of Uzbekistan"},
+    "president.uz": {"uz": "O'zbekiston Respublikasi Prezidentining rasmiy veb-sayti",
+                     "ru": "Официальный сайт Президента Республики Узбекистан",
+                     "en": "Official website of the President of the Republic of Uzbekistan"},
+    "cbu.uz": {"uz": "O'zbekiston Respublikasi Markaziy banki rasmiy sayti",
+               "ru": "Официальный сайт Центрального банка Республики Узбекистан",
+               "en": "Official website of the Central Bank of Uzbekistan"},
+    "uzedu.uz": {"uz": "O'zbekiston Respublikasi Maktabgacha va maktab ta'limi vazirligi rasmiy sayti",
+                 "ru": "Официальный сайт Министерства дошкольного и школьного образования",
+                 "en": "Official website of the Ministry of Preschool and School Education"},
+    "edu.uz": {"uz": "O'zbekiston Respublikasi Oliy ta'lim, fan va innovatsiyalar vazirligi rasmiy sayti",
+               "ru": "Официальный сайт Министерства высшего образования, науки и инноваций",
+               "en": "Official website of the Ministry of Higher Education, Science and Innovation"},
+}
+
+
+def _bugun() -> str:
+    return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5))).strftime("%d.%m.%Y")
+
+
+def _internet_format(a: dict, til: str) -> dict:
+    """GOST: «Nomi. – URL: https://... (murojaat sanasi: 26.11.2026).»"""
+    m = a["matn"]
+    if re.search(r"\((murojaat sanasi|дата обращения|accessed)", m, re.I):
+        return a
+    u = re.search(r"(https?://\S+|www\.\S+)", m)
+    if not u:
+        return a
+    url = u.group(1).rstrip(".,;)")
+    nom = _clean(re.sub(r"(URL|Электронный ресурс|Elektron resurs)\s*[:\-–]*", "", m.replace(u.group(1), ""), flags=re.I))
+    nom = nom.strip(" .–-:[]()")
+    if len(nom) < 4:
+        dom = re.sub(r"^(https?://)?(www\.)?", "", url).split("/")[0].lower()
+        nom = next((v[til] for k, v in _SAYTLAR.items() if dom == k or dom.endswith("." + k)), dom)
+    return dict(a, matn=f"{nom}. – URL: {url} ({_MUROJAAT.get(til, _MUROJAAT['uz'])}: {_bugun()}).")
+
+
+def _toliqmi(a: dict) -> bool:
+    m = a.get("matn", "")
+    if a.get("tur") == "internet":
+        return bool(re.search(r"https?://|www\.", m))
+    yil = re.search(r"\b(1[89]\d{2}|20\d{2})\b", m)
+    if a.get("tur") == "normativ":
+        return bool(yil)
+    if not yil:
+        return False
+    # kitob: «– Shahar: Nashriyot, yil» yoki maqola: «// Jurnal. – yil. – № 3. – B. 12–18»
+    return bool(re.search(r"//", m) or re.search(r"[–-]\s*[^:–]{1,40}:\s*[^,]{2,}", m)
+                or re.search(r"\b(T|M|СПб|L|N\.Y|Toshkent|Москва|Тошкент|Samarqand)\.?\s*:", m))
+
+
+def _adab_toliqlash(cid, p: dict, adab: list) -> list:
+    """Bibliografik ma'lumoti chala manbalar (yil, nashriyot yo'q) AI orqali to'ldiriladi; aniq bilinmaganlari —
+    ro'yxat minimal hajmdan kamaymasa — olib tashlanadi (chala manba snoskaga ham chala bo'lib tushardi)."""
+    til = p["til"]
+    adab = [(_internet_format(a, til) if a.get("tur") == "internet" else a) for a in adab]
+    chala = [i for i, a in enumerate(adab) if not _toliqmi(a)]
+    if not chala:
+        return adab
+    lo = HAJMLAR[p["hajm"]]["adab"][0]
+    try:
+        r = _ask(f"""Sen bibliograf (GOST 7.1-2003) mutaxassisisan. {L(til)['lang']}
+Quyidagi manbalarning bibliografik ma'lumoti chala. Har birini to'liq GOST formatida yoz:
+kitob — «Familiya I.O. Asar nomi. – Shahar: Nashriyot, yil. – 250 b.»; maqola — «Familiya I.O. Maqola nomi // Jurnal.
+– yil. – № 2. – B. 15–21.»; qonun/qaror — nomi, qabul qilingan sanasi va raqami.
+FAQAT haqiqatda mavjud va aniq bilgan ma'lumotingni yoz. Nashriyot yoki yilni aniq bilmasang — "aniq_emas": true qaytar
+(o'ylab topilgan ma'lumotdan ko'ra manbani olib tashlash yaxshi).
+{chr(10).join(f"{k + 1}. {adab[i]['matn']}" for k, i in enumerate(chala))}
+FAQAT JSON: {{"manbalar":[{{"n":1,"matn":"...","aniq_emas":false}}]}}""", "Bibliografiya", max_tokens=3500,
+                 temperature=0.2)
+        for x in (r.get("manbalar") or []):
+            try:
+                k = int(x.get("n")) - 1
+            except Exception:
+                continue
+            if not (0 <= k < len(chala)) or x.get("aniq_emas"):
+                continue
+            yangi = _clean(x.get("matn", ""))
+            i = chala[k]
+            if len(yangi) >= 12 and _toliqmi(dict(adab[i], matn=yangi)):
+                adab[i] = dict(adab[i], matn=re.sub(r"^\d+[\.\)]\s*", "", yangi))
+    except Exception as e:
+        log.warning(f"[{cid}] Adabiyotlarni to'ldirish xatosi: {e}")
+    out, olindi = [], 0
+    for a in adab:
+        if not _toliqmi(a) and len(adab) - olindi > lo:
+            olindi += 1
+            continue
+        out.append(a)
+    if olindi:
+        log.info(f"[{cid}] Kurs ishi: {olindi} ta chala manba ro'yxatdan olib tashlandi")
+    return out
+
+
+_ISM_RE = re.compile(
+    r"(\b[A-ZА-ЯЁЎҚҒҲ]\.\s?(?:[A-ZА-ЯЁЎҚҒҲ]\.\s?)?[A-ZА-ЯЁЎҚҒҲ][a-zа-яёўқғҳ'’‘ʻʼ]{2,}"          # A. Karimov, А.Н. Кононов
+    r"|\b[A-ZА-ЯЁЎҚҒҲ][a-zа-яёўқғҳ'’‘ʻʼ]{2,}\s[A-ZА-ЯЁЎҚҒҲ]\.(?:\s?[A-ZА-ЯЁЎҚҒҲ]\.)?"           # Karimov A.
+    r"|\b[A-ZА-ЯЁЎҚҒҲ][a-zа-яёўқғҳ'’‘ʻʼ]+(?:ov|ev|yev|ova|eva|yeva|skiy|skaya|zoda|ова|ева|ов|ев|ский|ская)"
+    r"(?:ning|ni|ga|da|dan|ningcha|ning fikricha|а|у|ым)?\b"
+    r"|according to [A-Z][a-z]+|по мнению [А-ЯЁ][а-яё]+)")
+_GAP_RE = re.compile(r"(?<![A-ZА-ЯЁЎҚҒҲ]\.)(?<=[.!?…])\s+(?=[A-ZА-ЯЁЎҚҒҲ«\"“(])")
+
+
+def _gaplar(ab: str) -> list:
+    return [g for g in _GAP_RE.split(ab) if g.strip()]
+
+
+def _havolasiz_fikrmi(gap: str) -> bool:
+    return "[" not in gap and bool(_ISM_RE.search(gap))
+
+
+def _betsizmi(snoska: str, a: dict) -> bool:
+    return a.get("tur") in ("asosiy", "xorijiy") and "//" not in a.get("matn", "") and \
+        not re.search(r"(B|С|P)\.\s*\d+\.?$", snoska or "")
+
+
+def _snoska_nazorati(cid, p: dict, plan: dict, adab: list, data: dict, taqsimot: dict | None = None,
+                     faqat: list | None = None):
+    """Har paragraf tekshiriladi: (1) olim nomi bor-u havolasi yo'q gaplar — mos manba va bet bilan havola qo'yiladi
+    yoki gap muallif nomisiz qayta yoziladi; (2) kitobga snoskada bet yo'q bo'lsa — bet so'raladi."""
+    nbob = data["bob_soni"]
+    keys = faqat or [(bi, ri) for bi in range(nbob) for ri in range(len(data[f"bob{bi + 1}_data"]["rejalar"]))]
+    ctx = _API.get("ai_ctx")
+
+    def ish(k):
+        bi, ri = k
+        rj = data[f"bob{bi + 1}_data"]["rejalar"][ri]
+        sn, sm = rj.setdefault("snoskalar", {}), rj.setdefault("snoska_manba", {})
+        bloklar = rj.get("matn", "").split(" [ABZAS] ")
+        gaplar = []                                      # (blok, gap_index, matn)
+        for b_i, bl in enumerate(bloklar):
+            if bl.startswith("[JADVAL:") or bl.startswith("[GRAFIK:"):
+                continue
+            for g_i, g in enumerate(_gaplar(bl)):
+                if _havolasiz_fikrmi(g):
+                    gaplar.append((b_i, g_i, g))
+        betsiz = [kk for kk, n in sm.items() if 1 <= n <= len(adab) and _betsizmi(sn.get(kk, ""), adab[n - 1])]
+        if not gaplar and not betsiz:
+            return 0
+        gaplar = gaplar[:14]
+        royxat = sorted(set((taqsimot or {}).get(k, [])) | set(sm.values()))
+        prompt = f"""Sen ilmiy muharrir va bibliografsan. {L(p['til'])['lang']}
+«{p['mavzu']}» {_ish(p)}ning {bi + 1}.{ri + 1}-paragrafidagi ilmiy havolalarni tekshir.
+MANBALAR (raqam — adabiyotlar ro'yxatidagi tartib raqami):
+{_adab_text_sub(adab, royxat or None)}
+
+1) Quyidagi gaplarda olim/muallif nomi bor, lekin snoska yo'q. Har biri uchun:
+   - agar fikr ro'yxatdagi manbadan bo'lsa — "manba" (raqam) va "bet" (shu fikr kitobning qaysi betida);
+   - agar mos manba ro'yxatda yo'q bo'lsa — "qayta": gapni muallif nomisiz, umumiy ilmiy fikr sifatida qayta yoz
+     (mazmun saqlansin, yangi fakt qo'shilmasin).
+{chr(10).join(f"G{i + 1}: {g}" for i, (_, _, g) in enumerate(gaplar)) or "(yo'q)"}
+
+2) Quyidagi snoskalarda iqtibos beti ko'rsatilmagan — har biriga kitobning mos betini ber (kitob hajmidan oshmasin):
+{chr(10).join(f"S{kk}: {sn.get(kk, '')}" for kk in betsiz) or "(yo'q)"}
+
+{_tur_qoida(p)}
+FAQAT JSON: {{"gaplar":[{{"id":"G1","manba":12,"bet":45}},{{"id":"G2","qayta":"..."}}],
+"snoskalar":[{{"id":"S3","bet":57}}]}}"""
+        try:
+            if ctx:
+                with ctx(cid):
+                    r = _ask(prompt, f"{bi + 1}.{ri + 1} snoska nazorati", max_tokens=3000, temperature=0.2)
+            else:
+                r = _ask(prompt, f"{bi + 1}.{ri + 1} snoska nazorati", max_tokens=3000, temperature=0.2)
+        except Exception as e:
+            log.warning(f"[{cid}] Snoska nazorati {k}: {e}")
+            return 0
+        tuz = 0
+        ozgar = {}
+        for x in (r.get("gaplar") or []):
+            try:
+                i = int(str(x.get("id", "")).lstrip("Gg")) - 1
+            except Exception:
+                continue
+            if not 0 <= i < len(gaplar):
+                continue
+            b_i, g_i, g = gaplar[i]
+            n = x.get("manba")
+            try:
+                n = int(n) if n is not None else None
+            except Exception:
+                n = None
+            if n and 1 <= n <= len(adab):
+                bet = x.get("bet")
+                bet = str(int(bet)) if str(bet or "").isdigit() else ""
+                belgi = f"[{n}:{bet}]" if bet else f"[{n}]"
+                yangi = re.sub(r"([.!?…]+)\s*$", lambda m: f"{belgi}{m.group(1)}", g.rstrip())
+                if yangi == g.rstrip():
+                    yangi = g.rstrip() + belgi
+                ozgar[(b_i, g_i)] = _bind_refs(yangi, adab, sn, sm)
+                tuz += 1
+            elif x.get("qayta"):
+                q = _strip_refs(_clean(x["qayta"]))
+                if _words(q) >= 4:
+                    ozgar[(b_i, g_i)] = q
+                    tuz += 1
+        if ozgar:
+            yangi_bl = []
+            for b_i, bl in enumerate(bloklar):
+                if any(kk[0] == b_i for kk in ozgar):
+                    gl = _gaplar(bl)
+                    bl = " ".join(ozgar.get((b_i, g_i), g) for g_i, g in enumerate(gl))
+                yangi_bl.append(bl)
+            rj["matn"] = " [ABZAS] ".join(yangi_bl)
+        for x in (r.get("snoskalar") or []):
+            kk = str(x.get("id", "")).lstrip("Ss")
+            n = sm.get(kk)
+            if not n or kk not in sn:
+                continue
+            nat = _snoska_matni(adab[n - 1], x.get("bet"))
+            if not _betsizmi(nat, adab[n - 1]):
+                sn[kk] = nat
+                tuz += 1
+        return tuz
+
+    with cf.ThreadPoolExecutor(max_workers=3) as ex:
+        jami = sum(ex.map(ish, keys))
+    log.info(f"[{cid}] Snoska nazorati: {jami} ta tuzatish")
+    return jami
+
+
+_TUR_ALMASH = {
+    "uz": [(r"\b([Bb])itiruv\s+malakaviy\s+ish", lambda m: ("K" if m.group(1) == "B" else "k") + "urs ish"),
+           (r"\b(mazkur|ushbu|bu|Mazkur|Ushbu|Bu)\s+BMI\b", r"\1 kurs ishi"),
+           (r"\b(mazkur|ushbu|Mazkur|Ushbu)\s+(?:magistrlik\s+)?dissertatsiya(da|ning|ni|si)?\b",
+            lambda m: m.group(1) + " kurs ishi" + {"da": "da", "ning": "ning", "ni": "ni", "si": ""}.get(m.group(2) or "", "")),
+           (r"\b(mazkur|ushbu|Mazkur|Ushbu)\s+diplom\s+ish", r"\1 kurs ish")],
+    "ru": [(r"([Вв])ыпускн(ая|ой|ую|ые|ых)\s+квалификационн(?:ая|ой|ую|ые|ых)\s+работ",
+            lambda m: ("К" if m.group(1) == "В" else "к") + "урсов" + m.group(2) + " работ"),
+           (r"([Дд])ипломн(ая|ой|ую)\s+работ", lambda m: ("К" if m.group(1) == "Д" else "к") + "урсов" + m.group(2) + " работ"),
+           (r"\bВКР\b", "курсовая работа")],
+    "en": [(r"(?i)\b(graduation|final qualifying|bachelor'?s|diploma)\s+(thesis|paper|work|project)\b", "course paper"),
+           (r"\b([Tt])his\s+(thesis|dissertation)\b", r"\1his course paper")],
+}
+
+
+def _ish_turi_tuzat(data: dict, p: dict):
+    """Kurs ishida «mazkur bitiruv malakaviy ishi» kabi boshqa ish turi nomlari qolmasin (o'qituvchi e'tirozi)."""
+    if _bmi(p):
+        return
+    qoidalar = _TUR_ALMASH["uz"] + (_TUR_ALMASH.get(p["til"], []) if p["til"] != "uz" else [])
+
+    def f(t):
+        if not isinstance(t, str):
+            return t
+        for a, b in qoidalar:
+            t = re.sub(a, b, t)
+        return t
+    kir = data.get("plan", {}).get("kirish", {})
+    for k in list(kir):
+        kir[k] = f(kir[k])
+    for bi in range(data.get("bob_soni", 0)):
+        bd = data.get(f"bob{bi + 1}_data", {})
+        bd["kirish"] = f(bd.get("kirish", ""))
+        for rj in bd.get("rejalar", []):
+            rj["matn"] = f(rj.get("matn", ""))
+    xd = data.get("xulosa_data", {})
+    xd["xulosa"] = f(xd.get("xulosa", ""))
+
+
+def snoska_hisobot(data: dict) -> dict:
+    """Snoskalar va adabiyotlar ro'yxati mosligini tekshiradi (test va log uchun)."""
+    adab = data.get("plan", {}).get("adabiyotlar", [])
+    asoslar = {re.sub(r"\s*[–-]\s*\d{2,4}\s*(?:b|bet|с|стр|p|pp)\.?$", "", _clean(a["matn"]), flags=re.I).rstrip(" .")
+               for a in adab}
+    h = {"snoska": 0, "belgisiz": 0, "royxatda_yoq": 0, "betsiz_kitob": 0, "havolasiz_fikr": 0}
+    for bi in range(data.get("bob_soni", 0)):
+        for rj in data.get(f"bob{bi + 1}_data", {}).get("rejalar", []):
+            sn = {str(k): v for k, v in (rj.get("snoskalar") or {}).items()}
+            sm = rj.get("snoska_manba") or {}
+            for bl in rj.get("matn", "").split(" [ABZAS] "):
+                if bl.startswith("[JADVAL:") or bl.startswith("[GRAFIK:"):
+                    continue
+                for k in re.findall(r"\[(\d+)\]", bl):
+                    if k not in sn:
+                        h["belgisiz"] += 1
+                        continue
+                    h["snoska"] += 1
+                    asos = re.sub(r"\s*[–-]\s*(B|С|P)\.\s*\d+\.?$", "", _clean(sn[k])).rstrip(" .")
+                    if asos not in asoslar:
+                        h["royxatda_yoq"] += 1
+                    n = sm.get(k)
+                    if n and 1 <= n <= len(adab) and _betsizmi(sn[k], adab[n - 1]):
+                        h["betsiz_kitob"] += 1
+                h["havolasiz_fikr"] += sum(1 for g in _gaplar(bl) if _havolasiz_fikrmi(g))
+    return h
 
 
 def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
@@ -956,12 +1310,13 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
         except Exception as e:
             log.warning(f"Qo'shimcha adabiyotlar xatosi: {e}")
             break
+    adab = _adab_toliqlash(cid, p, adab)
     log.info(f"[{cid}] Kurs ishi rejasi: {len(plan['boblar'])} bob, {len(adab)} ta adabiyot "
              f"(o'zbekcha {_uz_soni(adab)})")
 
     # 2) Kirish
     prog(T["kirish"].format(bet=h["bet"]))
-    kirish_raw = _ask(_kirish_prompt(p, plan), "Kirish", max_tokens=5000)
+    kirish_raw = _ask(_kirish_prompt(p, plan, adab), "Kirish", max_tokens=5000)
     kirish = {}
     for k in KIRISH_TARTIB[:-1]:
         v = kirish_raw.get(k)
@@ -980,12 +1335,13 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
     ctx = _API.get("ai_ctx")
 
     taqsimot = _manba_taqsimoti(adab, tasks, har=6 if p["hajm"] in ("katta", "bmi") else 5)
+    material = _strip_refs(_clean(str(kirish.get("material_bazasi", "")).replace("[ABZAS]", " ")))[:900]
 
     def run(bi, ri):
         if ri == -1:                                  # bob kirish qismi (sarlavhadan keyin, 1.1 dan oldin)
             fn = lambda: _write_bob_kirish(p, plan, bi)
         else:
-            fn = lambda: _write_section(p, plan, adab, bi, ri, taqsimot.get((bi, ri)))
+            fn = lambda: _write_section(p, plan, adab, bi, ri, taqsimot.get((bi, ri)), material)
         if ctx:
             with ctx(cid):
                 return fn()
@@ -1005,13 +1361,17 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
             done[0] += 1
             prog(T["bob"].format(k=done[0], n=jami_qadam, bet=h["bet"]))
 
-    _havola_cheklovi(natija, tasks)
+    # (Ilgari bu yerda bitta manbaga 2 tadan ortiq snoska o'chirilardi — keyingi boblarda olim fikrlari havolasiz
+    #  qolib ketardi. Endi manbalar paragraflarga oldindan taqsimlanadi, snoska hech qachon jim o'chirilmaydi.)
 
     # 4) Xulosa va takliflar
     prog(T["xulosa"].format(bet=h["bet"]))
     xr = _ask(_xulosa_prompt(p, plan), "Xulosa", max_tokens=4500)
     xul = [_strip_refs(_clean(x)) for x in (xr.get("xulosalar") or []) if _words(_clean(x)) >= 10]
     tak = [_strip_refs(_clean(x)).rstrip(".") for x in (xr.get("takliflar") or []) if _words(_clean(x)) >= 4]
+    if not _bmi(p) and tak:                         # kurs ishi: takliflar raqamlanmaydi — xulosa matniga qo'shiladi
+        xul.append(" ".join(re.sub(r"^\d+[\.\)]\s*", "", x).rstrip(".") + "." for x in tak))
+        tak = []
     xparts = list(xul)
     if tak:
         xparts.append(LB(p["til"], p["hajm"])["takliflar"])
@@ -1036,7 +1396,15 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
                                       "rejalar": [natija[(bi, ri)] for ri in range(h["rejalar"])]}
 
     # 5) Hajm kafolati: sahifalar aniq hisoblanadi; kam bo'lsa — paragraflar to'ldiriladi, ko'p bo'lsa — qisqartiriladi
-    _hajmga_moslash(cid, p, plan, data, lambda k, n: prog(T["hajm"].format(bet=h["bet"], k=k, n=n)))
+    _hajmga_moslash(cid, p, plan, data, lambda k, n: prog(T["hajm"].format(bet=h["bet"], k=k, n=n)), adab, taqsimot)
+
+    # 6) Snoskalar nazorati: olim fikri havolasiz qolmasin, kitobga snoskada bet bo'lsin, har snoska ro'yxatdagi
+    #    manbaning o'zi bo'lsin; kurs ishida boshqa ish turi nomi uchramasin
+    prog(T["format"].format(bet=h["bet"]))
+    _snoska_nazorati(cid, p, plan, adab, data, taqsimot)
+    _ish_turi_tuzat(data, p)
+    hisobot = snoska_hisobot(data)
+    log.info(f"[{cid}] Snoska nazorati: {hisobot}")
 
     prog(T["format"].format(bet=h["bet"]))
     fname = _out_name(p["mavzu"])
@@ -1045,6 +1413,77 @@ def generate(cid: int, p: dict, progress=None) -> tuple[str, dict]:
     log.info(f"[{cid}] Kurs ishi tayyor: {info['bet']} bet, {info['jadval']} jadval, {info['rasm']} rasm, "
              f"{info['snoska']} snoska")
     return fname, data
+
+
+# ═══════════════════════════════════════════════
+# TAHRIR (yaratilgan kurs ishining bir qismini qayta yozish) — snoskalar adabiyotlar ro'yxatidan
+# ═══════════════════════════════════════════════
+def _plan_from_data(data: dict) -> dict:
+    boblar = []
+    for bi in range(data.get("bob_soni", 0)):
+        nomi = re.sub(r"^\S+\s+(BOB|ГЛАВА|CHAPTER)\.?\s*|^(ГЛАВА|CHAPTER)\s+\S+\.?\s*", "", data.get(f"bob{bi + 1}_nomi", ""))
+        rejalar = [{"sarlavha": _strip_num(r.get("sarlavha", "")), "bandlar": []}
+                   for r in data.get(f"bob{bi + 1}_data", {}).get("rejalar", [])]
+        boblar.append({"nomi": nomi, "rejalar": rejalar})
+    return {"boblar": boblar}
+
+
+def qism_qayta_yoz(cid: int, data: dict, qism: str, talab: str) -> dict:
+    """bot.py tahrir tizimi uchun (v2 ma'lumot). Qaytaradi: yangilangan data (nusxa)."""
+    import copy
+    data = copy.deepcopy(data)
+    t = data.get("titul", {})
+    p = {"mavzu": t.get("mavzu", ""), "fan": t.get("fan", ""), "hajm": data.get("hajm", "standart"),
+         "til": data.get("til", "uz")}
+    if p["hajm"] not in HAJMLAR:
+        p["hajm"] = "standart"
+    plan = _plan_from_data(data)
+    adab = data.get("plan", {}).get("adabiyotlar", [])
+    talab_b = _clean(talab)[:800]
+    if qism == "kirish":
+        raw = _ask(_kirish_prompt(p, plan, adab) + f"\nFOYDALANUVCHI TALABI: {talab_b}", "Kirish tahrir", max_tokens=5000)
+        kir = {}
+        for k in KIRISH_TARTIB[:-1]:
+            v = raw.get(k)
+            if isinstance(v, list):
+                items = [_strip_refs(_clean(x)).rstrip(";.") for x in v if _clean(x)]
+                v = " [ABZAS] ".join(f"– {x};" if i < len(items) - 1 else f"– {x}." for i, x in enumerate(items))
+            else:
+                v = _strip_refs(_clean(v))
+            if v:
+                kir[k] = v
+        if len(kir) >= 5:
+            data["plan"]["kirish"] = kir
+    elif re.fullmatch(r"bob\d_reja_\d+", qism):
+        bi, ri = int(qism[3]) - 1, int(qism.split("_")[-1])
+        rejalar = data.get(f"bob{bi + 1}_data", {}).get("rejalar", [])
+        if not (0 <= bi < data.get("bob_soni", 0) and 0 <= ri < len(rejalar)):
+            raise ValueError("bunday paragraf yo'q")
+        tasks = [(b, r) for b in range(data["bob_soni"]) for r in range(len(data[f"bob{b + 1}_data"]["rejalar"]))]
+        taq = _manba_taqsimoti(adab, tasks, har=6 if p["hajm"] in ("katta", "bmi") else 5)
+        manbalar = sorted(set(taq.get((bi, ri), [])) | set((rejalar[ri].get("snoska_manba") or {}).values()))
+        material = _strip_refs(_clean(str(data["plan"].get("kirish", {}).get("material_bazasi", ""))))[:900]
+        yangi = _write_section(p, plan, adab, bi, ri, manbalar, material, talab_b)
+        yangi["sarlavha"] = rejalar[ri].get("sarlavha") or yangi["sarlavha"]
+        rejalar[ri] = yangi
+        _snoska_nazorati(cid, p, plan, adab, data, {(bi, ri): manbalar}, faqat=[(bi, ri)])
+    elif qism == "xulosa":
+        xr = _ask(_xulosa_prompt(p, plan) + f"\nFOYDALANUVCHI TALABI: {talab_b}", "Xulosa tahrir", max_tokens=4500)
+        xul = [_strip_refs(_clean(x)) for x in (xr.get("xulosalar") or []) if _words(_clean(x)) >= 10]
+        tak = [_strip_refs(_clean(x)).rstrip(".") for x in (xr.get("takliflar") or []) if _words(_clean(x)) >= 4]
+        if xul:
+            parts = list(xul)
+            if tak and _bmi(p):
+                parts.append(LB(p["til"], p["hajm"])["takliflar"])
+                tak = [re.sub(r"^[0-9]+[.)]\s*", "", x) for x in tak]
+                parts += [f"{i + 1}) {x}." for i, x in enumerate(tak)]
+            elif tak:
+                parts.append(" ".join(x + "." for x in tak))
+            data["xulosa_data"]["xulosa"] = " [ABZAS] ".join(parts)
+    else:
+        raise ValueError(f"noma'lum qism: {qism}")
+    _ish_turi_tuzat(data, p)
+    return data
 
 
 def _annot_prompt(p: dict, plan: dict, kirish: dict) -> str:
@@ -1132,7 +1571,7 @@ def _sahifalar(data: dict) -> int:
     return SH.paginate(B)[1]
 
 
-def _hajmga_moslash(cid, p, plan, data, prog=None):
+def _hajmga_moslash(cid, p, plan, data, prog=None, adab=None, taqsimot=None):
     lo, hi = HAJMLAR[p["hajm"]]["bet_oraliq"]
     maqsad = (lo + hi) // 2
     nbob = data["bob_soni"]
@@ -1183,8 +1622,8 @@ def _hajmga_moslash(cid, p, plan, data, prog=None):
         def ish(k):
             bi, ri = k
             mavjud = [x for x in bloklar(bi, ri) if matnli(x)]
-            run = lambda: _ask(_davom_prompt(p, plan, bi, ri, mavjud, har), f"{bi + 1}.{ri + 1} to'ldirish",
-                               max_tokens=5000)
+            run = lambda: _ask(_davom_prompt(p, plan, bi, ri, mavjud, har, adab, (taqsimot or {}).get(k)),
+                               f"{bi + 1}.{ri + 1} to'ldirish", max_tokens=5000)
             try:
                 if ctx:
                     with ctx(cid):
@@ -1194,12 +1633,17 @@ def _hajmga_moslash(cid, p, plan, data, prog=None):
             except Exception as e:
                 log.warning(f"Hajm to'ldirish xatosi {k}: {e}")
                 return k, []
-            add = [_strip_refs(_clean(x)) for x in (dv.get("paragraflar") or []) if isinstance(x, str)]
+            add = [_clean(x) for x in (dv.get("paragraflar") or []) if isinstance(x, str)]
+            if not adab:
+                add = [_strip_refs(x) for x in add]
             return k, [x for x in add if _words(x) >= 12]
 
         with cf.ThreadPoolExecutor(max_workers=3) as ex:
             for k, add in ex.map(ish, tartib[:soni]):
                 if add:
+                    rj = data[f"bob{k[0] + 1}_data"]["rejalar"][k[1]]
+                    sn, sm = rj.setdefault("snoskalar", {}), rj.setdefault("snoska_manba", {})
+                    add = [_bind_refs(x, adab, sn, sm) if adab else x for x in add]
                     bl = bloklar(*k)
                     saqla(*k, bl[:-1] + add + bl[-1:])     # xulosa abzasi oxirida qoladi
 
@@ -1210,7 +1654,7 @@ PROG = {
         "kirish": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n✍️ Kirish yozilmoqda...",
         "bob": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n📖 Paragraflar yozilmoqda: <b>{k}/{n}</b>\n"
                "<i>Jadvallar, grafiklar va snoskalar bilan</i>",
-        "xulosa": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n🧾 Xulosa va takliflar yozilmoqda...",
+        "xulosa": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n🧾 Xulosa yozilmoqda...",
         "hajm": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n📏 Hajm tekshirilmoqda va to'ldirilmoqda ({k}/{n})...",
         "format": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n📎 Mundarija, snoskalar va formatlash...",
         "bmi_qosh": "⏳ <b>Kurs ishi yaratilmoqda</b> ({bet} bet)\n\n🌐 Annotatsiya (3 tilda) va ilovalar tayyorlanmoqda...",
@@ -1220,7 +1664,7 @@ PROG = {
         "kirish": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n✍️ Пишется введение...",
         "bob": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n📖 Пишутся параграфы: <b>{k}/{n}</b>\n"
                "<i>С таблицами, графиками и сносками</i>",
-        "xulosa": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n🧾 Пишутся заключение и рекомендации...",
+        "xulosa": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n🧾 Пишется заключение...",
         "hajm": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n📏 Проверка и доведение объёма ({k}/{n})...",
         "format": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n📎 Содержание, сноски и оформление...",
         "bmi_qosh": "⏳ <b>Курсовая работа создаётся</b> ({bet} стр.)\n\n🌐 Аннотация (на 3 языках) и приложения...",
@@ -1641,13 +2085,9 @@ def _ref_segs(text: str, snoskalar: dict, adab: list) -> list:
             if seg:
                 segs.append(("t", seg, False, False))
         else:
-            src = snoskalar.get(seg) or snoskalar.get(str(seg))
-            if not src:
-                try:
-                    src = adab[int(seg) - 1]["matn"]
-                except Exception:
-                    src = ""
-            src = _clean(src)
+            # Faqat shu paragrafning o'z snoskasi. Ilgari kalit topilmasa adabiyotlar ro'yxatidagi shu tartib raqamli
+            # manba olinardi — bu BOSHQA kitobga noto'g'ri havola bo'lib qolishi mumkin edi.
+            src = _clean(snoskalar.get(seg) or snoskalar.get(str(seg)) or "")
             if len(src) >= 8:
                 segs.append(("fn", _nbsp(src.rstrip(".") + ".")))
     return segs
