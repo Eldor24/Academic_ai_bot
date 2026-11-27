@@ -1570,6 +1570,164 @@ def slide_timeline(prs, th, sd, num, total, topic):
 
 
 # ═══════════════════════════════════════════════════════════════════
+# SXEMALAR (raqamsiz vizual diagrammalar): tushunchalar xaritasi, sikl, piramida
+# ═══════════════════════════════════════════════════════════════════
+def _juftlar(matn: str, maks: int = 6) -> list[tuple[str, str]]:
+    out = []
+    for line in _clean(matn).split("\n"):
+        line = re.sub(r"^\s*(?:\d{1,2}[.)]|[-•–])\s*", "", line.strip())
+        if not line:
+            continue
+        sep = "|" if "|" in line else (" — " if " — " in line else (":" if ":" in line else None))
+        a, b = (line.split(sep, 1) if sep else (line, ""))
+        out.append((a.strip(), b.strip()))
+    return out[:maks]
+
+
+_SXEMA_DARAXT = ("swiss", "classic", "plain", "magazine", "luxe", "ornament")
+
+
+def slide_schema(prs, th, sd, num, total, topic):
+    """«sxema» — tushunchalar xaritasi: 1-qator markaziy tushuncha, qolganlari «tarmoq|izoh» (3-6 ta)."""
+    q = _juftlar(sd.get("matn", ""), 7)
+    if len(q) < 4:
+        return slide_list(prs, th, sd, num, total, topic)
+    markaz = q[0][0] if not q[0][1] or len(q[0][0]) < 60 else q[0][0]
+    tar = q[1:7]
+    n = len(tar)
+    sl, (x, y, w, h) = _start(prs, th, sd, num)
+    if th.decor in _SXEMA_DARAXT:          # daraxt (ierarxiya) ko'rinishi
+        bw, bh = min(w * 0.5, 6.0), 0.85
+        bx = x + (w - bw) / 2
+        _box(sl, th, bx, y, bw, bh, "primary", MSO_SHAPE.ROUNDED_RECTANGLE, radius=0.12)
+        _txt(sl, th, bx + 0.1, y, bw - 0.2, bh, markaz, 22, _onc(th, th.primary), True, th.font_head,
+             align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, fit=True, min_size=12)
+        g = 0.18
+        cw = (w - g * (n - 1)) / n
+        busy = y + bh + 0.35
+        _line(sl, th, x + cw / 2, busy, x + w - cw / 2, busy, "muted", 1.5)
+        _line(sl, th, x + w / 2, y + bh, x + w / 2, busy, "muted", 1.5)
+        cy = busy + 0.3
+        ch = h - (cy - y)
+        for i, (a, b) in enumerate(tar):
+            cx = x + i * (cw + g)
+            col = _col(th, i)
+            _line(sl, th, cx + cw / 2, busy, cx + cw / 2, cy, "muted", 1.5)
+            _card(sl, th, cx, cy, cw, ch)
+            _box(sl, th, cx, cy, cw, 0.09, col)
+            _txt(sl, th, cx + 0.12, cy + 0.2, cw - 0.24, 0.95, a, 18, col if not th.dark else "primary", True,
+                 th.font_head, align=PP_ALIGN.CENTER, fit=True, min_size=11)
+            if b:
+                _txt(sl, th, cx + 0.12, cy + 1.15, cw - 0.24, ch - 1.25, b, 15, "text", align=PP_ALIGN.CENTER,
+                     fit=True, min_size=9)
+    else:                                   # markazli xarita (hub-and-spoke)
+        cx0, cy0 = x + w / 2, y + h / 2
+        d = min(2.15, h * 0.40)
+        kw, kh = min(3.55, w * 0.29), min(1.5, h * 0.29)
+        rx, ry = w / 2 - kw / 2, h / 2 - kh / 2
+        bosh = -90 + (180 / n if n % 2 == 0 else 0)
+        nuqta = []
+        for i in range(n):
+            a = math.radians(bosh + i * 360 / n)
+            nuqta.append((cx0 + rx * math.cos(a), cy0 + ry * math.sin(a)))
+        for (px, py) in nuqta:
+            _line(sl, th, cx0, cy0, px, py, "muted", 1.75)
+        _box(sl, th, cx0 - d / 2 - 0.12, cy0 - d / 2 - 0.12, d + 0.24, d + 0.24, "accent", MSO_SHAPE.OVAL, opacity=0.25)
+        _box(sl, th, cx0 - d / 2, cy0 - d / 2, d, d, "primary", MSO_SHAPE.OVAL)
+        _txt(sl, th, cx0 - d / 2 + 0.18, cy0 - d / 2 + 0.2, d - 0.36, d - 0.4, markaz, 18, _onc(th, th.primary), True,
+             th.font_head, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, fit=True, min_size=10)
+        for i, ((px, py), (a, b)) in enumerate(zip(nuqta, tar)):
+            col = _col(th, i)
+            kx, ky = px - kw / 2, py - kh / 2
+            _card(sl, th, kx, ky, kw, kh, line=col)
+            _box(sl, th, kx, ky, 0.09, kh, col)
+            _txt(sl, th, kx + 0.2, ky + 0.06, kw - 0.3, 0.5, a, 16, col if not th.dark else "primary", True,
+                 th.font_head, fit=True, min_size=10)
+            if b:
+                _txt(sl, th, kx + 0.2, ky + 0.52, kw - 0.3, kh - 0.58, b, 13, "text", fit=True, min_size=8)
+    _footer(sl, th, num, total, topic)
+    return sl
+
+
+def slide_cycle(prs, th, sd, num, total, topic):
+    """«sikl» — davriy jarayon: «bosqich|izoh» (3-6 ta). Chapda halqa, o'ngda izohli ro'yxat."""
+    q = _juftlar(sd.get("matn", ""), 6)
+    if len(q) < 3:
+        return slide_list(prs, th, sd, num, total, topic)
+    n = len(q)
+    sl, (x, y, w, h) = _start(prs, th, sd, num)
+    D = min(h, w * 0.42)
+    cx0, cy0 = x + D / 2, y + h / 2
+    R = D / 2 - 0.45
+    _box(sl, th, cx0 - R, cy0 - R, 2 * R, 2 * R, None, MSO_SHAPE.OVAL, line="muted", line_w=3)
+    for i in range(n):                      # yo'nalish ko'rsatkichlari (soat mili bo'yicha)
+        a = -90 + (i + 0.5) * 360 / n
+        ax, ay = cx0 + R * math.cos(math.radians(a)), cy0 + R * math.sin(math.radians(a))
+        _box(sl, th, ax - 0.14, ay - 0.14, 0.28, 0.28, "muted", MSO_SHAPE.ISOSCELES_TRIANGLE, rot=a + 180)
+    nd = min(0.95, 2.6 / n + 0.3)
+    for i, (a_, _) in enumerate(q):
+        a = math.radians(-90 + i * 360 / n)
+        px, py = cx0 + R * math.cos(a), cy0 + R * math.sin(a)
+        col = _col(th, i)
+        _box(sl, th, px - nd / 2, py - nd / 2, nd, nd, col, MSO_SHAPE.OVAL, line="bg", line_w=3)
+        _txt(sl, th, px - nd / 2, py - nd / 2, nd, nd, str(i + 1), nd * 26, _onc(th, col), True, th.font_head,
+             align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    ic = (R - nd / 2) * 1.35
+    _txt(sl, th, cx0 - ic / 2, cy0 - ic / 2, ic, ic, _clean(sd.get("markaz") or sd.get("sarlavha", ""))[:60], 15,
+         "primary", True, th.font_head, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, fit=True, min_size=9)
+    lx = x + D + 0.5
+    lw = x + w - lx
+    rh = h / n
+    for i, (a_, b) in enumerate(q):
+        ry = y + i * rh
+        col = _col(th, i)
+        _box(sl, th, lx, ry + 0.12, 0.09, rh - 0.24, col)
+        _txt(sl, th, lx + 0.25, ry + 0.04, lw - 0.3, min(0.55, rh * 0.45), f"{i + 1}. {a_}", 18,
+             col if not th.dark else "primary", True, th.font_head, fit=True, min_size=11)
+        if b:
+            _txt(sl, th, lx + 0.25, ry + min(0.55, rh * 0.45), lw - 0.3, rh - min(0.55, rh * 0.45) - 0.05, b, 15,
+                 "text", fit=True, min_size=9)
+    _footer(sl, th, num, total, topic)
+    return sl
+
+
+def slide_pyramid(prs, th, sd, num, total, topic):
+    """«piramida» — ierarxiya / darajalar: yuqoridan pastga «daraja|izoh» (3-5 ta)."""
+    q = _juftlar(sd.get("matn", ""), 5)
+    if len(q) < 3:
+        return slide_list(prs, th, sd, num, total, topic)
+    n = len(q)
+    sl, (x, y, w, h) = _start(prs, th, sd, num)
+    pw = min(w * 0.46, h * 1.25)
+    lh = h / n
+    g = 0.06
+    for i, (a, b) in enumerate(q):
+        col = _col(th, i)
+        top_w = pw * i / n
+        bot_w = pw * (i + 1) / n
+        ly = y + i * lh
+        lx = x + (pw - bot_w) / 2
+        shape = MSO_SHAPE.ISOSCELES_TRIANGLE if i == 0 else MSO_SHAPE.TRAPEZOID
+        sh = _box(sl, th, lx, ly + g / 2, bot_w, lh - g, col, shape)
+        if i:
+            try:
+                sh.adjustments[0] = (bot_w - top_w) / 2 / (lh - g) if lh > g else 0.25
+            except Exception:
+                pass
+        _txt(sl, th, x + (pw - bot_w) / 2, ly + (lh * 0.38 if i == 0 else 0), bot_w, lh * (0.62 if i == 0 else 1),
+             str(i + 1), min(28, lh * 22), _onc(th, col), True, th.font_head, align=PP_ALIGN.CENTER,
+             anchor=MSO_ANCHOR.MIDDLE)
+        ex = x + pw / 2 + (top_w + bot_w) / 4 + 0.1
+        dx = x + pw + 0.45
+        _line(sl, th, ex, ly + lh / 2, dx - 0.08, ly + lh / 2, col, 1.25)
+        _box(sl, th, dx - 0.08, ly + lh / 2 - 0.07, 0.14, 0.14, col, MSO_SHAPE.OVAL)
+        _txt(sl, th, dx + 0.15, ly + 0.04, x + w - dx - 0.2, lh - 0.08, f"{a} — {b}" if b else a, 17, "text",
+             anchor=MSO_ANCHOR.MIDDLE, fit=True, min_size=9, lead_bold=True)
+    _footer(sl, th, num, total, topic)
+    return sl
+
+
+# ═══════════════════════════════════════════════════════════════════
 # XULOSA — 4 variant
 # ═══════════════════════════════════════════════════════════════════
 def slide_conclusion(prs, th, sd, num, total, topic):
@@ -1820,6 +1978,7 @@ DEFAULT_LABELS = {
 _RENDER = {
     "reja": slide_agenda, "xulosa": slide_conclusion, "ustun_diag": slide_bar, "doira_diag": slide_pie,
     "jadval_slayd": slide_table, "stat_karta": slide_stats, "bosqichlar": slide_timeline,
+    "sxema": slide_schema, "sikl": slide_cycle, "piramida": slide_pyramid,
 }
 
 

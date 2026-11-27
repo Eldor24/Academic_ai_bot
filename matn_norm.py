@@ -63,6 +63,49 @@ def kiril_lotin(t: str) -> str:
     return "".join(out)
 
 
+# ── Lotin → o'zbek kirill (1993-yilgacha kirillda chop etilgan asarlar bibliografiyasi uchun) ──
+_APOS_ALL = "'\u2018\u2019\u02bb\u02bc`\u00b4"
+_L2K_DI = [("o" + a, "ў") for a in _APOS_ALL] + [("g" + a, "ғ") for a in _APOS_ALL] + [
+    ("sh", "ш"), ("ch", "ч"), ("yo", "ё"), ("yu", "ю"), ("ya", "я"), ("ye", "е")]
+_L2K = {"a": "а", "b": "б", "d": "д", "e": "е", "f": "ф", "g": "г", "h": "ҳ", "i": "и", "j": "ж", "k": "к",
+        "l": "л", "m": "м", "n": "н", "o": "о", "p": "п", "q": "қ", "r": "р", "s": "с", "t": "т", "u": "у",
+        "v": "в", "x": "х", "y": "й", "z": "з", "c": "с", "w": "в"}
+
+
+def lotin_kiril(t: str) -> str:
+    """O'zbek lotin → kirill (asosiy qoidalar): o‘→ў, g‘→ғ, sh→ш, ch→ч, yo/yu/ya/ye → ё/ю/я/е,
+    so'z boshidagi e → э, tutuq belgisi → ъ, h → ҳ, x → х. URL va lotin qisqartmalarga tegilmaydi."""
+    def soz(w):
+        if re.match(r"(https?://|www\.)", w, re.I) or re.fullmatch(r"[A-Z]{2,}\d*", w):
+            return w
+        out, i = [], 0
+        while i < len(w):
+            ch = w[i]
+            low = w[i:i + 2].lower()
+            boshi = i == 0 or not w[i - 1].isalpha()
+            di = dict(_L2K_DI)
+            hit = low if low in di else None
+            if hit:
+                kir = di[hit]
+                out.append(kir.upper() if ch.isupper() and (len(w) > i + 2 and w[i + 2].isupper()) else
+                           (kir[0].upper() + kir[1:] if ch.isupper() else kir))
+                i += 2
+                continue
+            if ch in _APOS_ALL and 0 < i < len(w) - 1 and w[i - 1].isalpha() and w[i + 1].isalpha():
+                out.append("ъ")
+                i += 1
+                continue
+            lo = ch.lower()
+            if lo in _L2K:
+                kir = "э" if (lo == "e" and boshi) else _L2K[lo]
+                out.append(kir.upper() if ch.isupper() else kir)
+            else:
+                out.append(ch)
+            i += 1
+        return "".join(out)
+    return re.sub(r"(https?://\S+|www\.\S+|[^\s]+)", lambda m: soz(m.group(0)), t)
+
+
 _HOMO = str.maketrans({"а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "х": "x", "у": "y", "к": "k", "м": "m",
                        "т": "t", "н": "h", "в": "b", "А": "A", "Е": "E", "О": "O", "Р": "P", "С": "C",
                        "Х": "X", "К": "K", "М": "M", "Т": "T", "Н": "H", "В": "B"})

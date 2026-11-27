@@ -323,6 +323,25 @@ POSTS.extend([
            "<b>{narx2} coins</b>\n"
            "📊 Send the results — every learner gets the right certificate and a <b>personal praise note</b>.\n\n"
            "💰 Certificates — <b>from {narx} coins</b>"},
+    {"key": "rg_kart", "narx2": "rg_jadval", "yangi": "2026-11-27",
+     "uz": "🎴 <b>Yangi: Taqdimot + savol kartochkalari</b>\n\nSeminar yoki darsda mavzu bo'yicha chiqish qilasizmi?\n"
+           "1️⃣ Mavzuni yozing — bot taqdimot tayyorlaydi (yangi diagrammalar: tushunchalar sxemasi, sikl, piramida).\n"
+           "2️⃣ Shu taqdimotdan <b>savol-javob kartochkalari</b>: varaqda 4–12 ta, shakli va rangi — o'zingiz tanlaysiz. "
+           "Javob kartaning o'zida — guruhdoshlaringizdan so'rab, mavzuni mustahkamlaysiz.\n"
+           "👥 O'qituvchilar uchun: mavzularni o'quvchilar guruhlariga taqsimlash — sanalar, rollar, rubrika — "
+           "<b>{narx2} tanga</b>\n\n💰 Kartochkalar — <b>{narx} tangadan</b>",
+     "ru": "🎴 <b>Новое: Презентация + карточки с вопросами</b>\n\nВыступаете на семинаре или уроке?\n"
+           "1️⃣ Напишите тему — бот сделает презентацию (новые схемы: карта понятий, цикл, пирамида).\n"
+           "2️⃣ По этой презентации — <b>карточки «вопрос–ответ»</b>: 4–12 на листе, форму и цвет выбираете сами. "
+           "Ответ на карточке — спрашивайте одногруппников и закрепляйте тему.\n"
+           "👥 Для учителей: распределение тем по группам учеников — даты, роли, рубрика — <b>{narx2} монет</b>\n\n"
+           "💰 Карточки — <b>от {narx} монет</b>",
+     "en": "🎴 <b>New: Presentation + question cards</b>\n\nGiving a talk in a seminar or lesson?\n"
+           "1️⃣ Write the topic — the bot makes the presentation (new diagrams: concept map, cycle, pyramid).\n"
+           "2️⃣ From it — <b>question-and-answer cards</b>: 4–12 per sheet, you choose shape and colour. "
+           "The answer is on the card — quiz your classmates and lock in the topic.\n"
+           "👥 For teachers: assign topics to student groups — dates, roles, rubric — <b>{narx2} coins</b>\n\n"
+           "💰 Cards — <b>from {narx} coins</b>"},
     {"key": "test", "narx2": None,
      "uz": "📝 <b>Test kerakmi? Kimga mo'ljallanganini ayting — qolganini bot qiladi</b>\n\n"
            "🎒 1-4 sinf · 📘 5-9 sinf · 🎓 10-11 sinf · 🏁 Abituriyent (DTM) · 🏛 Talaba · 👔 Mutaxassis\n\n"

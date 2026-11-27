@@ -1,5 +1,41 @@
 # Academic Bot — o'zgarishlar ro'yxati
 
+## 16.8-versiya (27.11.2026) — Snoskalar: yil va bet har doim, eski adabiyot kirillda; Taqdimot + savol kartochkalari; taqdimot sxemalari
+- 📎 **Kurs ishi snoskalari va adabiyotlar ro'yxati:**
+  - Har bir snoskada **nashr yili ham, kitob beti ham** bo'ladi. Ro'yxatga faqat nashriyoti, yili va umumiy bet
+    soni (kitob) yoki jurnal nomi va betlari (maqola) aniq manbalar kiradi; to'liq bo'lmaganlari to'ldiriladi yoki
+    chiqariladi (`_toliqmi`, `_adab_toliqlash`). Nazorat bosqichi 2 marta aylanadi; hisobotda «yilsiz» hisoblagichi.
+  - Maqola snoskasida endi maqolaning bet oralig'i emas, **iqtibos olingan aniq bet** («– B. 47.») turadi.
+  - **1993-yilgacha nashr etilgan o'zbekcha adabiyotlar asl holidagidek kirill yozuvida** yoziladi (ro'yxatda ham,
+    snoskada ham): «Ҳожиев А. ... – Тошкент: Ўқитувчи, 1974. – 304 б.», snoskada «– Б. 45.» (`matn_norm.lotin_kiril`).
+  - Tuzatilgan xato: kirill «б.» bilan yozilgan umumiy bet soni snoskadan olib tashlanmasdi.
+- 🎴 **Rag'batlantirish → «Taqdimot + savol kartochkalari»** (`ragbat_kartochka.py`):
+  - Mavzu yoziladi → odatdagi taqdimot oqimi (ism, slaydlar soni, til, **dizayn shabloni tanlash**) → taqdimot
+    tayyor bo'lgach kartochka sozlamasi avtomatik ochiladi. Oxirgi taqdimotdan yoki o'z .pptx faylidan ham mumkin;
+    har qanday taqdimot yuborilgandan keyin «🎴 Shu taqdimotdan savol kartochkalari» taklifi chiqadi.
+  - Sozlamalar: varaqda **4/6/8/9/12** ta, varaqlar **1–6** (jami = varaqda × varaq, ko'pi bilan 72), shakl
+    (to'rtburchak, yumaloq, oval, oltiburchak, chipta), **9 rang yoki kamalak**, javob joyi (kartada — buklanadigan
+    pastki qism / orqa tomonda — ikki tomonlama chop, ko'zgu tartibida / faqat kalitda), qiyinlik (Bloom bo'yicha).
+  - Savollar faqat slaydlar mazmunidan; har bir savol-javob alohida AI bosqichida slaydlar bilan solishtirib
+    tekshiriladi (tuzatiladi yoki chiqariladi), takrorlar olib tashlanadi, taqdimot tartibida raqamlanadi.
+  - Natija: chop etishga tayyor vektor PDF (kesish chiziqlari, raqam, Bloom darajasi), oxirida o'qituvchi uchun
+    javoblar kaliti, birinchi varaq rasmi va darsda qo'llash usullari. Boshqa shakl/rangda qayta chizish — bepul.
+  - Narx: 24 tagacha — 3 🪙, 25–72 — 5 🪙.
+- 👥 **«Mavzularni taqsimlash» (o'quvchilar dars o'tadi):** o'quvchilar va mavzular ro'yxatidan guruhlar (1–4 kishi,
+  ro'yxat tartibida yoki aralash), har chiqishga sana (har dars kuni / kun ora / haftada 1, yakshanba o'tkaziladi,
+  bir darsda 1–2 chiqish), guruh ichida rollar, talaba darsi tuzilmasi, tayyorgarlik eslatmasi, **har bir chiqish
+  uchun oldindan to'ldirilgan o'qituvchi rubrikasi** (20 ball → 5 ballik baho) va «Ikki yulduz va bitta tilak»
+  o'zaro baholash varag'i (Word) — 2 🪙.
+- 📊 **Taqdimot bo'limi kuchaytirildi:**
+  - 3 ta yangi raqamsiz diagramma turi, 15 ta shablonning hammasida: **«sxema»** (tushunchalar xaritasi —
+    rasmiy shablonlarda daraxt, boshqalarida markazli xarita), **«sikl»** (davriy jarayon, yo'nalish strelkalari bilan),
+    **«piramida»** (darajalar/ierarxiya).
+  - AI qoidalari: kamida 3 xil vizual slayd, «matn» slaydlari ≤ 1/3; ilmiy-akademik uslub (shaxssiz, atamaga
+    ta'rif, sabab-oqibat/mexanizm/miqdor, olim va yil faqat aniq bilinganda).
+  - Slaydni tahrirlash endi slayd turini (diagramma, sxema, jadval) va manbasini saqlaydi; foydalanuvchi talabi
+    «faqat ma'lumot» chegarasida beriladi.
+- 📣 Marketing: yangi «Taqdimot + savol kartochkalari» posti (e'lon muddatida birinchi yuboriladi).
+
 ## 16.7-versiya (26.11.2026) — Kurs ishi: o'qituvchi e'tirozlari, snoskalar nazorati; professional test generatori
 - 📄 **Kurs ishi** (o'qituvchi e'tirozlari bo'yicha):
   - Kurs ishida endi faqat **«XULOSA»** bo'limi bor. Takliflar alohida raqamlanmaydi — xulosaning oxirgi

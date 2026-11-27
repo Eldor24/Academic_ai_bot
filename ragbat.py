@@ -68,6 +68,9 @@ _TX = {
                   "8 xil dizayn (rasmiy va bolalar uchun), bitta odamga yoki butun guruhga — {rg_bitta} 🪙 dan\n"
                   "🎓 <b>Dars to'plami</b> — mavzu yoki ma'ruza matningizdan tarqatma, savollar, javob kaliti, "
                   "baholash mezoni va dars rejasi — {rg_dars} 🪙\n"
+                  "🎴 <b>Taqdimot + savol kartochkalari</b> — taqdimot mazmunidan chop etiladigan savol-javob "
+                  "kartalari (shakl, rang, varaqda 4–12 ta) — {rg_kart} 🪙 dan\n"
+                  "👥 <b>Mavzularni taqsimlash</b> — o'quvchilar dars o'tadi: guruhlar, sanalar, rollar, rubrika — {rg_jadval} 🪙\n"
                   "🏆 <b>Natijalar bo'yicha taqdirlash</b> — «ism — ball» ro'yxatidan har kimga mos yorliq va "
                   "shaxsiy maqtov matni — {rg_natija} 🪙\n"
                   "🖨 <b>Bo'sh shablon</b> — ismni qo'lda yozasiz — {rg_shablon} 🪙\n"
@@ -179,6 +182,9 @@ _TX = {
                   "8 дизайнов (официальные и детские), одному человеку или всей группе — от {rg_bitta} 🪙\n"
                   "🎓 <b>Пакет к уроку</b> — по теме или тексту лекции: раздаточный материал, вопросы, ключ ответов, "
                   "критерии оценки и план урока — {rg_dars} 🪙\n"
+                  "🎴 <b>Презентация + карточки с вопросами</b> — печатные карточки «вопрос–ответ» по содержанию "
+                  "презентации (форма, цвет, 4–12 на листе) — от {rg_kart} 🪙\n"
+                  "👥 <b>Распределение тем</b> — ученики ведут урок: группы, даты, роли, рубрика — {rg_jadval} 🪙\n"
                   "🏆 <b>Награждение по результатам</b> — из списка «имя — балл» каждому подходящая грамота и "
                   "личный текст похвалы — {rg_natija} 🪙\n"
                   "🖨 <b>Пустой бланк</b> — имя впишете от руки — {rg_shablon} 🪙\n"
@@ -281,6 +287,9 @@ _TX = {
                   "and for kids), for one person or a whole group — from {rg_bitta} 🪙\n"
                   "🎓 <b>Lesson pack</b> — from a topic or your lecture text: handout, questions, answer key, "
                   "marking criteria and lesson plan — {rg_dars} 🪙\n"
+                  "🎴 <b>Presentation + question cards</b> — printable Q&A cards from the presentation content "
+                  "(shape, colour, 4–12 per sheet) — from {rg_kart} 🪙\n"
+                  "👥 <b>Assign topics</b> — students teach: groups, dates, roles, rubric — {rg_jadval} 🪙\n"
                   "🏆 <b>Awards by results</b> — from a «name — score» list: the right certificate and a personal "
                   "praise text for everyone — {rg_natija} 🪙\n"
                   "🖨 <b>Blank template</b> — write the name by hand — {rg_shablon} 🪙\n"
@@ -462,14 +471,17 @@ def _ctx_ol(cid):
 # 1. BO'LIM MENYUSI
 # ═══════════════════════════════════════════════════════════════════
 def menyu_kb(cid):
-    return _ikb([(_tt(cid, "b_cert"), "rgm_cert"), (_tt(cid, "b_dars"), "rgm_dars"), (_tt(cid, "b_nat"), "rgm_nat"),
+    import ragbat_kartochka as RK
+    return _ikb([(_tt(cid, "b_cert"), "rgm_cert"), (_tt(cid, "b_dars"), "rgm_dars"), (RK._tt(cid, "b_kart"), "rgm_kart"),
+                 (RK._tt(cid, "b_peer"), "rgm_peer"), (_tt(cid, "b_nat"), "rgm_nat"),
                  (_tt(cid, "b_blank"), "rgm_blank"), (_tt(cid, "b_info"), "rgm_info")])
 
 
 def ragbat_boshlash(msg):
     cid = msg.chat.id
     X._new_session(cid, "rg_menu", None)
-    _send(cid, _tt(cid, "intro", **NARX), reply_markup=menyu_kb(cid))
+    import ragbat_kartochka as RK
+    _send(cid, _tt(cid, "intro", **NARX, **RK.NARX), reply_markup=menyu_kb(cid))
     try:
         _send(cid, "👇", reply_markup=_api().back_kb(cid))
     except Exception:
@@ -549,6 +561,12 @@ def _menu_cb(call):
         else:
             _set(cid, qadam="rg_nat_mavzu")
             _send(cid, _tt(cid, "n_mavzu", **NARX), reply_markup=_api().back_kb(cid))
+    elif d == "rgm_kart":
+        import ragbat_kartochka as RK
+        RK.kart_boshlash(cid)
+    elif d == "rgm_peer":
+        import ragbat_kartochka as RK
+        RK.peer_boshlash(cid)
     elif d == "rgm_ppt":
         ctx = _ctx_ol(cid)
         f = getattr(_api(), "pptx_mavzu", None)

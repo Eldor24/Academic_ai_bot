@@ -351,8 +351,12 @@ Turlari ("tur") va tili ("til": "uz" | "ru" | "en"):
                avtoreferatlari, ilmiy jurnallardagi maqolalari; rus tilidagi asosiy darslik va monografiyalar;
   "xorijiy"  — ingliz tilidagi taniqli kitob va maqolalar;
   "internet" — faqat rasmiy saytlarning bosh manzili (masalan https://lex.uz, https://stat.uz, https://ziyonet.uz).
-Yozilish formati (GOST): Familiya I.O. Asar nomi. – Shahar: Nashriyot, yil. – 250 b.  (oxirida kitobning umumiy bet soni)
-Nashriyot yoki yilni bilmasang — o'sha qismni tashlab yoz, o'ylab topma.
+Yozilish formati (GOST) — HAR BIR manbada yil MAJBURIY:
+  kitob:  Familiya I.O. Asar nomi. – Shahar: Nashriyot, yil. – 250 b.  (oxirida kitobning umumiy bet soni)
+  maqola: Familiya I.O. Maqola nomi // Jurnal nomi. – yil. – № 3. – B. 15–21.
+1993-yilgacha (kirill yozuvida) nashr etilgan o'zbekcha asarlar ASL NASHRDAGIDEK kirillda yozilsin:
+  Ҳожиев А. Ўзбек тили синонимларининг изоҳли луғати. – Тошкент: Ўқитувчи, 1974. – 304 б.
+Nashriyot, yil yoki bet sonini aniq bilmagan manbani ro'yxatga KIRITMA (o'ylab topma).
 
 FAQAT JSON qaytar (Markdown yo'q):
 {{"boblar":[{{"nomi":"bob nomi","rejalar":[{{"sarlavha":"paragraf nomi","bandlar":["...","...","..."]}}]}}],
@@ -390,7 +394,10 @@ Mavjud ro'yxat (bularni TAKRORLAMA):
 Yana {kerak} ta {"RUS YOKI O'ZBEK TILIDAGI" if p["til"] == "ru" else ("ingliz tilidagi yoki O'zbekiston mualliflarining" if p["til"] == "en" else "O'ZBEK TILIDAGI")} manba qo'sh: o'zbek olimlarining darsliklari, o'quv qo'llanmalari, monografiyalari,
 lug'atlari, dissertatsiya va avtoreferatlari, «O'zbek tili va adabiyoti», «Xalq ta'limi», «Iqtisodiyot va ta'lim» kabi
 jurnallardagi maqolalari, mavzuga aloqador qonun va qarorlar. FAQAT haqiqatda mavjud manbalar, bir muallifdan ko'pi bilan
-2 ta. Format: Familiya I.O. Asar nomi. – Shahar: Nashriyot, yil. – 250 b.
+2 ta. Format (yil MAJBURIY): kitob — Familiya I.O. Asar nomi. – Shahar: Nashriyot, yil. – 250 b.;
+maqola — Familiya I.O. Maqola nomi // Jurnal. – yil. – № 3. – B. 15–21.
+1993-yilgacha nashr etilgan o'zbekcha asarlar asl nashrdagidek kirillda: Ҳожиев А. ... – Тошкент: Фан, 1981. – 160 б.
+Nashriyot, yil yoki bet sonini aniq bilmagan manbani kiritma.
 FAQAT JSON: {{"adabiyotlar":[{{"tur":"asosiy","til":"uz","matn":"..."}}]}}"""
 
 
@@ -708,11 +715,16 @@ def _snoska_matni(a: dict, bet) -> str:
     """Adabiyot yozuvidan snoska: umumiy bet soni («– 250 b.») o'rniga iqtibos beti («– B. 45.»)."""
     m = _clean(a.get("matn", "")).rstrip(". ")
     jami = None
-    mm = re.search(r"\s*[–-]\s*(\d{2,4})\s*(?:b|bet|с|стр|p|pp)\.?$", m, re.I)
+    mm = re.search(r"\s*[–-]\s*(\d{2,4})\s*(?:b|bet|б|бет|с|стр|p|pp)\.?$", m, re.I)
     if mm:
         jami = int(mm.group(1))
         m = m[:mm.start()].rstrip(" .")
-    if a.get("tur") in ("internet", "normativ") or not bet:      # qonun/farmonga bet emas, modda bilan murojaat
+    if a.get("tur") in ("internet", "normativ"):      # qonun/farmonga bet emas, modda bilan murojaat
+        return m + "."
+    if not bet:
+        rr = re.search(r"\s*[–-]\s*(B|Б|С|P|pp?)\.\s*(\d+)\s*[–-]\s*(\d+)\.?$", m)
+        if rr:                                         # maqola: bet berilmasa — maqolaning birinchi beti
+            return f"{m[:rr.start()].rstrip(' .')}. – {rr.group(1)}. {rr.group(2)}."
         return m + "."
     try:
         bet = int(bet)
@@ -720,7 +732,16 @@ def _snoska_matni(a: dict, bet) -> str:
         return m + "."
     if bet <= 0 or (jami and bet > jami):
         return m + "."
-    return f"{m}. – {_PAGE_ABBR.get(a.get('til', 'uz'), 'B.')} {bet}."
+    abbr = _PAGE_ABBR.get(a.get("til", "uz"), "B.")
+    if abbr == "B." and re.search(r"[а-яёўқғҳА-ЯЁЎҚҒҲ]", m) and not re.search(r"[a-z]{3}", m):
+        abbr = "Б."                                    # kirillda yozilgan o'zbekcha manba
+    # Maqola: «– B. 15–21» (maqola betlari) o'rniga aniq iqtibos beti; bet oraliqdan tashqarida bo'lsa — birinchi bet
+    rr = re.search(r"\s*[–-]\s*(B|Б|С|P|pp?)\.\s*(\d+)\s*[–-]\s*(\d+)\.?$", m)
+    if rr:
+        b1, b2 = int(rr.group(2)), int(rr.group(3))
+        bet = bet if b1 <= bet <= b2 else b1
+        return f"{m[:rr.start()].rstrip(' .')}. – {rr.group(1)}. {bet}."
+    return f"{m}. – {abbr} {bet}."
 
 
 def _fix_refs(text: str, nadab: int, used: set) -> str:
@@ -1019,8 +1040,28 @@ def _toliqmi(a: dict) -> bool:
     if not yil:
         return False
     # kitob: «– Shahar: Nashriyot, yil» yoki maqola: «// Jurnal. – yil. – № 3. – B. 12–18»
-    return bool(re.search(r"//", m) or re.search(r"[–-]\s*[^:–]{1,40}:\s*[^,]{2,}", m)
-                or re.search(r"\b(T|M|СПб|L|N\.Y|Toshkent|Москва|Тошкент|Samarqand)\.?\s*:", m))
+    if "//" in m:                                      # maqola: jurnal, yil va betlar
+        return bool(re.search(r"(B|Б|С|P|pp?)\.\s*\d+", m))
+    nashr = re.search(r"[–-]\s*[^:–]{1,40}:\s*[^,]{2,}", m) or \
+        re.search(r"\b(T|M|СПб|L|N\.Y|Toshkent|Москва|Тошкент|Т|М|Samarqand|Самарқанд)\.?\s*:", m)
+    bet = re.search(r"[–-]\s*\d{2,4}\s*(b|bet|б|с|стр|p|pp)\.?$", m.rstrip(". "), re.I)
+    return bool(nashr and bet)
+
+
+def _nashr_yili(m: str) -> int | None:
+    """Nashr yili: nashriyotdan keyingi yoki «– yil.» shaklidagi oxirgi yil (sarlavhadagi yillar emas)."""
+    yy = re.findall(r"(?:[,:–-]\s*|\s)(1[89]\d{2}|20\d{2})(?=\s*[.,;–-]|\s*$)", m)
+    return int(yy[-1]) if yy else None
+
+
+def _kirill_eski(a: dict) -> dict:
+    """1993-yilgacha chop etilgan o'zbekcha asar asl nashrdagidek kirillda yoziladi (GOST: asl tilda va yozuvda)."""
+    m = a.get("matn", "")
+    y = _nashr_yili(m)
+    if a.get("til") == "uz" and a.get("tur") in ("asosiy", "xorijiy") and y and y < 1993 \
+            and not re.search(r"[а-яёўқғҳА-ЯЁЎҚҒҲ]", m):
+        return dict(a, matn=matn_norm.lotin_kiril(m))
+    return a
 
 
 def _adab_toliqlash(cid, p: dict, adab: list) -> list:
@@ -1030,14 +1071,15 @@ def _adab_toliqlash(cid, p: dict, adab: list) -> list:
     adab = [(_internet_format(a, til) if a.get("tur") == "internet" else a) for a in adab]
     chala = [i for i, a in enumerate(adab) if not _toliqmi(a)]
     if not chala:
-        return adab
+        return [_kirill_eski(a) for a in adab]
     lo = HAJMLAR[p["hajm"]]["adab"][0]
     try:
         r = _ask(f"""Sen bibliograf (GOST 7.1-2003) mutaxassisisan. {L(til)['lang']}
 Quyidagi manbalarning bibliografik ma'lumoti chala. Har birini to'liq GOST formatida yoz:
 kitob — «Familiya I.O. Asar nomi. – Shahar: Nashriyot, yil. – 250 b.»; maqola — «Familiya I.O. Maqola nomi // Jurnal.
 – yil. – № 2. – B. 15–21.»; qonun/qaror — nomi, qabul qilingan sanasi va raqami.
-FAQAT haqiqatda mavjud va aniq bilgan ma'lumotingni yoz. Nashriyot yoki yilni aniq bilmasang — "aniq_emas": true qaytar
+1993-yilgacha nashr etilgan o'zbekcha asarni asl nashrdagidek KIRILLDA yoz (Тошкент: Фан, 1981. – 160 б.).
+FAQAT haqiqatda mavjud va aniq bilgan ma'lumotingni yoz. Nashriyot, yil yoki bet sonini aniq bilmasang — "aniq_emas": true qaytar
 (o'ylab topilgan ma'lumotdan ko'ra manbani olib tashlash yaxshi).
 {chr(10).join(f"{k + 1}. {adab[i]['matn']}" for k, i in enumerate(chala))}
 FAQAT JSON: {{"manbalar":[{{"n":1,"matn":"...","aniq_emas":false}}]}}""", "Bibliografiya", max_tokens=3500,
@@ -1055,6 +1097,7 @@ FAQAT JSON: {{"manbalar":[{{"n":1,"matn":"...","aniq_emas":false}}]}}""", "Bibli
                 adab[i] = dict(adab[i], matn=re.sub(r"^\d+[\.\)]\s*", "", yangi))
     except Exception as e:
         log.warning(f"[{cid}] Adabiyotlarni to'ldirish xatosi: {e}")
+    adab = [_kirill_eski(a) for a in adab]
     out, olindi = [], 0
     for a in adab:
         if not _toliqmi(a) and len(adab) - olindi > lo:
@@ -1084,8 +1127,11 @@ def _havolasiz_fikrmi(gap: str) -> bool:
 
 
 def _betsizmi(snoska: str, a: dict) -> bool:
-    return a.get("tur") in ("asosiy", "xorijiy") and "//" not in a.get("matn", "") and \
-        not re.search(r"(B|С|P)\.\s*\d+\.?$", snoska or "")
+    return a.get("tur") in ("asosiy", "xorijiy") and not re.search(r"(B|Б|С|P)\.\s*\d+\.?$", snoska or "")
+
+
+def _yilsizmi(snoska: str, a: dict) -> bool:
+    return a.get("tur") != "internet" and not re.search(r"\b(1[89]\d{2}|20\d{2})\b", snoska or "")
 
 
 def _snoska_nazorati(cid, p: dict, plan: dict, adab: list, data: dict, taqsimot: dict | None = None,
@@ -1187,8 +1233,13 @@ FAQAT JSON: {{"gaplar":[{{"id":"G1","manba":12,"bet":45}},{{"id":"G2","qayta":".
                 tuz += 1
         return tuz
 
-    with cf.ThreadPoolExecutor(max_workers=3) as ex:
-        jami = sum(ex.map(ish, keys))
+    jami = 0
+    for bosqich in range(2):                          # 2-bosqich — 1-bosqichdan keyin qolgan kamchiliklar uchun
+        with cf.ThreadPoolExecutor(max_workers=3) as ex:
+            t = sum(ex.map(ish, keys))
+        jami += t
+        if t == 0:
+            break
     log.info(f"[{cid}] Snoska nazorati: {jami} ta tuzatish")
     return jami
 
@@ -1235,9 +1286,9 @@ def _ish_turi_tuzat(data: dict, p: dict):
 def snoska_hisobot(data: dict) -> dict:
     """Snoskalar va adabiyotlar ro'yxati mosligini tekshiradi (test va log uchun)."""
     adab = data.get("plan", {}).get("adabiyotlar", [])
-    asoslar = {re.sub(r"\s*[–-]\s*\d{2,4}\s*(?:b|bet|с|стр|p|pp)\.?$", "", _clean(a["matn"]), flags=re.I).rstrip(" .")
+    asoslar = {re.sub(r"\s*[–-]\s*\d{2,4}\s*(?:b|bet|б|с|стр|p|pp)\.?$", "", _clean(a["matn"]), flags=re.I).rstrip(" .")
                for a in adab}
-    h = {"snoska": 0, "belgisiz": 0, "royxatda_yoq": 0, "betsiz_kitob": 0, "havolasiz_fikr": 0}
+    h = {"snoska": 0, "belgisiz": 0, "royxatda_yoq": 0, "betsiz_kitob": 0, "yilsiz": 0, "havolasiz_fikr": 0}
     for bi in range(data.get("bob_soni", 0)):
         for rj in data.get(f"bob{bi + 1}_data", {}).get("rejalar", []):
             sn = {str(k): v for k, v in (rj.get("snoskalar") or {}).items()}
@@ -1250,12 +1301,14 @@ def snoska_hisobot(data: dict) -> dict:
                         h["belgisiz"] += 1
                         continue
                     h["snoska"] += 1
-                    asos = re.sub(r"\s*[–-]\s*(B|С|P)\.\s*\d+\.?$", "", _clean(sn[k])).rstrip(" .")
-                    if asos not in asoslar:
+                    asos = re.sub(r"\s*[–-]\s*(B|Б|С|P)\.\s*\d+\.?$", "", _clean(sn[k])).rstrip(" .")
+                    if asos not in asoslar and not any(x.startswith(asos) for x in asoslar):
                         h["royxatda_yoq"] += 1
                     n = sm.get(k)
                     if n and 1 <= n <= len(adab) and _betsizmi(sn[k], adab[n - 1]):
                         h["betsiz_kitob"] += 1
+                    if n and 1 <= n <= len(adab) and _yilsizmi(sn[k], adab[n - 1]):
+                        h["yilsiz"] += 1
                 h["havolasiz_fikr"] += sum(1 for g in _gaplar(bl) if _havolasiz_fikrmi(g))
     return h
 
